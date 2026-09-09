@@ -95,6 +95,11 @@ Spec parcial, com todas as decisões já travadas nas perguntas ao usuário,
 e a lista exata do que falta desenhar:
 `docs/superpowers/specs/2026-09-09-desk-wifi-autonomy-design.md`
 
+**Atenção:** `docs/superpowers/` está no `.gitignore` deste repo (convenção
+já existente, não fui eu que decidi) — esse arquivo existe no disco mas
+NÃO está protegido por git. Não rode `git clean -fd` neste repo sem ler
+esse arquivo antes.
+
 **Não implementar nada disso ainda** — o usuário só viu e não confirmou a
 Seção 1 (arquitetura). Retome perguntando se a Seção 1 está certa, depois
 siga pras seções 2–7 listadas no arquivo, uma de cada vez, seguindo o
