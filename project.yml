@@ -33,6 +33,11 @@ targets:
     platform: macOS
     sources:
       - Sources/NotchAgent
+      - path: Resources/LaunchAgents
+        buildPhase:
+          copyFiles:
+            destination: wrapper
+            subpath: Contents/Library/LaunchAgents
     dependencies:
       - target: AgentMeterCore
     info:

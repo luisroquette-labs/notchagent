@@ -91,6 +91,12 @@ actor NotchAgentDeskSerialTransport {
                 Darwin.close(fd)
                 continue
             }
+            if identifiesAsPokeDeck(fd) {
+                candidateCooldowns[path] = .now
+                Darwin.close(fd)
+                Log.app.info("Ignored PokeDeck USB device")
+                continue
+            }
             descriptor = fd
             connectedPath = path
             decoder = DeskFrameStreamDecoder()
@@ -152,6 +158,34 @@ actor NotchAgentDeskSerialTransport {
         else { return false }
         options.c_cflag |= tcflag_t(CLOCAL | CREAD)
         return tcsetattr(fd, TCSANOW, &options) == 0
+    }
+
+    private func identifiesAsPokeDeck(_ fd: Int32) -> Bool {
+        let probe = Data("PING\n\0".utf8)
+        guard probe.withUnsafeBytes({ bytes in
+            guard let base = bytes.baseAddress else { return false }
+            return Darwin.write(fd, base, bytes.count) == bytes.count
+        }) else { return false }
+
+        let deadline = Date().addingTimeInterval(2.5)
+        var response = Data()
+        while Date() < deadline {
+            var readable = pollfd(fd: fd, events: Int16(POLLIN), revents: 0)
+            let remaining = max(1, Int32(deadline.timeIntervalSinceNow * 1_000))
+            let ready = Darwin.poll(&readable, 1, remaining)
+            if ready < 0, errno == EINTR { continue }
+            guard ready > 0 else { break }
+            var bytes = [UInt8](repeating: 0, count: 256)
+            let count = Darwin.read(fd, &bytes, bytes.count)
+            if count > 0 {
+                response.append(contentsOf: bytes.prefix(count))
+                if String(decoding: response, as: UTF8.self).contains("PONG POKEDECK/3") { return true }
+                if response.count > 1_024 { response.removeFirst(response.count - 1_024) }
+            } else if count < 0, errno != EAGAIN, errno != EWOULDBLOCK, errno != EINTR {
+                break
+            }
+        }
+        return false
     }
 
     private func sendHello() {
@@ -219,7 +253,11 @@ actor NotchAgentDeskSerialTransport {
             return
         }
         guard let firmwareVersion = acknowledgement.firmwareVersion,
-              firmwareVersion.wholeMatch(of: /[0-9]+\.[0-9]+\.[0-9]+/) != nil else {
+              // SemVer core plus optional pre-release/build metadata (e.g.
+              // "1.0.0-alpha.1") — dogfooding/dev firmware reports these,
+              // and a compatible protocolMajor means the device is real and
+              // usable regardless of a pre-release suffix.
+              firmwareVersion.wholeMatch(of: /[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-.]+)?(\+[0-9A-Za-z-.]+)?/) != nil else {
             isIncompatible = true
             stateHandler(.init(
                 phase: .incompatible,
@@ -334,6 +372,7 @@ final class NotchAgentDeskCoordinator {
                 self.connectionState = state
                 self.soakRecorder?.record(state)
                 if previousPhase != state.phase {
+                    if state.phase == .connected { DeskWatchdog.ensureRegistered() }
                     self.onConnectionPhaseChange?(state.phase)
                 }
             }

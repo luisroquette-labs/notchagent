@@ -44,11 +44,22 @@ final class AppEnvironment {
         mind = MascotMind(settings: preferences, store: store)
         router.environment = self
         desk.onConnectionPhaseChange = { [weak self] phase in
-            guard let self,
-                  phase == .connected || phase == .incompatible,
-                  !self.preferences.settings.notchAgentDeskOnboardingCompleted
-            else { return }
-            self.router.openSettings()
+            guard let self else { return }
+            switch DeskOnboardingDecision.action(
+                for: phase,
+                onboardingCompleted: self.preferences.settings.notchAgentDeskOnboardingCompleted,
+                mirroringEnabled: self.preferences.settings.notchAgentDeskEnabled
+            ) {
+            case .none: break
+            case .openRecoverySettings: self.router.openSettings()
+            case .askToEnableMirroring: self.notifications.postDeskDetected()
+            }
+        }
+        notifications.onDeskMirroringRequested = { [weak self] in
+            guard let self else { return }
+            self.preferences.settings.notchAgentDeskEnabled = true
+            self.preferences.settings.notchAgentDeskOnboardingCompleted = true
+            self.desk.setMirroringEnabled(true)
         }
         spending.onMonthlyBudgetAlert = { [notifications, preferences] alert in
             notifications.postBudget(alert, settings: preferences.settings)

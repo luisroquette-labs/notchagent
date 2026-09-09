@@ -100,6 +100,10 @@ echo "▸ bundling generated weather art"
 mkdir -p "$APP/Contents/Resources/Weather"
 cp Resources/Weather/*.png "$APP/Contents/Resources/Weather/" 2>/dev/null || echo "   (no generated weather art — procedural fallback stays active)"
 
+echo "▸ bundling Desk crash-watchdog LaunchAgent"
+mkdir -p "$APP/Contents/Library/LaunchAgents"
+cp Resources/LaunchAgents/*.plist "$APP/Contents/Library/LaunchAgents/"
+
 SPARKLE_FRAMEWORK=$(find .build/artifacts -path '*/macos-*/Sparkle.framework' -type d -print -quit 2>/dev/null || true)
 [[ -n "$SPARKLE_FRAMEWORK" && -d "$SPARKLE_FRAMEWORK" ]] || {
     echo "FAIL: Sparkle.framework was not produced by SwiftPM." >&2

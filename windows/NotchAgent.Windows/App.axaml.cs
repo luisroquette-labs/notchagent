@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
+using NotchAgent.Windows.Desk;
 using NotchAgent.Windows.Models;
 using NotchAgent.Windows.Providers;
 using NotchAgent.Windows.Providers.Claude;
@@ -25,6 +26,8 @@ public partial class App : Application
     private NativeMenuItem _pauseMenuItem = null!;
     private FloatingBarWindow _bar = null!;
     private SettingsWindow? _settingsWindow;
+    private DeskCoordinator _desk = null!;
+    private bool _deskPromptShownThisSession;
 
     public override void Initialize()
     {
@@ -43,6 +46,33 @@ public partial class App : Application
 
             var providers = new List<IUsageProvider> { new ClaudeProvider(), new CodexProvider() };
             _scheduler = new RefreshScheduler(providers, _store, _snapshotStore);
+
+            _desk = new DeskCoordinator(_store);
+            _desk.OnConnectionPhaseChange += phase =>
+            {
+                if (_deskPromptShownThisSession) return;
+                if (phase == DeskConnectionPhase.Incompatible)
+                {
+                    // A real problem needing recovery UI — not a consent ask.
+                    _deskPromptShownThisSession = true;
+                    Avalonia.Threading.Dispatcher.UIThread.Post(OpenSettings);
+                }
+                else if (phase == DeskConnectionPhase.Connected && !_settings.NotchAgentDeskEnabled)
+                {
+                    _deskPromptShownThisSession = true;
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    {
+                        var consent = new DeskConsentWindow(() =>
+                        {
+                            _settings.NotchAgentDeskEnabled = true;
+                            PreferencesStore.Save(_settings);
+                            _desk.SetMirroringEnabled(true);
+                        });
+                        consent.Show();
+                    });
+                }
+            };
+            _desk.Start(_settings.NotchAgentDeskEnabled);
 
             ApplyTheme();
             SetupTrayIcon(desktop);
@@ -122,6 +152,7 @@ public partial class App : Application
     {
         ApplyTheme();
         _scheduler.Restart();
+        _desk.SetMirroringEnabled(_settings.NotchAgentDeskEnabled);
     }
 
     private void ApplyTheme()

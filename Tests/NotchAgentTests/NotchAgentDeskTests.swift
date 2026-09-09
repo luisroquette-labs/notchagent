@@ -105,6 +105,48 @@ final class NotchAgentDeskTests: XCTestCase {
         XCTAssertFalse(AppSettings().claudeQuotaProbeEnabled)
     }
 
+    // REGRESSÃO: Desk reconhecida via handshake com mirroring ainda OFF
+    // ficava sem nenhum pedido de consentimento visível (só abria Settings
+    // silenciosamente) — usuário via a tela plugada e "sem dados" sem saber
+    // por quê. `askToEnableMirroring` é o CTA de 1 toque que fecha essa lacuna.
+    func testDeskOnboardingAsksToEnableMirroringOnFirstConnectedHandshake() {
+        XCTAssertEqual(
+            DeskOnboardingDecision.action(for: .connected, onboardingCompleted: false, mirroringEnabled: false),
+            .askToEnableMirroring
+        )
+    }
+
+    func testDeskOnboardingOpensRecoverySettingsOnIncompatibleFirmware() {
+        XCTAssertEqual(
+            DeskOnboardingDecision.action(for: .incompatible, onboardingCompleted: false, mirroringEnabled: false),
+            .openRecoverySettings
+        )
+    }
+
+    func testDeskOnboardingDoesNothingOnceCompletedOrAlreadyMirroring() {
+        XCTAssertEqual(
+            DeskOnboardingDecision.action(for: .connected, onboardingCompleted: true, mirroringEnabled: false),
+            .none
+        )
+        XCTAssertEqual(
+            DeskOnboardingDecision.action(for: .connected, onboardingCompleted: false, mirroringEnabled: true),
+            .none
+        )
+        XCTAssertEqual(
+            DeskOnboardingDecision.action(for: .incompatible, onboardingCompleted: true, mirroringEnabled: false),
+            .none
+        )
+    }
+
+    func testDeskOnboardingIgnoresTransientPhases() {
+        for phase in [NotchAgentDeskConnectionState.Phase.disabled, .searching, .handshaking] {
+            XCTAssertEqual(
+                DeskOnboardingDecision.action(for: phase, onboardingCompleted: false, mirroringEnabled: false),
+                .none
+            )
+        }
+    }
+
     func testDeskSetupRequiresConnectionProviderAndConsent() {
         var status = NotchAgentDeskSetupStatus(
             connectionPhase: .searching,
@@ -475,6 +517,35 @@ final class NotchAgentDeskTests: XCTestCase {
         await transport.stop()
     }
 
+    func testSerialTransportReleasesPokeDeckWithoutDeskHandshake() async throws {
+        var master: Int32 = -1
+        var slave: Int32 = -1
+        var name = [CChar](repeating: 0, count: 1_024)
+        XCTAssertEqual(openpty(&master, &slave, &name, nil, nil), 0)
+        defer { Darwin.close(master); Darwin.close(slave) }
+        let path = String(decoding: name.prefix { $0 != 0 }.map { UInt8(bitPattern: $0) }, as: UTF8.self)
+        let flags = fcntl(master, F_GETFL)
+        XCTAssertEqual(fcntl(master, F_SETFL, flags | O_NONBLOCK), 0)
+        let transport = NotchAgentDeskSerialTransport(candidatePaths: { [path] })
+        await transport.start()
+
+        let deadline = ContinuousClock.now.advanced(by: .seconds(2))
+        var probe = Data()
+        while !probe.contains(Data("PING\n".utf8)), ContinuousClock.now < deadline {
+            var bytes = [UInt8](repeating: 0, count: 128)
+            let count = Darwin.read(master, &bytes, bytes.count)
+            if count > 0 { probe.append(contentsOf: bytes.prefix(count)) }
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        XCTAssertTrue(probe.contains(Data("PING\n".utf8)))
+        try writeAll(Data("I am LVGL_Arduino\nSetup done\n".utf8), to: master)
+        try await Task.sleep(for: .milliseconds(100))
+        try writeAll(Data("PONG POKEDECK/3\n".utf8), to: master)
+        try await Task.sleep(for: .milliseconds(500))
+        XCTAssertNil(tryReadFrame(from: master))
+        await transport.stop()
+    }
+
     @MainActor
     func testSanitizedDiagnosticIncludesDeskIdentityButNotSerialPath() throws {
         let report = SanitizedDiagnosticExporter.report(
@@ -655,6 +726,49 @@ final class NotchAgentDeskTests: XCTestCase {
         try await Task.sleep(for: .seconds(6))
         XCTAssertEqual(states.last?.phase, .incompatible)
         XCTAssertEqual(states.last?.path, path)
+        await transport.stop()
+    }
+
+    // REGRESSÃO: a Desk física real deste repositório roda firmware
+    // "1.0.0-alpha.1" (build de dogfooding, protocolMajor compatível) e o
+    // handshake nunca completava — `wholeMatch(of: /[0-9]+\.[0-9]+\.[0-9]+/)`
+    // rejeitava a versão inteira por causa do sufixo de pre-release, mesmo
+    // com o protocolo major batendo. Achado só ao testar contra o hardware
+    // real (probe manual na porta serial), não coberto pelos testes
+    // anteriores porque todos usavam versões "N.N.N" limpas.
+    func testHandshakeAcceptsPrereleaseFirmwareVersions() async throws {
+        var master: Int32 = -1
+        var slave: Int32 = -1
+        var name = [CChar](repeating: 0, count: 1_024)
+        XCTAssertEqual(openpty(&master, &slave, &name, nil, nil), 0)
+        guard master >= 0, slave >= 0 else { return XCTFail("openpty failed") }
+        defer { Darwin.close(master); Darwin.close(slave) }
+        let path = String(decoding: name.prefix { $0 != 0 }.map { UInt8(bitPattern: $0) }, as: UTF8.self)
+        let flags = fcntl(master, F_GETFL)
+        XCTAssertEqual(fcntl(master, F_SETFL, flags | O_NONBLOCK), 0)
+        let states = DeskConnectionStateRecorder()
+        let transport = NotchAgentDeskSerialTransport(
+            candidatePaths: { [path] in [path] },
+            stateHandler: { states.append($0) }
+        )
+        await transport.start()
+        let hello = try await readFrame(from: master, timeout: .seconds(3))
+        let decoded = try JSONDecoder().decode(DeskHello.self, from: hello.payload)
+        let acknowledgement = DeskHelloAcknowledgement(
+            product: decoded.product,
+            protocolMajor: decoded.protocolMajor,
+            protocolMinor: 9,
+            nonce: decoded.nonce,
+            firmwareVersion: "1.0.0-alpha.1"
+        )
+        try writeAll(try DeskFrameCodec.encode(.init(
+            type: .helloAcknowledgement,
+            sequence: 1,
+            payload: try JSONEncoder().encode(acknowledgement)
+        )), to: master)
+        try await Task.sleep(for: .seconds(1))
+        XCTAssertEqual(states.last?.phase, .connected)
+        XCTAssertEqual(states.last?.firmwareVersion, "1.0.0-alpha.1")
         await transport.stop()
     }
 

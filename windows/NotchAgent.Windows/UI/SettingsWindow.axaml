@@ -22,6 +22,7 @@
       <CheckBox Name="NotificationsCheck" Content="Quota alerts as notifications" Checked="OnCheckToggled" Unchecked="OnCheckToggled"/>
       <CheckBox Name="RunnerCheck" Content="Clawd runner (dino-game mascot)" Checked="OnCheckToggled" Unchecked="OnCheckToggled"/>
       <CheckBox Name="ProbeCheck" Content="Read real quota from the Anthropic API" Checked="OnCheckToggled" Unchecked="OnCheckToggled"/>
+      <CheckBox Name="DeskCheck" Content="Show my data on a connected NotchAgent Desk" Checked="OnCheckToggled" Unchecked="OnCheckToggled"/>
 
       <TextBlock Text="Refresh" FontWeight="Bold" FontSize="13" Margin="0,10,0,0"/>
       <StackPanel Spacing="6">
