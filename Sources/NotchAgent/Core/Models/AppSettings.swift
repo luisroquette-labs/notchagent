@@ -55,6 +55,13 @@ public struct AppSettings: Codable, Sendable, Equatable {
     /// System notifications when a provider crosses warning/critical
     /// (requires running from the .app bundle).
     public var notificationsEnabled: Bool = true
+    /// Opt-in email when a weekly or 5h window resets (credits back).
+    /// Requires a Resend API key in Keychain; off by default like the other
+    /// features that leave the device (see claudeQuotaProbeEnabled).
+    public var notifyEmailOnRestore: Bool = false
+    /// Recipient for restore emails. Non-secret — the API key stays in
+    /// Keychain, this is just an address.
+    public var notificationEmail: String = ""
     /// Optional user-set budgets used only when the API probe is unavailable.
     public var claudeSessionTokenBudget: Int?
     public var claudeWeeklyTokenBudget: Int?
@@ -100,6 +107,8 @@ public struct AppSettings: Codable, Sendable, Equatable {
         case monitoredAPIServices
         case apiAccountIdentifiers
         case notificationsEnabled
+        case notifyEmailOnRestore
+        case notificationEmail
         case claudeSessionTokenBudget
         case claudeWeeklyTokenBudget
         case weatherEnabled
@@ -156,6 +165,8 @@ public struct AppSettings: Codable, Sendable, Equatable {
                 )
             }
         notificationsEnabled = try container.decodeIfPresent(Bool.self, forKey: .notificationsEnabled) ?? true
+        notifyEmailOnRestore = try container.decodeIfPresent(Bool.self, forKey: .notifyEmailOnRestore) ?? false
+        notificationEmail = try container.decodeIfPresent(String.self, forKey: .notificationEmail) ?? ""
         claudeSessionTokenBudget = try container.decodeIfPresent(Int.self, forKey: .claudeSessionTokenBudget)
         claudeWeeklyTokenBudget = try container.decodeIfPresent(Int.self, forKey: .claudeWeeklyTokenBudget)
         weatherEnabled = try container.decodeIfPresent(Bool.self, forKey: .weatherEnabled) ?? true

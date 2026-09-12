@@ -20,6 +20,8 @@ struct SettingsView: View {
     @State private var deskDiagnosticStatus: String?
     @State private var showsDeskFirmwareConfirmation = false
     @State private var showsDeskDetails = false
+    @State private var deskPairingPIN = ""
+    @State private var deskPairingMessage: String?
     @State private var codexOnboarding: CodexOnboardingStatus?
     @State private var codexOnboardingMessage: String?
     @State private var codexOnboardingBusy = false
@@ -50,6 +52,22 @@ struct SettingsView: View {
             .pickerStyle(.segmented)
 
             if selectedSection != .apiAccounts {
+            if selectedSection == .desk {
+            Section(pt ? "Conexão Wi-Fi" : "Wi-Fi connection") {
+                LabeledContent("NotchAgent Desk") {
+                    DeskWiFiIndicator(
+                        state: desk.connectionState,
+                        showsLabel: true,
+                        portuguese: pt
+                    )
+                }
+                Text(pt
+                     ? "O ícone no header fica verde quando o Desk está conectado por Wi-Fi. Clique nele para abrir os Ajustes."
+                     : "The header icon turns green when Desk is connected over Wi-Fi. Click it to open Settings.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            }
             if selectedSection == .general {
             Section {
                 Picker(pt ? "Idioma" : "Language", selection: $preferences.settings.interfaceLanguage) {
@@ -110,6 +128,24 @@ struct SettingsView: View {
                     title: pt ? "Marcos de quota" : "Quota milestones",
                     values: $preferences.settings.quotaAlertThresholdPercents
                 )
+            }
+
+            Section {
+                Toggle(
+                    pt ? "Avisar por e-mail quando os créditos voltarem" : "Email me when credits are back",
+                    isOn: $preferences.settings.notifyEmailOnRestore
+                )
+                TextField(pt ? "E-mail de destino" : "Recipient email", text: $preferences.settings.notificationEmail)
+                    .disableAutocorrection(true)
+                SecureField(pt ? "Chave de API do Resend" : "Resend API key", text: resendAPIKeyBinding)
+            } header: {
+                Text(pt ? "Aviso de créditos por e-mail" : "Credit restore email")
+            } footer: {
+                Text(pt
+                    ? "Envia um e-mail (via Resend) toda vez que a janela semanal ou de 5h resetar, com o provedor e o modelo ativo. Sai da máquina só quando ativado."
+                    : "Sends an email (via Resend) whenever the weekly or 5h window resets, naming the provider and active model. Only leaves the machine when enabled.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
 
             Section(pt ? "Notch" : "Notch overlay") {
@@ -227,6 +263,8 @@ struct SettingsView: View {
                         : "Opens the installation walkthrough in your browser."
                 )
 
+                deskPairingControls(desk, portuguese: pt)
+
                 if !preferences.settings.notchAgentDeskEnabled {
                     Button {
                         preferences.settings.notchAgentDeskEnabled = true
@@ -253,6 +291,11 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         if let firmware = desk.connectionState.firmwareVersion {
                             LabeledContent("Firmware") { Text(firmware).monospacedDigit() }
+                        }
+                        if let transport = desk.connectionState.transport {
+                            LabeledContent(pt ? "Conexão" : "Connection") {
+                                Text(transport == .usb ? "USB" : "Wi‑Fi")
+                            }
                         }
                         if let major = desk.connectionState.protocolMajor,
                            let minor = desk.connectionState.protocolMinor {
@@ -287,6 +330,12 @@ struct SettingsView: View {
                                     pt ? "Exportar diagnóstico" : "Export diagnostic",
                                     systemImage: "square.and.arrow.up"
                                 )
+                            }
+                            if desk.connectionState.deviceID != nil {
+                                Button(pt ? "Esquecer pareamento" : "Forget pairing", role: .destructive) {
+                                    desk.forgetNetworkPairing()
+                                    deskPairingPIN = ""
+                                }
                             }
                             if case .updating = desk.updateState {
                                 ProgressView().controlSize(.small)
@@ -423,6 +472,43 @@ struct SettingsView: View {
         }
     }
 
+    @ViewBuilder
+    private func deskPairingControls(_ desk: NotchAgentDeskCoordinator, portuguese pt: Bool) -> some View {
+        if desk.connectionState.phase == .pairingRequired {
+            HStack {
+                SecureField("PIN", text: $deskPairingPIN)
+                    .textFieldStyle(.roundedBorder)
+                    .frame(width: 100)
+                Button(pt ? "Parear" : "Pair") {
+                    let pin = deskPairingPIN
+                    Task {
+                        do {
+                            try await desk.pairNetwork(pin: pin)
+                            deskPairingMessage = nil
+                        } catch {
+                            deskPairingMessage = pt
+                                ? "Digite os 6 dígitos mostrados na Desk."
+                                : "Enter the 6 digits shown on Desk."
+                        }
+                    }
+                }
+                .disabled(deskPairingPIN.wholeMatch(of: /[0-9]{6}/) == nil)
+            }
+            if let deskPairingMessage {
+                Text(deskPairingMessage).font(.caption).foregroundStyle(.red)
+            }
+        }
+    }
+
+    /// Same pattern as the API-account SecureFields: the secret never touches
+    /// AppSettings (plist-backed), only Keychain.
+    private var resendAPIKeyBinding: Binding<String> {
+        Binding(
+            get: { APIAccountCredentialStore.key(for: ResendCredential.keychainAccount) ?? "" },
+            set: { APIAccountCredentialStore.save($0, for: ResendCredential.keychainAccount) }
+        )
+    }
+
     private func brlRateText(_ rate: Decimal?) -> String {
         guard let rate else { return "Atualizando…" }
         let formatter = NumberFormatter()
@@ -452,7 +538,9 @@ struct SettingsView: View {
         case .disabled: portuguese ? "Desativado" : "Disabled"
         case .searching: portuguese ? "Procurando…" : "Searching…"
         case .handshaking: portuguese ? "Reconhecendo…" : "Recognizing…"
+        case .pairingRequired: portuguese ? "PIN necessário" : "PIN required"
         case .connected: portuguese ? "Conectado" : "Connected"
+        case .hostUnavailable: portuguese ? "Host indisponível" : "Host unavailable"
         case .incompatible: portuguese ? "Firmware incompatível" : "Incompatible firmware"
         }
     }

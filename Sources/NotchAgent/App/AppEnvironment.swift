@@ -70,6 +70,16 @@ final class AppEnvironment {
         store.onRestore = { [notifications, preferences, mind] moment in
             notifications.postRestored(moment, settings: preferences.settings)
             mind.notePeakPassed()
+            let settings = preferences.settings
+            let apiKey = APIAccountCredentialStore.key(for: ResendCredential.keychainAccount)
+            Task {
+                await CreditRestoreEmailNotifier.evaluateAndSend(
+                    moment: moment,
+                    settings: settings,
+                    apiKey: apiKey,
+                    gate: ResendEmailGate()
+                )
+            }
         }
     }
 
