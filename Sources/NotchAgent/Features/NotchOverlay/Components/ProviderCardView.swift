@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 /// One provider inside the expanded notch panel, stick-style: giant
@@ -10,6 +11,10 @@ struct ProviderCardView: View {
     var burn: BurnRate.Projection?
 
     @Environment(UsageStore.self) private var store
+
+    /// NotchAgent never spends a reset itself — it opens OpenAI's own flow so
+    /// the account owner picks which of the (scarce, non-refundable) credits to use.
+    static let codexUsageSettingsURL = URL(string: "https://chatgpt.com/codex/settings/usage")!
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -308,7 +313,11 @@ struct ProviderCardView: View {
     /// The weekly cap rendered as the bottom block — smaller scale of the
     /// session block above. Used only by `weeklyWindowBlock`.
     @ViewBuilder
-    private func weeklySecondaryBlock(secondary: (usedPercent: Double, resetsAt: Date?), warningAt: Double, criticalAt: Double) -> some View {
+    private func weeklySecondaryBlock(
+        secondary: (usedPercent: Double, resetsAt: Date?),
+        warningAt: Double,
+        criticalAt: Double
+    ) -> some View {
         VStack(alignment: .leading, spacing: 3) {
             let tint = Theme.riskTint(
                 used: secondary.usedPercent,

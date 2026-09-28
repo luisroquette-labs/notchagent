@@ -72,6 +72,28 @@ final class CodexAppServerRateLimitReaderTests: XCTestCase {
         #endif
     }
 
+    // REGRESSÃO (28/09): no EOF do pipe o readabilityHandler recebia Data vazio
+    // em loop (100% de CPU) e waitUntilExit() num Task.detached podia não
+    // voltar — o swift test travou 6h no CI (16/09) e 11+ min no Mac.
+    func testFetchNeverHangsAcrossRepeatedAppServerRuns() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let executable = root.appendingPathComponent("fake-codex")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let response = #"{"id":2,"result":{"rateLimits":{"limitId":"codex","primary":{"usedPercent":21,"windowDurationMins":300}}}}"#
+        // Responde e segura o stdout aberto (sleep): o cenário que travava ~1 em 3.
+        try Data("#!/bin/sh\nprintf '%s\\n' '\(response)'\nsleep 1\n".utf8).write(to: executable)
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: executable.path)
+
+        let started = Date()
+        for _ in 0..<6 {
+            let reader = CodexAppServerRateLimitReader(executableURL: executable, minInterval: 0)
+            let limits = await reader.currentLimits()
+            XCTAssertNotNil(limits)
+        }
+        XCTAssertLessThan(Date().timeIntervalSince(started), 30, "fetch must not hang after the child exits")
+    }
+
     func testLiveOfficialRateLimitsWhenExplicitlyEnabled() async throws {
         guard ProcessInfo.processInfo.environment["NOTCHAGENT_CODEX_RATE_LIMIT_E2E"] == "1" else {
             throw XCTSkip("Set NOTCHAGENT_CODEX_RATE_LIMIT_E2E=1 for the authenticated read-only test")
@@ -97,11 +119,74 @@ final class CodexAppServerRateLimitReaderTests: XCTestCase {
         XCTAssertEqual(limits["codex_bengalfox"]?.limitName, "GPT-5.3-Codex-Spark")
     }
 
+    func testParsesRateLimitResetCredits() throws {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let response = #"{"id":2,"result":{"rateLimits":{"limitId":"codex","primary":{"usedPercent":100,"windowDurationMins":10080}},"rateLimitResetCredits":{"availableCount":3,"credits":[{"status":"available","expiresAt":1800604800},{"status":"available","expiresAt":1800100000},{"status":"used","expiresAt":1800000001}]}}}"#
+
+        let limits = try XCTUnwrap(CodexAppServerRateLimitReader.parseResponse(Data(response.utf8), now: now))
+        let credits = try XCTUnwrap(limits["codex"]?.resetCredits)
+        XCTAssertEqual(credits.availableCount, 3)
+        // totalCount counts EVERY credit ever granted, used ones included.
+        XCTAssertEqual(credits.totalCount, 3)
+        // Soonest AVAILABLE expiry — the already-used one must not win the min().
+        XCTAssertEqual(credits.soonestExpiresAt, Date(timeIntervalSince1970: 1800100000))
+    }
+
+    func testTotalCountIncludesUsedCredits() throws {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let response = #"{"id":2,"result":{"rateLimits":{"limitId":"codex","primary":{"usedPercent":50,"windowDurationMins":10080}},"rateLimitResetCredits":{"availableCount":1,"credits":[{"status":"available","expiresAt":1800604800},{"status":"used","expiresAt":1800000001},{"status":"used","expiresAt":1800000002}]}}}"#
+
+        let limits = try XCTUnwrap(CodexAppServerRateLimitReader.parseResponse(Data(response.utf8), now: now))
+        let credits = try XCTUnwrap(limits["codex"]?.resetCredits)
+        XCTAssertEqual(credits.availableCount, 1)
+        XCTAssertEqual(credits.totalCount, 3)
+    }
+
     func testFallsBackToBackwardCompatibleSingleBucket() throws {
         let response = #"{"id":2,"result":{"rateLimits":{"limitId":"codex","primary":{"usedPercent":40,"windowDurationMins":300,"resetsAt":1800000300},"secondary":null}}}"#
         let limits = try XCTUnwrap(CodexAppServerRateLimitReader.parseResponse(Data(response.utf8)))
         XCTAssertEqual(limits.keys.sorted(), ["codex"])
         XCTAssertEqual(limits["codex"]?.sessionWindow?.usedPercent, 40)
+    }
+
+    /// REGRESSÃO 16/09/2026: NotchAgent rodou 60h sem reiniciar; o app-server
+    /// oficial parou de responder com sucesso em algum ponto e o notch continuou
+    /// exibindo "81% restante" com confiança total enquanto a conta real já
+    /// estava em 100% usado / 0% restante. `cached` não tinha teto de idade.
+    func testCacheExpiresAfterMaxAgeWhenFetchesKeepFailing() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let executable = root.appendingPathComponent("fake-codex")
+        let marker = root.appendingPathComponent("called")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let response = #"{"id":2,"result":{"rateLimits":{"limitId":"codex","primary":{"usedPercent":19,"windowDurationMins":10080}}}}"#
+        let script = """
+        #!/bin/sh
+        if [ -f "\(marker.path)" ]; then
+            exit 1
+        fi
+        touch "\(marker.path)"
+        printf '%s\\n' '\(response)'
+        sleep 1
+        """
+        try Data(script.utf8).write(to: executable)
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: executable.path)
+
+        let reader = CodexAppServerRateLimitReader(executableURL: executable, minInterval: 0, maxCacheAge: 300)
+        let t0 = Date(timeIntervalSince1970: 1_800_000_000)
+
+        let first = await reader.currentLimits(now: t0)
+        XCTAssertEqual(first?["codex"]?.weeklyWindow?.usedPercent, 19)
+
+        // Fetch fails silently but the cache is still fresh: brief hiccups are tolerated.
+        let stillFresh = await reader.currentLimits(now: t0.addingTimeInterval(60))
+        XCTAssertEqual(stillFresh?["codex"]?.weeklyWindow?.usedPercent, 19)
+
+        // Fetches kept failing past maxCacheAge: the stale reading must be dropped,
+        // never frozen indefinitely regardless of how long the process has been up.
+        let stale = await reader.currentLimits(now: t0.addingTimeInterval(601))
+        XCTAssertNil(stale)
     }
 }
 

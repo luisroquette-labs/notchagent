@@ -7,15 +7,23 @@ actor CodexAppServerRateLimitReader {
 
     private let executableURL: URL?
     private let minInterval: TimeInterval
+    /// A NotchAgent process can legitimately run for days without restarting.
+    /// If official fetches keep failing silently that whole time, `cached` must
+    /// not be trusted forever — an account that hit 100%/0% left must never
+    /// keep showing a days-old "81% left" with full confidence.
+    private let maxCacheAge: TimeInterval
     private var cached: [String: CodexTokenInfo]?
     private var lastAttempt = Date.distantPast
+    private var lastSuccess = Date.distantPast
 
     init(
         executableURL: URL? = CodexAppServerRateLimitReader.defaultExecutableURL(),
-        minInterval: TimeInterval = 60
+        minInterval: TimeInterval = 60,
+        maxCacheAge: TimeInterval = 5 * 60
     ) {
         self.executableURL = executableURL
         self.minInterval = minInterval
+        self.maxCacheAge = maxCacheAge
     }
 
     private static func defaultExecutableURL(fileManager: FileManager = .default) -> URL? {
@@ -30,18 +38,23 @@ actor CodexAppServerRateLimitReader {
     }
 
     func currentLimits(now: Date = Date()) async -> [String: CodexTokenInfo]? {
-        if now.timeIntervalSince(lastAttempt) < minInterval { return cached }
+        if now.timeIntervalSince(lastAttempt) < minInterval { return freshCache(now: now) }
         lastAttempt = now
-        guard let executableURL else { return cached }
+        guard let executableURL else { return freshCache(now: now) }
 
         do {
             if let fresh = try await Self.fetch(executableURL: executableURL, now: now) {
                 cached = fresh
+                lastSuccess = now
             }
         } catch {
             Log.providers.info("codex app-server quota unavailable: \(error.localizedDescription, privacy: .public)")
         }
-        return cached
+        return freshCache(now: now)
+    }
+
+    private func freshCache(now: Date) -> [String: CodexTokenInfo]? {
+        now.timeIntervalSince(lastSuccess) <= maxCacheAge ? cached : nil
     }
 
     static func parseResponse(_ data: Data, now: Date = Date()) -> [String: CodexTokenInfo]? {
@@ -61,6 +74,10 @@ actor CodexAppServerRateLimitReader {
                 return nil
             }
 
+            // Account-wide, not per-bucket — attached to every entry so it
+            // survives regardless of which key ends up as the shared quota.
+            let resetCredits = extractResetCredits(from: result.rateLimitResetCredits)
+
             return buckets.reduce(into: [:]) { parsed, entry in
                 let bucket = entry.value
                 let key = bucket.limitId ?? entry.key
@@ -71,11 +88,26 @@ actor CodexAppServerRateLimitReader {
                     secondary: window(bucket.secondary),
                     planType: bucket.planType,
                     limitID: key,
-                    limitName: bucket.limitName
+                    limitName: bucket.limitName,
+                    resetCredits: resetCredits
                 )
             }
         }
         return nil
+    }
+
+    private static func extractResetCredits(from raw: Envelope.Result.ResetCredits?) -> RateLimitResetCredits? {
+        guard let raw else { return nil }
+        let soonest = (raw.credits ?? [])
+            .filter { $0.status == "available" }
+            .compactMap(\.expiresAt)
+            .min()
+            .map { Date(timeIntervalSince1970: $0) }
+        return RateLimitResetCredits(
+            availableCount: raw.availableCount ?? 0,
+            totalCount: raw.credits?.count ?? raw.availableCount ?? 0,
+            soonestExpiresAt: soonest
+        )
     }
 
     private static func fetch(executableURL: URL, now: Date) async throws -> [String: CodexTokenInfo]? {
@@ -96,7 +128,8 @@ actor CodexAppServerRateLimitReader {
             let buffer = LockedData()
             output.fileHandleForReading.readabilityHandler = { handle in
                 let data = handle.availableData
-                if !data.isEmpty { buffer.append(data) }
+                // EOF entrega Data vazio em loop — sem zerar o handler, gira a 100% de CPU.
+                if data.isEmpty { handle.readabilityHandler = nil } else { buffer.append(data) }
             }
 
             let requests = """
@@ -115,7 +148,12 @@ actor CodexAppServerRateLimitReader {
             }
             try? input.fileHandleForWriting.close()
             if process.isRunning { process.terminate() }
-            process.waitUntilExit()
+            // waitUntilExit() num Task.detached podia não voltar (travou o CI 6h em 16/09).
+            let exitDeadline = Date().addingTimeInterval(2)
+            while process.isRunning, Date() < exitDeadline {
+                try await Task.sleep(for: .milliseconds(20))
+            }
+            if process.isRunning { kill(process.processIdentifier, SIGKILL) }
             output.fileHandleForReading.readabilityHandler = nil
             return result ?? parseResponse(buffer.snapshot(), now: now)
         }.value
@@ -138,6 +176,17 @@ actor CodexAppServerRateLimitReader {
         struct Result: Decodable {
             let rateLimits: Bucket?
             let rateLimitsByLimitId: [String: Bucket]?
+            let rateLimitResetCredits: ResetCredits?
+
+            struct ResetCredits: Decodable {
+                let availableCount: Int?
+                let credits: [Credit]?
+            }
+
+            struct Credit: Decodable {
+                let status: String?
+                let expiresAt: Double?
+            }
         }
     }
 
