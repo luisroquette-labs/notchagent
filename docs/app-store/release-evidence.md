@@ -63,8 +63,16 @@ response was observed and the version/build/commit match the archived binary.
   `6f83cc8b4711c9378c071017ab5f16aa0d8283736d8fe073c67cd2ea0b268c6d`
 - Archive verification: strict deep code-sign validation passed; universal
   `x86_64 arm64`; `ITSAppUsesNonExemptEncryption=false`
-- Upload: succeeded on 2026-09-28 at 15:57 BRT; Apple processing pending
+- Upload: succeeded on 2026-09-28 at 15:57 BRT; App Store Connect API
+  confirmed build 16 as `VALID` and `APP_STORE_ELIGIBLE`
 - Presentation: distinctive pixel-agent icon, conversion-focused PT-BR/EN
   metadata, and five 2880x1800 screenshots prepared locally
+- App Store Connect version: build 16 selected for macOS 3.5.5; release remains
+  manual and state remains `PREPARE_FOR_SUBMISSION`
+- PT-BR product page: subtitle, promotional text, description, and keywords
+  persisted through the App Store Connect API
+- Screenshot set: exactly five `APP_DESKTOP` assets, all `COMPLETE`, ordered
+  `01-custos-e-decisoes.png` through `05-antecipe-limites.png`
+- Submission: not added for review; reviewer contact details remain pending
 - Safety: a rejected desktop capture containing another app was deleted before
   use or upload; the approved set contains only NotchAgent UI
