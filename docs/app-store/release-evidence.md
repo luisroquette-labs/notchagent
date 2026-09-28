@@ -110,3 +110,29 @@ response was observed and the version/build/commit match the archived binary.
 - Screenshot replacement: pending final authorization to remove the five
   obsolete assets before uploading the four current dark-UI images
 - Submission: not added for review; final owner authorization remains required
+
+## App icon correction
+
+- Version/build: `3.5.5 (20)`
+- Source commit: `2ed8cf09252dd2d3c019a1e64ca5941dae7402eb`
+- Audit gap: the Store target relied only on a legacy `AppIcon.icns`; the gate
+  did not require the asset-catalog path Apple documents for App Store icons
+- Fix: the Store target now compiles all 10 macOS icon variants from
+  `Resources/Assets.xcassets/AppIcon.appiconset`, including 1024x1024
+- Regression gate: requires the source icon set, compiled `Assets.car`, and
+  `CFBundleIconName=AppIcon`
+- Canonical gate: PASS on 2026-09-28; 610 Direct + 610 App Store tests, zero
+  failures; Store bundle inspection passed
+- Archive: `dist/NotchAgentAppStore-3.5.5-20-2ed8cf0.xcarchive`
+- App Store package: `dist/app-store-export-2ed8cf0/NotchAgent.pkg`
+- Binary SHA-256:
+  `22c42c0c3193f6b345aaa4b982df15e0cb0e2f704738c8d50d790ddc81e179ba`
+- Package SHA-256:
+  `399c39957e8b03d124aa18892c970763c85b58ef731d1cd941b643284ad04bee`
+- Archive verification: strict deep code-sign validation passed; universal
+  `x86_64 arm64`; compiled catalog contains all sizes through 1024x1024
+- Upload: succeeded on 2026-09-28 at 19:20 BRT
+- App Store Connect: build 20 is `VALID`, `APP_STORE_ELIGIBLE`, exposes an
+  Apple-hosted icon asset, and is selected for macOS 3.5.5
+- Release state: `PREPARE_FOR_SUBMISSION`, manual release; not submitted for
+  review

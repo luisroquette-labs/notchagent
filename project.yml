@@ -52,7 +52,7 @@ targets:
         CFBundleName: AgentMeter
         CFBundleDisplayName: "AgentMeter: NotchAgent"
         CFBundleShortVersionString: "3.5.5"
-        CFBundleVersion: "19"
+        CFBundleVersion: "20"
         # Agent app: menu bar + overlay only, no Dock icon.
         LSUIElement: true
         LSMinimumSystemVersion: "14.0"
@@ -60,7 +60,7 @@ targets:
       PRODUCT_BUNDLE_IDENTIFIER: br.com.lfrprojects.notchagent
       ENABLE_HARDENED_RUNTIME: YES
       MARKETING_VERSION: "3.5.5"
-      CURRENT_PROJECT_VERSION: "19"
+      CURRENT_PROJECT_VERSION: "20"
 
   NotchAgentAppStore:
     type: application
@@ -69,7 +69,7 @@ targets:
       - Sources/NotchAgent
       - path: Resources/Weather
         buildPhase: resources
-      - path: Resources/AppIcon.icns
+      - path: Resources/Assets.xcassets
         buildPhase: resources
       - path: Resources/PrivacyInfo.xcprivacy
         buildPhase: resources
@@ -91,9 +91,8 @@ targets:
         CFBundleName: NotchAgent
         CFBundleDisplayName: NotchAgent
         CFBundleShortVersionString: "3.5.5"
-        CFBundleVersion: "19"
+        CFBundleVersion: "20"
         ITSAppUsesNonExemptEncryption: false
-        CFBundleIconFile: AppIcon
         LSApplicationCategoryType: public.app-category.developer-tools
         LSUIElement: true
         LSMinimumSystemVersion: "14.0"
@@ -108,9 +107,10 @@ targets:
       DEVELOPMENT_TEAM: S3YCFYY8SC
       CODE_SIGN_STYLE: Automatic
       ENABLE_HARDENED_RUNTIME: YES
+      ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
       SWIFT_ACTIVE_COMPILATION_CONDITIONS: APP_STORE
       MARKETING_VERSION: "3.5.5"
-      CURRENT_PROJECT_VERSION: "19"
+      CURRENT_PROJECT_VERSION: "20"
 
   NotchAgentTests:
     type: bundle.unit-test
