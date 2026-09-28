@@ -32,7 +32,7 @@ andamento está documentado em detalhe. Leia este arquivo primeiro.
 
 ## Estado do código — tudo commitado, nada perdido
 
-**Repo `NotchAgent`** (`/Users/luisroquette/Projects/NotchAgent`)
+**Repo `NotchAgent`** (checkout local do repositório)
 Branch: `feat/desk-watchdog-windows-bridge-and-firmware-regex-fix`
 Commit: `4610f11`
 Base: `master` (branch criada a partir dele, master não foi tocado)
@@ -55,7 +55,7 @@ O que tem nesse commit:
 Testes: `swift test` → **584/584 verde** (era 579 antes desta sessão).
 `.NET` (`windows/NotchAgent.Windows.Tests`) → **10/10 verde**.
 
-**Repo `NotchAgent-Desk`** (`/Users/luisroquette/Projects/NotchAgent-Desk`)
+**Repo `NotchAgent-Desk`** (checkout local do repositório)
 Branch: `fix/dotnet-protocol-minor-version-drift`
 Commit: `bca8a5b`
 Base: `main`
