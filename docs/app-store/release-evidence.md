@@ -48,3 +48,23 @@
 
 Never replace a pending value with a claim unless the exact Apple screen or API
 response was observed and the version/build/commit match the archived binary.
+
+## Presentation-polished candidate
+
+- Version/build: `3.5.5 (16)`
+- Source commit: `f975bfe3c03f9dbf13e2734249ff11d1b24badd5`
+- Canonical gate: PASS on 2026-09-28; 598 Direct + 598 App Store tests,
+  zero failures; Store bundle inspection passed
+- Archive: `dist/NotchAgentAppStore-3.5.5-16-f975bfe.xcarchive`
+- App Store package: `dist/app-store-export-f975bfe/NotchAgent.pkg`
+- Binary SHA-256:
+  `cbcfe114de83a1100ecaf46534d16f06423011a570a6fa3a4ef640ea61fd63ac`
+- Package SHA-256:
+  `6f83cc8b4711c9378c071017ab5f16aa0d8283736d8fe073c67cd2ea0b268c6d`
+- Archive verification: strict deep code-sign validation passed; universal
+  `x86_64 arm64`; `ITSAppUsesNonExemptEncryption=false`
+- Upload: succeeded on 2026-09-28 at 15:57 BRT; Apple processing pending
+- Presentation: distinctive pixel-agent icon, conversion-focused PT-BR/EN
+  metadata, and five 2880x1800 screenshots prepared locally
+- Safety: a rejected desktop capture containing another app was deleted before
+  use or upload; the approved set contains only NotchAgent UI
