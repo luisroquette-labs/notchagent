@@ -1,7 +1,7 @@
 # Mac App Store metadata
 
 Version: 3.5.5
-Build: 13
+Build: 14
 Bundle ID: `br.com.lfrprojects.notchagent.appstore`
 Primary category: Developer Tools
 Secondary category: Productivity

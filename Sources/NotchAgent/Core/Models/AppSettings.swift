@@ -16,7 +16,7 @@ public enum InterfaceLanguage: String, Codable, Sendable, CaseIterable {
 
 public struct AppSettings: Codable, Sendable, Equatable {
     public var interfaceLanguage: InterfaceLanguage = .ptBR
-    public var themeMode: ThemeMode = .auto
+    public var themeMode: ThemeMode = .dark
     public var refreshIntervalSeconds: Double = 60
     /// Percent thresholds applied to any quota percentage a provider reports.
     public var warningThresholdPercent: Double = 70
@@ -123,7 +123,7 @@ public struct AppSettings: Codable, Sendable, Equatable {
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        themeMode = try container.decodeIfPresent(ThemeMode.self, forKey: .themeMode) ?? .auto
+        themeMode = try container.decodeIfPresent(ThemeMode.self, forKey: .themeMode) ?? .dark
         interfaceLanguage = try container.decodeIfPresent(InterfaceLanguage.self, forKey: .interfaceLanguage) ?? .ptBR
         refreshIntervalSeconds = try container.decodeIfPresent(Double.self, forKey: .refreshIntervalSeconds) ?? 60
         warningThresholdPercent = try container.decodeIfPresent(Double.self, forKey: .warningThresholdPercent) ?? 70

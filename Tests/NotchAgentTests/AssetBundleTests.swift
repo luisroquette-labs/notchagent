@@ -6,6 +6,13 @@ import XCTest
 /// — o "mascote quebrado" que os usuários viam. O helper precisa resolver
 /// os 5 assets no ambiente SwiftPM (Bundle.module) e no .app instalado.
 final class AssetBundleTests: XCTestCase {
+    func testXcodeFlattenedMascotNameIsAResolutionCandidate() {
+        XCTAssertEqual(
+            AssetBundle.resourceNames(for: "Mascots/claude-sonnet"),
+            ["Mascots/claude-sonnet", "claude-sonnet"]
+        )
+    }
+
     func testEveryMascotSpriteResolves() {
         for name in ["claude-fable", "claude-haiku", "claude-opus", "claude-sonnet", "openai-glyph"] {
             let url = AssetBundle.url(forResource: "Mascots/\(name)", withExtension: "png")
