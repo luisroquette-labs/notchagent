@@ -6,9 +6,13 @@ final class AppSettingsWeatherTests: XCTestCase {
         try? JSONDecoder().decode(AppSettings.self, from: Data(json.utf8))
     }
 
-    func testWeatherEnabledDefaultsToTrueOnLegacyPayload() {
+    func testWeatherDefaultMatchesDistributionOnLegacyPayload() {
         let settings = decode("{\"themeMode\":\"auto\"}")
+        #if APP_STORE
+        XCTAssertEqual(settings?.weatherEnabled, false, "App Store builds must not resolve location before opt-in")
+        #else
         XCTAssertEqual(settings?.weatherEnabled, true, "legacy payload without the key must enable weather")
+        #endif
     }
 
     func testWeatherFieldsDecodeWhenPresent() {

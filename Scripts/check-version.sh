@@ -14,6 +14,17 @@ if [[ "$plist_version" != "$version" ]]; then
     exit 1
 fi
 
+if [[ $(grep -c "CFBundleShortVersionString: \"$version\"" project.yml) -lt 2 ]]; then
+    echo "ERRO: targets Direct e App Store em project.yml devem usar VERSION=$version."
+    exit 1
+fi
+
+build_number=$(tr -d '[:space:]' < BUILD_NUMBER)
+if [[ $(grep -c "CFBundleVersion: \"$build_number\"" project.yml) -lt 2 ]]; then
+    echo "ERRO: targets Direct e App Store em project.yml devem usar BUILD_NUMBER=$build_number."
+    exit 1
+fi
+
 if ! grep -Eq "^## ${version} — " CHANGELOG.md; then
     echo "ERRO: CHANGELOG.md não contém a versão $version."
     exit 1

@@ -19,7 +19,11 @@ final class PreferencesStore {
     /// .app's standard defaults use, so both packaging worlds read and
     /// write the one true settings blob.
     static let defaultStore: UserDefaults = {
+        #if APP_STORE
+        .standard
+        #else
         UserDefaults(suiteName: "br.com.lfrprojects.notchagent") ?? .standard
+        #endif
     }()
 
     init(defaults: UserDefaults = PreferencesStore.defaultStore) {

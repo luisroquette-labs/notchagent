@@ -1,0 +1,18 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="NotchAgent.Windows.UI.DeskConsentWindow"
+        Title="NotchAgent Desk"
+        Width="360" SizeToContent="Height"
+        Background="#F2F2F5"
+        CanResize="False"
+        WindowStartupLocation="CenterScreen"
+        Topmost="True">
+  <StackPanel Margin="20" Spacing="14">
+    <TextBlock Text="NotchAgent Desk detectada" FontWeight="Bold" FontSize="15"/>
+    <TextBlock Text="Mostrar sua quota na tela física?" TextWrapping="Wrap"/>
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+      <Button Name="NotNowButton" Content="Agora não" Click="OnNotNow"/>
+      <Button Name="EnableButton" Content="Mostrar meus dados" Click="OnEnable"/>
+    </StackPanel>
+  </StackPanel>
+</Window>

@@ -11,6 +11,10 @@ options:
     watchOS: "9.0"
 settings:
   SWIFT_VERSION: "6.0"
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    exactVersion: 2.9.4
 targets:
   AgentMeterCore:
     type: framework
@@ -33,21 +37,80 @@ targets:
     platform: macOS
     sources:
       - Sources/NotchAgent
+      - path: Resources/LaunchAgents
+        buildPhase:
+          copyFiles:
+            destination: wrapper
+            subpath: Contents/Library/LaunchAgents
     dependencies:
       - target: AgentMeterCore
+      - package: Sparkle
+        product: Sparkle
     info:
       path: Resources/Info.plist
       properties:
         CFBundleName: AgentMeter
         CFBundleDisplayName: "AgentMeter: NotchAgent"
-        CFBundleShortVersionString: "0.1.0"
-        CFBundleVersion: "1"
+        CFBundleShortVersionString: "3.5.5"
+        CFBundleVersion: "19"
         # Agent app: menu bar + overlay only, no Dock icon.
         LSUIElement: true
         LSMinimumSystemVersion: "14.0"
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: br.com.lfrprojects.notchagent
       ENABLE_HARDENED_RUNTIME: YES
+      MARKETING_VERSION: "3.5.5"
+      CURRENT_PROJECT_VERSION: "19"
+
+  NotchAgentAppStore:
+    type: application
+    platform: macOS
+    sources:
+      - Sources/NotchAgent
+      - path: Resources/Weather
+        buildPhase: resources
+      - path: Resources/AppIcon.icns
+        buildPhase: resources
+      - path: Resources/PrivacyInfo.xcprivacy
+        buildPhase: resources
+    dependencies:
+      - target: AgentMeterCore
+    entitlements:
+      path: Resources/NotchAgentAppStore.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.device.serial: true
+        com.apple.security.device.usb: true
+        com.apple.security.files.bookmarks.app-scope: true
+        com.apple.security.files.user-selected.read-only: true
+        com.apple.security.network.client: true
+        com.apple.security.network.server: true
+    info:
+      path: Generated/NotchAgentAppStore-Info.plist
+      properties:
+        CFBundleName: NotchAgent
+        CFBundleDisplayName: NotchAgent
+        CFBundleShortVersionString: "3.5.5"
+        CFBundleVersion: "19"
+        ITSAppUsesNonExemptEncryption: false
+        CFBundleIconFile: AppIcon
+        LSApplicationCategoryType: public.app-category.developer-tools
+        LSUIElement: true
+        LSMinimumSystemVersion: "14.0"
+        NSHighResolutionCapable: true
+        NSLocalNetworkUsageDescription: NotchAgent connects directly to your paired NotchAgent Desk on the local network.
+        NSBonjourServices:
+          - _notchagent-desk._tcp
+    settings:
+      PRODUCT_NAME: NotchAgent
+      PRODUCT_BUNDLE_IDENTIFIER: br.com.lfrprojects.notchagent.appstore
+      PRODUCT_MODULE_NAME: NotchAgent
+      DEVELOPMENT_TEAM: S3YCFYY8SC
+      CODE_SIGN_STYLE: Automatic
+      ENABLE_HARDENED_RUNTIME: YES
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: APP_STORE
+      MARKETING_VERSION: "3.5.5"
+      CURRENT_PROJECT_VERSION: "19"
 
   NotchAgentTests:
     type: bundle.unit-test

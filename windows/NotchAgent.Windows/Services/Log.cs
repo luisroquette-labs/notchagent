@@ -32,4 +32,5 @@ public static class Log
     public static readonly Logger Refresh = new("refresh");
     public static readonly Logger Providers = new("providers");
     public static readonly Logger Persistence = new("persistence");
+    public static readonly Logger Desk = new("desk");
 }

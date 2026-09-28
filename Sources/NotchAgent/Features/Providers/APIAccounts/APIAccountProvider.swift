@@ -194,6 +194,9 @@ enum GoogleCloudCredentialProvider {
     }
 
     private static func applicationDefaultAccessToken() async -> String? {
+        #if APP_STORE
+        nil
+        #else
         await Task.detached(priority: .utility) {
             guard let executable = executableCandidates.first(where: {
                 FileManager.default.isExecutableFile(atPath: $0)
@@ -217,6 +220,7 @@ enum GoogleCloudCredentialProvider {
                 return nil
             }
         }.value
+        #endif
     }
 }
 

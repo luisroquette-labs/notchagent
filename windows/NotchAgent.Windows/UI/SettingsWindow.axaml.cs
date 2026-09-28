@@ -29,6 +29,7 @@ public partial class SettingsWindow : Window
         this.FindControl<CheckBox>("NotificationsCheck")!.IsChecked = _settings.NotificationsEnabled;
         this.FindControl<CheckBox>("RunnerCheck")!.IsChecked = _settings.RunnerEnabled;
         this.FindControl<CheckBox>("ProbeCheck")!.IsChecked = _settings.ClaudeQuotaProbeEnabled;
+        this.FindControl<CheckBox>("DeskCheck")!.IsChecked = _settings.NotchAgentDeskEnabled;
 
         this.FindControl<NumericUpDown>("IntervalUpDown")!.Value = (decimal)_settings.RefreshIntervalSeconds;
         this.FindControl<Slider>("WarningSlider")!.Value = _settings.WarningThresholdPercent;
@@ -57,6 +58,7 @@ public partial class SettingsWindow : Window
         _settings.NotificationsEnabled = this.FindControl<CheckBox>("NotificationsCheck")!.IsChecked ?? false;
         _settings.RunnerEnabled = this.FindControl<CheckBox>("RunnerCheck")!.IsChecked ?? false;
         _settings.ClaudeQuotaProbeEnabled = this.FindControl<CheckBox>("ProbeCheck")!.IsChecked ?? false;
+        _settings.NotchAgentDeskEnabled = this.FindControl<CheckBox>("DeskCheck")!.IsChecked ?? false;
         Save();
     }
 
