@@ -1,7 +1,7 @@
 # Mac App Store metadata
 
 Version: 3.5.5
-Build: 14
+Build: 16
 Bundle ID: `br.com.lfrprojects.notchagent.appstore`
 Primary category: Developer Tools
 Secondary category: Productivity
@@ -16,54 +16,61 @@ Price: Free
 ## Portuguese (Brazil)
 
 Name: `NotchAgent`
-Subtitle: `Uso de IA, claro no notch`
-Keywords: `IA,Claude,Codex,tokens,cotas,custos,produtividade,notch,menu bar,desenvolvedor`
+Subtitle: `Uso de IA no seu Mac`
+Keywords: `Claude,Codex,tokens,cota,custo,limite,produtividade,notch,menu bar,monitor,LLM`
 
 Promotional text:
 
-> Acompanhe tokens, cotas, ritmo e custos de IA em uma interface nativa que
-> vive discretamente no notch e na barra de menus do Mac.
+> Veja Claude e Codex no notch. Antecipe limites, entenda tokens, ritmo e
+> custos e mantenha seus dados locais — sem anúncios, rastreamento ou conta.
 
 Description:
 
-> NotchAgent transforma o notch do Mac em um painel local de uso de IA.
-> Autorize suas pastas do Claude Code, Claude Desktop e Codex para visualizar
-> atividade, consumo de tokens, janelas de cota, ritmo e estimativas de custo.
+> Saiba quanto de IA você está usando antes de atingir o limite. O NotchAgent
+> reúne Claude e Codex em um painel nativo no notch e na barra de menus do Mac.
 >
-> • Processamento local e acesso somente leitura às pastas escolhidas
-> • Painel compacto no notch e visão detalhada sob demanda
-> • Alertas de limite, histórico e projeções de consumo
-> • Monitoramento opcional de contas e serviços configurados por você
-> • Integração opcional com NotchAgent Desk por rede local ou USB
+> • Acompanhe tokens, sessões, cotas, ritmo e estimativas de custo
+> • Compare o uso por modelo e identifique picos ao longo do dia
+> • Antecipe limites com histórico e projeções de consumo
+> • Consulte o essencial no notch ou abra o dashboard detalhado
+> • Monitore contas e conecte o NotchAgent Desk, se quiser
 >
-> Sem anúncios, rastreamento ou conta NotchAgent. A edição da App Store não
-> executa CLIs externos, não usa Sparkle e recebe atualizações pela App Store.
+> Seus dados continuam no Mac. O acesso às pastas do Claude Code, Claude
+> Desktop e Codex é somente leitura e depende da sua autorização. Sem anúncios,
+> rastreamento ou conta NotchAgent.
+>
+> A edição da App Store não executa CLIs externos. As atualizações chegam pela
+> própria App Store.
 
 ## English (U.S.)
 
 Name: `NotchAgent`
-Subtitle: `AI usage at a glance`
-Keywords: `AI,Claude,Codex,tokens,quota,costs,productivity,notch,menu bar,developer`
+Subtitle: `AI usage on your Mac`
+Keywords: `Claude,Codex,tokens,quota,cost,limits,productivity,notch,menu bar,monitor,LLM`
 
 Promotional text:
 
-> Track AI tokens, quota, pace, and cost in a native interface that stays out
-> of the way in your Mac's notch and menu bar.
+> See Claude and Codex in your notch. Anticipate limits, understand tokens,
+> pace, and costs, and keep your data local — with no ads, tracking, or account.
 
 Description:
 
-> NotchAgent turns your Mac's notch into a local AI usage dashboard. Grant
-> read-only access to your Claude Code, Claude Desktop, and Codex folders to
-> see activity, token usage, quota windows, pace, and cost estimates.
+> Know how much AI you are using before you hit a limit. NotchAgent brings
+> Claude and Codex together in a native dashboard for your Mac's notch and
+> menu bar.
 >
-> • Local processing with read-only access to folders you choose
-> • Compact notch status and an on-demand detailed dashboard
-> • Limit alerts, history, and usage projections
-> • Optional monitoring for accounts and services you configure
-> • Optional NotchAgent Desk integration over local network or USB
+> • Track tokens, sessions, quotas, pace, and cost estimates
+> • Compare usage by model and spot peaks throughout your day
+> • Anticipate limits with history and consumption projections
+> • Check the essentials in the notch or open the detailed dashboard
+> • Optionally monitor accounts and connect NotchAgent Desk
 >
-> No ads, tracking, or NotchAgent account. The App Store edition does not run
-> external CLIs, does not use Sparkle, and receives updates from the App Store.
+> Your data stays on your Mac. Read-only access to Claude Code, Claude Desktop,
+> and Codex folders requires your authorization. No ads, tracking, or
+> NotchAgent account.
+>
+> The App Store edition does not run external CLIs. Updates arrive through the
+> App Store.
 
 ## Review notes
 
@@ -97,13 +104,14 @@ Reconfirm these answers against the final archived binary before submission.
 
 ## Screenshots
 
-Prepare at least one, preferably five, opaque PNG screenshots at 2880 × 1800:
+Final set: five opaque PNG screenshots at 2880 × 1800 in
+`dist/app-store-screenshots-polished/`:
 
-1. Expanded notch dashboard with Claude and Codex cards.
-2. Session rhythm and model breakdown.
-3. Spending and subscription dashboard.
-4. Read-only folder authorization in Settings.
-5. Compact notch state and a quota alert.
+1. Cost and decision dashboard — strongest first benefit.
+2. Claude and Codex overview in the notch.
+3. Token distribution by model.
+4. Usage rhythm throughout the day.
+5. Session burn and limit projection.
 
 Do not show API keys, email addresses, file paths, account identifiers, or real
 transcript content. App previews are optional.
