@@ -16,7 +16,7 @@ public enum InterfaceLanguage: String, Codable, Sendable, CaseIterable {
 
 public struct AppSettings: Codable, Sendable, Equatable {
     public var interfaceLanguage: InterfaceLanguage = .ptBR
-    public var themeMode: ThemeMode = .auto
+    public var themeMode: ThemeMode = .dark
     public var refreshIntervalSeconds: Double = 60
     /// Percent thresholds applied to any quota percentage a provider reports.
     public var warningThresholdPercent: Double = 70
@@ -55,11 +55,22 @@ public struct AppSettings: Codable, Sendable, Equatable {
     /// System notifications when a provider crosses warning/critical
     /// (requires running from the .app bundle).
     public var notificationsEnabled: Bool = true
+    /// Opt-in email when a weekly or 5h window resets (credits back).
+    /// Requires a Resend API key in Keychain; off by default like the other
+    /// features that leave the device (see claudeQuotaProbeEnabled).
+    public var notifyEmailOnRestore: Bool = false
+    /// Recipient for restore emails. Non-secret — the API key stays in
+    /// Keychain, this is just an address.
+    public var notificationEmail: String = ""
     /// Optional user-set budgets used only when the API probe is unavailable.
     public var claudeSessionTokenBudget: Int?
     public var claudeWeeklyTokenBudget: Int?
     /// Weather ambience (Now page): feature switch + location resolution.
+    #if APP_STORE
+    public var weatherEnabled: Bool = false
+    #else
     public var weatherEnabled: Bool = true
+    #endif
     /// Delight layer (mascot reactions, moments, sound/haptics, time tint):
     /// one master switch — off means a sober panel.
     public var delightEnabled: Bool = true
@@ -100,6 +111,8 @@ public struct AppSettings: Codable, Sendable, Equatable {
         case monitoredAPIServices
         case apiAccountIdentifiers
         case notificationsEnabled
+        case notifyEmailOnRestore
+        case notificationEmail
         case claudeSessionTokenBudget
         case claudeWeeklyTokenBudget
         case weatherEnabled
@@ -114,7 +127,7 @@ public struct AppSettings: Codable, Sendable, Equatable {
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        themeMode = try container.decodeIfPresent(ThemeMode.self, forKey: .themeMode) ?? .auto
+        themeMode = try container.decodeIfPresent(ThemeMode.self, forKey: .themeMode) ?? .dark
         interfaceLanguage = try container.decodeIfPresent(InterfaceLanguage.self, forKey: .interfaceLanguage) ?? .ptBR
         refreshIntervalSeconds = try container.decodeIfPresent(Double.self, forKey: .refreshIntervalSeconds) ?? 60
         warningThresholdPercent = try container.decodeIfPresent(Double.self, forKey: .warningThresholdPercent) ?? 70
@@ -156,9 +169,15 @@ public struct AppSettings: Codable, Sendable, Equatable {
                 )
             }
         notificationsEnabled = try container.decodeIfPresent(Bool.self, forKey: .notificationsEnabled) ?? true
+        notifyEmailOnRestore = try container.decodeIfPresent(Bool.self, forKey: .notifyEmailOnRestore) ?? false
+        notificationEmail = try container.decodeIfPresent(String.self, forKey: .notificationEmail) ?? ""
         claudeSessionTokenBudget = try container.decodeIfPresent(Int.self, forKey: .claudeSessionTokenBudget)
         claudeWeeklyTokenBudget = try container.decodeIfPresent(Int.self, forKey: .claudeWeeklyTokenBudget)
+        #if APP_STORE
+        weatherEnabled = try container.decodeIfPresent(Bool.self, forKey: .weatherEnabled) ?? false
+        #else
         weatherEnabled = try container.decodeIfPresent(Bool.self, forKey: .weatherEnabled) ?? true
+        #endif
         delightEnabled = try container.decodeIfPresent(Bool.self, forKey: .delightEnabled) ?? true
         weatherCity = try container.decodeIfPresent(String.self, forKey: .weatherCity)
         weatherLat = try container.decodeIfPresent(Double.self, forKey: .weatherLat)

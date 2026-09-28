@@ -11,6 +11,11 @@ final class AppSettingsDelightTests: XCTestCase {
         XCTAssertEqual(settings?.delightEnabled, true, "legacy payload without the key must enable delight")
     }
 
+    func testAppearanceDefaultsToDark() {
+        XCTAssertEqual(AppSettings().themeMode, .dark)
+        XCTAssertEqual(decode("{}")?.themeMode, .dark)
+    }
+
     func testDelightEnabledDecodesWhenPresent() {
         let settings = decode("{\"delightEnabled\":false}")
         XCTAssertEqual(settings?.delightEnabled, false)

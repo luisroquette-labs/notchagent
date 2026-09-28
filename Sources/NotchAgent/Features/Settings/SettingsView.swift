@@ -70,14 +70,20 @@ struct SettingsView: View {
                 .disabled(!LoginItem.isAvailable)
                 Toggle(pt ? "Alertas de quota como notificações" : "Quota alerts as system notifications", isOn: $preferences.settings.notificationsEnabled)
                     .disabled(!NotificationService.isAvailable)
-                Button(pt ? "Buscar atualização…" : "Check for updates…") {
-                    AppEnvironment.shared.appUpdates.checkForUpdates()
+                if !AppEnvironment.shared.appUpdates.isManagedByStore {
+                    Button(pt ? "Buscar atualização…" : "Check for updates…") {
+                        AppEnvironment.shared.appUpdates.checkForUpdates()
+                    }
+                    .disabled(!AppEnvironment.shared.appUpdates.isConfigured)
                 }
-                .disabled(!AppEnvironment.shared.appUpdates.isConfigured)
             } header: {
                 Text(pt ? "Geral" : "General")
             } footer: {
-                if BundleContext.isBundledApp && !AppEnvironment.shared.appUpdates.isConfigured {
+                if AppEnvironment.shared.appUpdates.isManagedByStore {
+                    Text(pt ? "Atualizações são instaladas pela Mac App Store." : "Updates are installed by the Mac App Store.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else if BundleContext.isBundledApp && !AppEnvironment.shared.appUpdates.isConfigured {
                     Text(pt ? "Atualizações automáticas serão ativadas no build comercial assinado." : "Automatic updates will be enabled in the signed commercial build.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -87,6 +93,10 @@ struct SettingsView: View {
                         .foregroundStyle(.secondary)
                 }
             }
+
+            #if APP_STORE
+            StoreFolderAccessSection(portuguese: pt)
+            #endif
 
             Section(pt ? "Atualização" : "Refresh") {
                 Picker(pt ? "Intervalo" : "Interval", selection: $preferences.settings.refreshIntervalSeconds) {
@@ -111,6 +121,26 @@ struct SettingsView: View {
                     values: $preferences.settings.quotaAlertThresholdPercents
                 )
             }
+
+            #if !APP_STORE
+            Section {
+                Toggle(
+                    pt ? "Avisar por e-mail quando os créditos voltarem" : "Email me when credits are back",
+                    isOn: $preferences.settings.notifyEmailOnRestore
+                )
+                TextField(pt ? "E-mail de destino" : "Recipient email", text: $preferences.settings.notificationEmail)
+                    .disableAutocorrection(true)
+                SecureField(pt ? "Chave de API do Resend" : "Resend API key", text: resendAPIKeyBinding)
+            } header: {
+                Text(pt ? "Aviso de créditos por e-mail" : "Credit restore email")
+            } footer: {
+                Text(pt
+                    ? "Envia um e-mail (via Resend) toda vez que a janela semanal ou de 5h resetar, com o provedor e o modelo ativo. Sai da máquina só quando ativado."
+                    : "Sends an email (via Resend) whenever the weekly or 5h window resets, naming the provider and active model. Only leaves the machine when enabled.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            #endif
 
             Section(pt ? "Notch" : "Notch overlay") {
                 Toggle(pt ? "Mostrar painel no notch" : "Show notch overlay", isOn: $preferences.settings.notchOverlayEnabled)
@@ -154,6 +184,19 @@ struct SettingsView: View {
                 // 30-min cycle (refreshIfNeeded no-ops when disabled).
                 Task { await AppEnvironment.shared.weather.refreshIfNeeded() }
             }
+
+            #if APP_STORE
+            Section(pt ? "Privacidade e suporte" : "Privacy and support") {
+                Link(
+                    pt ? "Política de privacidade" : "Privacy policy",
+                    destination: URL(string: "https://notchagent.app/privacy")!
+                )
+                Link(
+                    pt ? "Obter suporte" : "Get support",
+                    destination: URL(string: "https://notchagent.app/support")!
+                )
+            }
+            #endif
             }
 
             if selectedSection == .desk {
@@ -331,7 +374,9 @@ struct SettingsView: View {
             }
 
             Section {
+                #if !APP_STORE
                 Toggle("Read real quota from the Anthropic API", isOn: $preferences.settings.claudeQuotaProbeEnabled)
+                #endif
                 budgetField(
                     "Session budget (tokens)",
                     value: $preferences.settings.claudeSessionTokenBudget
@@ -343,9 +388,15 @@ struct SettingsView: View {
             } header: {
                 Text(pt ? "Quota do Claude Code" : "Claude Code quota")
             } footer: {
+                #if APP_STORE
+                Text("The App Store edition estimates quota from the token budgets you provide and never sends paid probe requests.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                #else
                 Text("The API probe sends a 1-token request using your local Claude Code OAuth token and reads the official 5h/7d utilization headers (macOS will ask for Keychain access once). The token never leaves this Mac except toward api.anthropic.com. Budgets below are only used as fallback when the probe is off or no token is found.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                #endif
             }
 
             }
@@ -421,6 +472,15 @@ struct SettingsView: View {
                 ? "Mantenha o cabo conectado. Se a atualização falhar, reconecte o Desk e tente novamente."
                 : "Keep the cable connected. If the update fails, reconnect Desk and retry.")
         }
+    }
+
+    /// Same pattern as the API-account SecureFields: the secret never touches
+    /// AppSettings (plist-backed), only Keychain.
+    private var resendAPIKeyBinding: Binding<String> {
+        Binding(
+            get: { APIAccountCredentialStore.key(for: ResendCredential.keychainAccount) ?? "" },
+            set: { APIAccountCredentialStore.save($0, for: ResendCredential.keychainAccount) }
+        )
     }
 
     private func brlRateText(_ rate: Decimal?) -> String {

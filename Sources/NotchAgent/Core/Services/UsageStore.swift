@@ -233,7 +233,7 @@ final class UsageStore {
             if !fired.isEmpty, let low = lowestRemainingSinceFired[key],
                let lastActivity = snapshot.lastActivityAt,
                snapshot.capturedAt.timeIntervalSince(lastActivity) < 10 * 60 {
-                presentRestore(provider: snapshot.provider, previousRemaining: low, remaining: remaining, isWeekly: metric.isWeekly, now: snapshot.capturedAt)
+                presentRestore(provider: snapshot.provider, previousRemaining: low, remaining: remaining, isWeekly: metric.isWeekly, now: snapshot.capturedAt, activeModel: snapshot.activeModel)
             }
             fired = []
             lowestRemainingSinceFired[key] = nil
@@ -300,7 +300,7 @@ final class UsageStore {
 
     /// Sticky like `present(_:)`: a moment already showing isn't replaced by a
     /// smaller bounce-back from another provider in the same refresh cycle.
-    private func presentRestore(provider: ProviderID, previousRemaining: Double, remaining: Double, isWeekly: Bool, now: Date) {
+    private func presentRestore(provider: ProviderID, previousRemaining: Double, remaining: Double, isWeekly: Bool, now: Date, activeModel: String? = nil) {
         if let last = lastRestoreAt[provider], now.timeIntervalSince(last) < Self.restoreCooldown {
             return
         }
@@ -309,7 +309,8 @@ final class UsageStore {
             provider: provider,
             previousRemaining: previousRemaining,
             remaining: remaining,
-            isWeekly: isWeekly
+            isWeekly: isWeekly,
+            activeModel: activeModel
         )
         activeRestoreMoment = moment
         restoreDismissTask?.cancel()

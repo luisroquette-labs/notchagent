@@ -13,12 +13,16 @@ struct ClaudeProvider: UsageProvider {
         .sessionTokens, .sessionPercent, .weeklyTokens, .weeklyPercent, .costEstimate, .resetSchedule,
     ]
 
-    private let roots: [URL]
+    private let configuredRoots: [URL]?
     private let cache = ClaudeScanCache()
     private let probe: ClaudeQuotaProbe?
     private static let lookback: TimeInterval = 8 * 24 * 3600
     private static var paidProbeAllowed: Bool {
+        #if APP_STORE
+        false
+        #else
         ProcessInfo.processInfo.environment["NOTCHAGENT_DISABLE_PAID_PROBES"] != "1"
+        #endif
     }
 
     /// Every place Claude Code writes transcripts on this Mac: the CLI and
@@ -28,8 +32,15 @@ struct ClaudeProvider: UsageProvider {
         AppPaths.home.appendingPathComponent("Library/Application Support/Claude/local-agent-mode-sessions"),
     ]
 
-    init(roots: [URL] = ClaudeProvider.defaultRoots, probe: ClaudeQuotaProbe? = ClaudeQuotaProbe()) {
-        self.roots = roots
+    private var roots: [URL] {
+        if let configuredRoots { return configuredRoots }
+        return DistributionChannel.isAppStore
+            ? SandboxBookmarkStore.shared.claudeRoots
+            : Self.defaultRoots
+    }
+
+    init(roots: [URL]? = nil, probe: ClaudeQuotaProbe? = ClaudeQuotaProbe()) {
+        configuredRoots = roots
         self.probe = probe
     }
 
@@ -62,6 +73,9 @@ struct ClaudeProvider: UsageProvider {
 
     func fetchSnapshot(settings: AppSettings) async throws -> UsageSnapshot {
         let now = Date()
+        if DistributionChannel.isAppStore, roots.isEmpty {
+            return UsageSnapshot(provider: id, health: .noData, note: "Folder access required")
+        }
         guard case .installed = detectInstallation() else {
             return UsageSnapshot(provider: id, health: .notInstalled)
         }
