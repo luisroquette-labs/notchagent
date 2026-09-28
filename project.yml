@@ -52,7 +52,7 @@ targets:
         CFBundleName: AgentMeter
         CFBundleDisplayName: "AgentMeter: NotchAgent"
         CFBundleShortVersionString: "3.5.5"
-        CFBundleVersion: "16"
+        CFBundleVersion: "17"
         # Agent app: menu bar + overlay only, no Dock icon.
         LSUIElement: true
         LSMinimumSystemVersion: "14.0"
@@ -91,7 +91,7 @@ targets:
         CFBundleName: NotchAgent
         CFBundleDisplayName: NotchAgent
         CFBundleShortVersionString: "3.5.5"
-        CFBundleVersion: "16"
+        CFBundleVersion: "17"
         ITSAppUsesNonExemptEncryption: false
         CFBundleIconFile: AppIcon
         LSApplicationCategoryType: public.app-category.developer-tools

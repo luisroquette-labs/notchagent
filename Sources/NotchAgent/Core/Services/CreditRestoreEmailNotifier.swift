@@ -39,9 +39,13 @@ enum ResendCredential {
 
 enum CreditRestoreEmailNotifier {
     static func shouldSend(settings: AppSettings, apiKey: String?) -> Bool {
+        #if APP_STORE
+        false
+        #else
         settings.notifyEmailOnRestore
             && !settings.notificationEmail.trimmingCharacters(in: .whitespaces).isEmpty
             && !(apiKey ?? "").isEmpty
+        #endif
     }
 
     static func subject(for moment: RestoreMoment, settings: AppSettings) -> String {

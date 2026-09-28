@@ -122,6 +122,7 @@ struct SettingsView: View {
                 )
             }
 
+            #if !APP_STORE
             Section {
                 Toggle(
                     pt ? "Avisar por e-mail quando os créditos voltarem" : "Email me when credits are back",
@@ -139,6 +140,7 @@ struct SettingsView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+            #endif
 
             Section(pt ? "Notch" : "Notch overlay") {
                 Toggle(pt ? "Mostrar painel no notch" : "Show notch overlay", isOn: $preferences.settings.notchOverlayEnabled)
@@ -182,6 +184,19 @@ struct SettingsView: View {
                 // 30-min cycle (refreshIfNeeded no-ops when disabled).
                 Task { await AppEnvironment.shared.weather.refreshIfNeeded() }
             }
+
+            #if APP_STORE
+            Section(pt ? "Privacidade e suporte" : "Privacy and support") {
+                Link(
+                    pt ? "Política de privacidade" : "Privacy policy",
+                    destination: URL(string: "https://notchagent.app/privacy")!
+                )
+                Link(
+                    pt ? "Obter suporte" : "Get support",
+                    destination: URL(string: "https://notchagent.app/support")!
+                )
+            }
+            #endif
             }
 
             if selectedSection == .desk {

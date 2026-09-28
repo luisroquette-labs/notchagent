@@ -38,7 +38,11 @@ final class CreditRestoreEmailNotifierTests: XCTestCase {
     }
 
     func testShouldSendTrueWhenFullyConfigured() {
+        #if APP_STORE
+        XCTAssertFalse(CreditRestoreEmailNotifier.shouldSend(settings: settings(), apiKey: "re_key"))
+        #else
         XCTAssertTrue(CreditRestoreEmailNotifier.shouldSend(settings: settings(), apiKey: "re_key"))
+        #endif
     }
 
     // Especifica qual janela (semanal vs 5h) e qual modelo estava ativo.
@@ -78,8 +82,12 @@ final class CreditRestoreEmailNotifierTests: XCTestCase {
 
         await CreditRestoreEmailNotifier.evaluateAndSend(moment: moment, settings: settings(), apiKey: "re_key", gate: gate)
         let call = await gate.lastCall()
+        #if APP_STORE
+        XCTAssertNil(call)
+        #else
         XCTAssertEqual(call?.to, "user@example.com")
         XCTAssertEqual(call?.apiKey, "re_key")
         XCTAssertTrue(call?.body.contains("claude-opus-4") == true)
+        #endif
     }
 }

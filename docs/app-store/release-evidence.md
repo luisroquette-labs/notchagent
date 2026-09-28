@@ -73,6 +73,25 @@ response was observed and the version/build/commit match the archived binary.
   persisted through the App Store Connect API
 - Screenshot set: exactly five `APP_DESKTOP` assets, all `COMPLETE`, ordered
   `01-custos-e-decisoes.png` through `05-antecipe-limites.png`
-- Submission: not added for review; reviewer contact details remain pending
+- Submission: not added for review; reviewer contact details are complete
 - Safety: a rejected desktop capture containing another app was deleted before
   use or upload; the approved set contains only NotchAgent UI
+
+## Compliance candidate
+
+- Version/build: `3.5.5 (17)`
+- Canonical gate: PASS on 2026-09-28; 598 Direct + 598 App Store tests,
+  zero failures; Store bundle inspection passed
+- App Store defaults: weather disabled until user opt-in; paid Anthropic probe,
+  Resend email delivery, and Sparkle absent from the Store edition
+- Privacy/support links: `https://notchagent.app/privacy` and
+  `https://notchagent.app/support`
+- Screenshots: four current dark-UI, opaque sRGB PNGs at 2880x1800 in
+  `dist/app-store-screenshots-v17/`; obsolete no-data/probe screens excluded
+- App Store Connect: reviewer contact, metadata, Developer Tools/Productivity
+  categories, third-party content declaration, and all-zero age questionnaire
+  persisted through the API
+- Commercial setup: free price persisted with USA base territory; all 175
+  current storefront territories enabled, including future territories
+- Final archive/upload, public legal pages, and screenshot replacement pending
+- Submission: not added for review; final owner authorization remains required

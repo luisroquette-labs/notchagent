@@ -66,7 +66,11 @@ public struct AppSettings: Codable, Sendable, Equatable {
     public var claudeSessionTokenBudget: Int?
     public var claudeWeeklyTokenBudget: Int?
     /// Weather ambience (Now page): feature switch + location resolution.
+    #if APP_STORE
+    public var weatherEnabled: Bool = false
+    #else
     public var weatherEnabled: Bool = true
+    #endif
     /// Delight layer (mascot reactions, moments, sound/haptics, time tint):
     /// one master switch — off means a sober panel.
     public var delightEnabled: Bool = true
@@ -169,7 +173,11 @@ public struct AppSettings: Codable, Sendable, Equatable {
         notificationEmail = try container.decodeIfPresent(String.self, forKey: .notificationEmail) ?? ""
         claudeSessionTokenBudget = try container.decodeIfPresent(Int.self, forKey: .claudeSessionTokenBudget)
         claudeWeeklyTokenBudget = try container.decodeIfPresent(Int.self, forKey: .claudeWeeklyTokenBudget)
+        #if APP_STORE
+        weatherEnabled = try container.decodeIfPresent(Bool.self, forKey: .weatherEnabled) ?? false
+        #else
         weatherEnabled = try container.decodeIfPresent(Bool.self, forKey: .weatherEnabled) ?? true
+        #endif
         delightEnabled = try container.decodeIfPresent(Bool.self, forKey: .delightEnabled) ?? true
         weatherCity = try container.decodeIfPresent(String.self, forKey: .weatherCity)
         weatherLat = try container.decodeIfPresent(Double.self, forKey: .weatherLat)
