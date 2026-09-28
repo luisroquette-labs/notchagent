@@ -121,7 +121,8 @@ actor CodexAppServerRateLimitReader {
             let buffer = LockedData()
             output.fileHandleForReading.readabilityHandler = { handle in
                 let data = handle.availableData
-                if !data.isEmpty { buffer.append(data) }
+                // EOF entrega Data vazio em loop — sem zerar o handler, gira a 100% de CPU.
+                if data.isEmpty { handle.readabilityHandler = nil } else { buffer.append(data) }
             }
 
             let requests = """
@@ -140,7 +141,12 @@ actor CodexAppServerRateLimitReader {
             }
             try? input.fileHandleForWriting.close()
             if process.isRunning { process.terminate() }
-            process.waitUntilExit()
+            // waitUntilExit() num Task.detached podia não voltar (travou o CI 6h em 16/09).
+            let exitDeadline = Date().addingTimeInterval(2)
+            while process.isRunning, Date() < exitDeadline {
+                try await Task.sleep(for: .milliseconds(20))
+            }
+            if process.isRunning { kill(process.processIdentifier, SIGKILL) }
             output.fileHandleForReading.readabilityHandler = nil
             return result ?? parseResponse(buffer.snapshot(), now: now)
         }.value

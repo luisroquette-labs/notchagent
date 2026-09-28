@@ -66,6 +66,28 @@ final class CodexAppServerRateLimitReaderTests: XCTestCase {
         XCTAssertEqual(snapshot.weekly?.usedPercent, 69)
     }
 
+    // REGRESSÃO (28/09): no EOF do pipe o readabilityHandler recebia Data vazio
+    // em loop (100% de CPU) e waitUntilExit() num Task.detached podia não
+    // voltar — o swift test travou 6h no CI (16/09) e 11+ min no Mac.
+    func testFetchNeverHangsAcrossRepeatedAppServerRuns() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let executable = root.appendingPathComponent("fake-codex")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let response = #"{"id":2,"result":{"rateLimits":{"limitId":"codex","primary":{"usedPercent":21,"windowDurationMins":300}}}}"#
+        // Responde e segura o stdout aberto (sleep): o cenário que travava ~1 em 3.
+        try Data("#!/bin/sh\nprintf '%s\\n' '\(response)'\nsleep 1\n".utf8).write(to: executable)
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: executable.path)
+
+        let started = Date()
+        for _ in 0..<6 {
+            let reader = CodexAppServerRateLimitReader(executableURL: executable, minInterval: 0)
+            let limits = await reader.currentLimits()
+            XCTAssertNotNil(limits)
+        }
+        XCTAssertLessThan(Date().timeIntervalSince(started), 30, "fetch must not hang after the child exits")
+    }
+
     func testLiveOfficialRateLimitsWhenExplicitlyEnabled() async throws {
         guard ProcessInfo.processInfo.environment["NOTCHAGENT_CODEX_RATE_LIMIT_E2E"] == "1" else {
             throw XCTSkip("Set NOTCHAGENT_CODEX_RATE_LIMIT_E2E=1 for the authenticated read-only test")

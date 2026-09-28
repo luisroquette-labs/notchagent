@@ -8,6 +8,12 @@ import XCTest
 /// percentual, o card cai no fallback de tokens.
 final class ClaudeProbeKeychainTests: XCTestCase {
     func testProbeCanReadTheCliKeychainCredential() throws {
+        // REGRESSÃO (28/09): no runner macOS headless o SecItemCopyMatching real
+        // pode ficar esperando um prompt do Keychain que nunca aparece — um run
+        // travou 6h (16/09). Em CI não há credencial do CLI de qualquer forma.
+        if ProcessInfo.processInfo.environment["CI"] != nil {
+            throw XCTSkip("Live keychain read can block on a headless CI runner")
+        }
         // Never assert on the token's content — presence is the contract.
         // REGRESSÃO (22/08): the CI runner has no Claude Code CLI installed,
         // so there is no keychain credential to read — that's an environment
