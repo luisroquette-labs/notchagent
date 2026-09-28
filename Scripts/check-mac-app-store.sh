@@ -46,6 +46,18 @@ cleanup() {
 }
 trap cleanup EXIT
 
+iconset="$project_dir/AppIcon.iconset"
+iconutil -c iconset Resources/AppIcon.icns -o "$iconset"
+retina_icon="$iconset/icon_512x512@2x.png"
+[[ -f "$retina_icon" ]] || {
+    echo "FAIL: AppIcon.icns is missing the required 512pt @2x image." >&2
+    exit 1
+}
+[[ $(sips -g pixelWidth "$retina_icon" 2>/dev/null | awk '/pixelWidth/{print $2}') == 1024 ]] || {
+    echo "FAIL: AppIcon.icns 512pt @2x image must be 1024 pixels wide." >&2
+    exit 1
+}
+
 # Xcode resolves plist and entitlement build settings relative to the generated
 # .xcodeproj, while source groups honor --project-root.
 ln -s "$PWD/Generated" "$project_dir/Generated"
