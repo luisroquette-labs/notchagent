@@ -34,7 +34,8 @@
 - Signed archive: verified locally on 2026-09-28
 - Distribution certificate/profile: generated and verified
 - Upload: build 15 accepted by App Store Connect on 2026-09-28 at 15:18 BRT
-- Uploaded build processing status: processing
+- Uploaded build processing status: ready to submit; confirmed in App Store
+  Connect at 15:19 BRT
 - Export compliance: `ITSAppUsesNonExemptEncryption=false` embedded and
   verified in the archived app
 - Visual acceptance: canonical dark UI and all mascot sprites verified from
