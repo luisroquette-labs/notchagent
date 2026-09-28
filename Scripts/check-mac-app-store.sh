@@ -53,6 +53,23 @@ retina_icon="$iconset/icon_512x512@2x.png"
     echo "FAIL: AppIcon.icns is missing the required 512pt @2x image." >&2
     exit 1
 }
+
+catalog=Resources/Assets.xcassets/AppIcon.appiconset
+[[ -f "$catalog/Contents.json" ]] || {
+    echo "FAIL: Store AppIcon.appiconset is missing." >&2
+    exit 1
+}
+for icon in \
+    icon_16x16.png icon_16x16@2x.png \
+    icon_32x32.png icon_32x32@2x.png \
+    icon_128x128.png icon_128x128@2x.png \
+    icon_256x256.png icon_256x256@2x.png \
+    icon_512x512.png icon_512x512@2x.png; do
+    [[ -f "$catalog/$icon" ]] || {
+        echo "FAIL: Store AppIcon.appiconset is missing $icon." >&2
+        exit 1
+    }
+done
 [[ $(sips -g pixelWidth "$retina_icon" 2>/dev/null | awk '/pixelWidth/{print $2}') == 1024 ]] || {
     echo "FAIL: AppIcon.icns 512pt @2x image must be 1024 pixels wide." >&2
     exit 1
@@ -104,8 +121,12 @@ binary="$app/Contents/MacOS/NotchAgent"
     echo "FAIL: Store bundle contains the firmware recovery helper." >&2
     exit 1
 }
-[[ -f "$app/Contents/Resources/AppIcon.icns" ]] || {
-    echo "FAIL: Store bundle is missing the complete macOS icon set." >&2
+[[ -f "$app/Contents/Resources/Assets.car" ]] || {
+    echo "FAIL: Store bundle is missing the compiled AppIcon asset catalog." >&2
+    exit 1
+}
+[[ $(plutil -extract CFBundleIconName raw -o - "$app/Contents/Info.plist") == AppIcon ]] || {
+    echo "FAIL: Store bundle does not declare AppIcon as its primary asset catalog icon." >&2
     exit 1
 }
 [[ -f "$app/Contents/Resources/PrivacyInfo.xcprivacy" ]] || {
