@@ -80,12 +80,22 @@ response was observed and the version/build/commit match the archived binary.
 ## Compliance candidate
 
 - Version/build: `3.5.5 (17)`
+- Source commit: `4c32915a9c5148195112a4a96fc0980aa506db06`
 - Canonical gate: PASS on 2026-09-28; 598 Direct + 598 App Store tests,
   zero failures; Store bundle inspection passed
+- Archive: `dist/NotchAgentAppStore-3.5.5-17-4c32915.xcarchive`
+- App Store package: `dist/app-store-export-4c32915/NotchAgent.pkg`
+- Binary SHA-256:
+  `67c26a268edc5027cb0ebc83b02b72a8b203e8b6f0f9592b09584425ae4de6f7`
+- Package SHA-256:
+  `91608e250c4bca4d65aaad94a8862e001e8f9d875d599e0abacf203e84810a95`
+- Archive verification: strict deep code-sign validation passed; universal
+  `x86_64 arm64`; sandbox entitlements and
+  `ITSAppUsesNonExemptEncryption=false` embedded
 - App Store defaults: weather disabled until user opt-in; paid Anthropic probe,
   Resend email delivery, and Sparkle absent from the Store edition
 - Privacy/support links: `https://notchagent.app/privacy` and
-  `https://notchagent.app/support`
+  `https://notchagent.app/support`, both live with HTTP 200
 - Screenshots: four current dark-UI, opaque sRGB PNGs at 2880x1800 in
   `dist/app-store-screenshots-v17/`; obsolete no-data/probe screens excluded
 - App Store Connect: reviewer contact, metadata, Developer Tools/Productivity
@@ -93,5 +103,10 @@ response was observed and the version/build/commit match the archived binary.
   persisted through the API
 - Commercial setup: free price persisted with USA base territory; all 175
   current storefront territories enabled, including future territories
-- Final archive/upload, public legal pages, and screenshot replacement pending
+- Upload: succeeded on 2026-09-28 at 17:40 BRT; App Store Connect API
+  confirmed build 17 as `VALID` and `APP_STORE_ELIGIBLE`
+- App Store Connect version: build 17 selected for macOS 3.5.5; release remains
+  manual and state remains `PREPARE_FOR_SUBMISSION`
+- Screenshot replacement: pending final authorization to remove the five
+  obsolete assets before uploading the four current dark-UI images
 - Submission: not added for review; final owner authorization remains required
