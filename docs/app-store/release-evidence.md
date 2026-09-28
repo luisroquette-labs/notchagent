@@ -77,18 +77,18 @@ response was observed and the version/build/commit match the archived binary.
 - Safety: a rejected desktop capture containing another app was deleted before
   use or upload; the approved set contains only NotchAgent UI
 
-## Compliance candidate
+## Final merged candidate
 
-- Version/build: `3.5.5 (17)`
-- Source commit: `4c32915a9c5148195112a4a96fc0980aa506db06`
-- Canonical gate: PASS on 2026-09-28; 598 Direct + 598 App Store tests,
+- Version/build: `3.5.5 (18)`
+- Source commit: `edd4cb304d9c971e12cff18c39b2afd2d9690b4e`
+- Canonical gate: PASS on 2026-09-28; 610 Direct + 610 App Store tests,
   zero failures; Store bundle inspection passed
-- Archive: `dist/NotchAgentAppStore-3.5.5-17-4c32915.xcarchive`
-- App Store package: `dist/app-store-export-4c32915/NotchAgent.pkg`
+- Archive: `dist/NotchAgentAppStore-3.5.5-18-edd4cb3.xcarchive`
+- App Store package: `dist/app-store-export-edd4cb3/NotchAgent.pkg`
 - Binary SHA-256:
-  `67c26a268edc5027cb0ebc83b02b72a8b203e8b6f0f9592b09584425ae4de6f7`
+  `e696a1f9c91b0720f8861dfe95ae706eaa12b7071f4f90483a4208124b724020`
 - Package SHA-256:
-  `91608e250c4bca4d65aaad94a8862e001e8f9d875d599e0abacf203e84810a95`
+  `8fbbf951d4abc92bf68a4c3682831f247488ffe841d57643ac44e8545fb54a66`
 - Archive verification: strict deep code-sign validation passed; universal
   `x86_64 arm64`; sandbox entitlements and
   `ITSAppUsesNonExemptEncryption=false` embedded
@@ -103,9 +103,9 @@ response was observed and the version/build/commit match the archived binary.
   persisted through the API
 - Commercial setup: free price persisted with USA base territory; all 175
   current storefront territories enabled, including future territories
-- Upload: succeeded on 2026-09-28 at 17:40 BRT; App Store Connect API
-  confirmed build 17 as `VALID` and `APP_STORE_ELIGIBLE`
-- App Store Connect version: build 17 selected for macOS 3.5.5; release remains
+- Upload: succeeded on 2026-09-28 at 17:59 BRT; App Store Connect API
+  confirmed build 18 as `VALID` and `APP_STORE_ELIGIBLE`
+- App Store Connect version: build 18 selected for macOS 3.5.5; release remains
   manual and state remains `PREPARE_FOR_SUBMISSION`
 - Screenshot replacement: pending final authorization to remove the five
   obsolete assets before uploading the four current dark-UI images
