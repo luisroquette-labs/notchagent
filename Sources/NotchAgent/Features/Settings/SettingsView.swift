@@ -20,8 +20,6 @@ struct SettingsView: View {
     @State private var deskDiagnosticStatus: String?
     @State private var showsDeskFirmwareConfirmation = false
     @State private var showsDeskDetails = false
-    @State private var deskPairingPIN = ""
-    @State private var deskPairingMessage: String?
     @State private var codexOnboarding: CodexOnboardingStatus?
     @State private var codexOnboardingMessage: String?
     @State private var codexOnboardingBusy = false
@@ -52,22 +50,6 @@ struct SettingsView: View {
             .pickerStyle(.segmented)
 
             if selectedSection != .apiAccounts {
-            if selectedSection == .desk {
-            Section(pt ? "Conexão Wi-Fi" : "Wi-Fi connection") {
-                LabeledContent("NotchAgent Desk") {
-                    DeskWiFiIndicator(
-                        state: desk.connectionState,
-                        showsLabel: true,
-                        portuguese: pt
-                    )
-                }
-                Text(pt
-                     ? "O ícone no header fica verde quando o Desk está conectado por Wi-Fi. Clique nele para abrir os Ajustes."
-                     : "The header icon turns green when Desk is connected over Wi-Fi. Click it to open Settings.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            }
             if selectedSection == .general {
             Section {
                 Picker(pt ? "Idioma" : "Language", selection: $preferences.settings.interfaceLanguage) {
@@ -88,14 +70,20 @@ struct SettingsView: View {
                 .disabled(!LoginItem.isAvailable)
                 Toggle(pt ? "Alertas de quota como notificações" : "Quota alerts as system notifications", isOn: $preferences.settings.notificationsEnabled)
                     .disabled(!NotificationService.isAvailable)
-                Button(pt ? "Buscar atualização…" : "Check for updates…") {
-                    AppEnvironment.shared.appUpdates.checkForUpdates()
+                if !AppEnvironment.shared.appUpdates.isManagedByStore {
+                    Button(pt ? "Buscar atualização…" : "Check for updates…") {
+                        AppEnvironment.shared.appUpdates.checkForUpdates()
+                    }
+                    .disabled(!AppEnvironment.shared.appUpdates.isConfigured)
                 }
-                .disabled(!AppEnvironment.shared.appUpdates.isConfigured)
             } header: {
                 Text(pt ? "Geral" : "General")
             } footer: {
-                if BundleContext.isBundledApp && !AppEnvironment.shared.appUpdates.isConfigured {
+                if AppEnvironment.shared.appUpdates.isManagedByStore {
+                    Text(pt ? "Atualizações são instaladas pela Mac App Store." : "Updates are installed by the Mac App Store.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else if BundleContext.isBundledApp && !AppEnvironment.shared.appUpdates.isConfigured {
                     Text(pt ? "Atualizações automáticas serão ativadas no build comercial assinado." : "Automatic updates will be enabled in the signed commercial build.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -105,6 +93,10 @@ struct SettingsView: View {
                         .foregroundStyle(.secondary)
                 }
             }
+
+            #if APP_STORE
+            StoreFolderAccessSection(portuguese: pt)
+            #endif
 
             Section(pt ? "Atualização" : "Refresh") {
                 Picker(pt ? "Intervalo" : "Interval", selection: $preferences.settings.refreshIntervalSeconds) {
@@ -263,8 +255,6 @@ struct SettingsView: View {
                         : "Opens the installation walkthrough in your browser."
                 )
 
-                deskPairingControls(desk, portuguese: pt)
-
                 if !preferences.settings.notchAgentDeskEnabled {
                     Button {
                         preferences.settings.notchAgentDeskEnabled = true
@@ -291,11 +281,6 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         if let firmware = desk.connectionState.firmwareVersion {
                             LabeledContent("Firmware") { Text(firmware).monospacedDigit() }
-                        }
-                        if let transport = desk.connectionState.transport {
-                            LabeledContent(pt ? "Conexão" : "Connection") {
-                                Text(transport == .usb ? "USB" : "Wi‑Fi")
-                            }
                         }
                         if let major = desk.connectionState.protocolMajor,
                            let minor = desk.connectionState.protocolMinor {
@@ -330,12 +315,6 @@ struct SettingsView: View {
                                     pt ? "Exportar diagnóstico" : "Export diagnostic",
                                     systemImage: "square.and.arrow.up"
                                 )
-                            }
-                            if desk.connectionState.deviceID != nil {
-                                Button(pt ? "Esquecer pareamento" : "Forget pairing", role: .destructive) {
-                                    desk.forgetNetworkPairing()
-                                    deskPairingPIN = ""
-                                }
                             }
                             if case .updating = desk.updateState {
                                 ProgressView().controlSize(.small)
@@ -380,7 +359,9 @@ struct SettingsView: View {
             }
 
             Section {
+                #if !APP_STORE
                 Toggle("Read real quota from the Anthropic API", isOn: $preferences.settings.claudeQuotaProbeEnabled)
+                #endif
                 budgetField(
                     "Session budget (tokens)",
                     value: $preferences.settings.claudeSessionTokenBudget
@@ -392,9 +373,15 @@ struct SettingsView: View {
             } header: {
                 Text(pt ? "Quota do Claude Code" : "Claude Code quota")
             } footer: {
+                #if APP_STORE
+                Text("The App Store edition estimates quota from the token budgets you provide and never sends paid probe requests.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                #else
                 Text("The API probe sends a 1-token request using your local Claude Code OAuth token and reads the official 5h/7d utilization headers (macOS will ask for Keychain access once). The token never leaves this Mac except toward api.anthropic.com. Budgets below are only used as fallback when the probe is off or no token is found.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                #endif
             }
 
             }
@@ -472,34 +459,6 @@ struct SettingsView: View {
         }
     }
 
-    @ViewBuilder
-    private func deskPairingControls(_ desk: NotchAgentDeskCoordinator, portuguese pt: Bool) -> some View {
-        if desk.connectionState.phase == .pairingRequired {
-            HStack {
-                SecureField("PIN", text: $deskPairingPIN)
-                    .textFieldStyle(.roundedBorder)
-                    .frame(width: 100)
-                Button(pt ? "Parear" : "Pair") {
-                    let pin = deskPairingPIN
-                    Task {
-                        do {
-                            try await desk.pairNetwork(pin: pin)
-                            deskPairingMessage = nil
-                        } catch {
-                            deskPairingMessage = pt
-                                ? "Digite os 6 dígitos mostrados na Desk."
-                                : "Enter the 6 digits shown on Desk."
-                        }
-                    }
-                }
-                .disabled(deskPairingPIN.wholeMatch(of: /[0-9]{6}/) == nil)
-            }
-            if let deskPairingMessage {
-                Text(deskPairingMessage).font(.caption).foregroundStyle(.red)
-            }
-        }
-    }
-
     /// Same pattern as the API-account SecureFields: the secret never touches
     /// AppSettings (plist-backed), only Keychain.
     private var resendAPIKeyBinding: Binding<String> {
@@ -538,9 +497,7 @@ struct SettingsView: View {
         case .disabled: portuguese ? "Desativado" : "Disabled"
         case .searching: portuguese ? "Procurando…" : "Searching…"
         case .handshaking: portuguese ? "Reconhecendo…" : "Recognizing…"
-        case .pairingRequired: portuguese ? "PIN necessário" : "PIN required"
         case .connected: portuguese ? "Conectado" : "Connected"
-        case .hostUnavailable: portuguese ? "Host indisponível" : "Host unavailable"
         case .incompatible: portuguese ? "Firmware incompatível" : "Incompatible firmware"
         }
     }

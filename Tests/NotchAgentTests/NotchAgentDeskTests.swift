@@ -1029,7 +1029,11 @@ final class NotchAgentDeskTests: XCTestCase {
             )
             XCTFail("A hung firmware process should time out")
         } catch {
+            #if APP_STORE
+            XCTAssertEqual(error as? DeskFirmwareUpdateError, .packageUnavailable)
+            #else
             XCTAssertEqual(error as? DeskFirmwareUpdateError, .flashTimedOut)
+            #endif
         }
         XCTAssertLessThan(started.duration(to: clock.now), .seconds(3))
         XCTAssertFalse(NotchAgentDeskFirmwareUpdater.isSupportedSerialDevice("/dev/cu.usbmodem/../../etc/passwd"))

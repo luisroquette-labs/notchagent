@@ -167,6 +167,9 @@ enum NotchAgentDeskFirmwareUpdater {
         #"identifier "br.com.lfrprojects.notchagent" and anchor apple generic and certificate leaf[subject.OU] = "S3YCFYY8SC""#
 
     static func bundledPackage(bundle: Bundle = .main) throws -> DeskFirmwarePackage {
+        #if APP_STORE
+        throw DeskFirmwareUpdateError.packageUnavailable
+        #else
         try verifyBundleSignature(bundle)
         guard let resources = bundle.resourceURL else { throw DeskFirmwareUpdateError.packageUnavailable }
         let directory = resources.appendingPathComponent("DeskFirmware", isDirectory: true)
@@ -174,6 +177,7 @@ enum NotchAgentDeskFirmwareUpdater {
             throw DeskFirmwareUpdateError.packageUnavailable
         }
         return try DeskFirmwarePackage.load(from: directory)
+        #endif
     }
 
     static func flash(package: DeskFirmwarePackage, port: String) async throws {
@@ -203,6 +207,9 @@ enum NotchAgentDeskFirmwareUpdater {
         arguments: [String],
         timeoutSeconds: TimeInterval
     ) async throws -> Int32 {
+        #if APP_STORE
+        throw DeskFirmwareUpdateError.packageUnavailable
+        #else
         try await Task.detached(priority: .userInitiated) {
             let process = Process()
             process.executableURL = executableURL
@@ -230,6 +237,7 @@ enum NotchAgentDeskFirmwareUpdater {
             }
             throw DeskFirmwareUpdateError.flashTimedOut
         }.value
+        #endif
     }
 
     static func isSupportedSerialDevice(_ path: String) -> Bool {

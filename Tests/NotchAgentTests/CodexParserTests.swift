@@ -60,10 +60,16 @@ final class CodexAppServerRateLimitReaderTests: XCTestCase {
         let snapshot = try await CodexProvider(root: sessions, appServerRateLimits: reader)
             .fetchSnapshot(settings: AppSettings())
 
+        #if APP_STORE
+        XCTAssertEqual(snapshot.health, .noData)
+        XCTAssertNil(snapshot.session)
+        XCTAssertNil(snapshot.weekly)
+        #else
         XCTAssertEqual(snapshot.health, .ok)
         XCTAssertEqual(snapshot.session?.tokens, .zero)
         XCTAssertEqual(snapshot.session?.usedPercent, 21)
         XCTAssertEqual(snapshot.weekly?.usedPercent, 69)
+        #endif
     }
 
     func testLiveOfficialRateLimitsWhenExplicitlyEnabled() async throws {

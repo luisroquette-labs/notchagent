@@ -14,7 +14,9 @@ import ServiceManagement
 enum DeskWatchdog {
     private static let plistName = "br.com.lfrprojects.notchagent.watchdog.plist"
 
-    static var isAvailable: Bool { BundleContext.isBundledApp }
+    static var isAvailable: Bool {
+        BundleContext.isBundledApp && !DistributionChannel.isAppStore
+    }
 
     static var isRegistered: Bool {
         guard isAvailable else { return false }

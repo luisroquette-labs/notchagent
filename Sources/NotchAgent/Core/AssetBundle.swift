@@ -13,6 +13,7 @@ enum AssetBundle {
         if let url = Bundle.main.url(forResource: name, withExtension: ext) {
             return url
         }
+        #if SWIFT_PACKAGE
         if let url = Bundle.module.url(forResource: name, withExtension: ext) {
             return url
         }
@@ -21,6 +22,7 @@ enum AssetBundle {
         if let url = Bundle.module.url(forResource: "Resources/\(name)", withExtension: ext) {
             return url
         }
+        #endif
         return nil
     }
 }

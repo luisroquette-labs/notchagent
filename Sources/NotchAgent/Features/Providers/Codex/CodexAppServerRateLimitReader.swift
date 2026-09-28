@@ -19,10 +19,14 @@ actor CodexAppServerRateLimitReader {
     }
 
     private static func defaultExecutableURL(fileManager: FileManager = .default) -> URL? {
+        #if APP_STORE
+        nil
+        #else
         let bundled = URL(fileURLWithPath: "/Applications/ChatGPT.app/Contents/Resources/codex")
         return fileManager.isExecutableFile(atPath: bundled.path)
             ? bundled
             : CodexOnboardingInspector.executableURL(fileManager: fileManager)
+        #endif
     }
 
     func currentLimits(now: Date = Date()) async -> [String: CodexTokenInfo]? {
@@ -75,6 +79,9 @@ actor CodexAppServerRateLimitReader {
     }
 
     private static func fetch(executableURL: URL, now: Date) async throws -> [String: CodexTokenInfo]? {
+        #if APP_STORE
+        nil
+        #else
         try await Task.detached(priority: .utility) {
             let process = Process()
             let input = Pipe()
@@ -112,6 +119,7 @@ actor CodexAppServerRateLimitReader {
             output.fileHandleForReading.readabilityHandler = nil
             return result ?? parseResponse(buffer.snapshot(), now: now)
         }.value
+        #endif
     }
 
     private static func window(_ raw: Window?) -> CodexRateWindow? {
