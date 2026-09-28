@@ -88,6 +88,10 @@ binary="$app/Contents/MacOS/NotchAgent"
     echo "FAIL: Store category must be Developer Tools." >&2
     exit 1
 }
+[[ $(plutil -extract ITSAppUsesNonExemptEncryption raw -o - "$app/Contents/Info.plist") == false ]] || {
+    echo "FAIL: Store bundle must declare that it does not use non-exempt encryption." >&2
+    exit 1
+}
 ! otool -L "$binary" | grep -q Sparkle || {
     echo "FAIL: Store binary links Sparkle." >&2
     exit 1
