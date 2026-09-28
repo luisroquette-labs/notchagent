@@ -79,16 +79,16 @@ response was observed and the version/build/commit match the archived binary.
 
 ## Final merged candidate
 
-- Version/build: `3.5.5 (18)`
-- Source commit: `edd4cb304d9c971e12cff18c39b2afd2d9690b4e`
+- Version/build: `3.5.5 (19)`
+- Source commit: `06224497775cb5f477559127b8191c37701b88b5`
 - Canonical gate: PASS on 2026-09-28; 610 Direct + 610 App Store tests,
   zero failures; Store bundle inspection passed
-- Archive: `dist/NotchAgentAppStore-3.5.5-18-edd4cb3.xcarchive`
-- App Store package: `dist/app-store-export-edd4cb3/NotchAgent.pkg`
+- Archive: `dist/NotchAgentAppStore-3.5.5-19-0622449.xcarchive`
+- App Store package: `dist/app-store-export-0622449/NotchAgent.pkg`
 - Binary SHA-256:
-  `e696a1f9c91b0720f8861dfe95ae706eaa12b7071f4f90483a4208124b724020`
+  `d8e49ac5a8ec24578bbecc4d64d1480405a337f420c082fe408a709b94e02dea`
 - Package SHA-256:
-  `8fbbf951d4abc92bf68a4c3682831f247488ffe841d57643ac44e8545fb54a66`
+  `610b7714c74a6a9bcd3a3bf9c6988604a1512e3c9796ff6fc16eb495ab3d702e`
 - Archive verification: strict deep code-sign validation passed; universal
   `x86_64 arm64`; sandbox entitlements and
   `ITSAppUsesNonExemptEncryption=false` embedded
@@ -103,9 +103,9 @@ response was observed and the version/build/commit match the archived binary.
   persisted through the API
 - Commercial setup: free price persisted with USA base territory; all 175
   current storefront territories enabled, including future territories
-- Upload: succeeded on 2026-09-28 at 17:59 BRT; App Store Connect API
-  confirmed build 18 as `VALID` and `APP_STORE_ELIGIBLE`
-- App Store Connect version: build 18 selected for macOS 3.5.5; release remains
+- Upload: succeeded on 2026-09-28 at 18:21 BRT; App Store Connect API
+  confirmed build 19 as `VALID` and `APP_STORE_ELIGIBLE`
+- App Store Connect version: build 19 selected for macOS 3.5.5; release remains
   manual and state remains `PREPARE_FOR_SUBMISSION`
 - Screenshot replacement: pending final authorization to remove the five
   obsolete assets before uploading the four current dark-UI images
