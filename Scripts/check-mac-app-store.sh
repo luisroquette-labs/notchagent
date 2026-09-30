@@ -20,7 +20,6 @@ entitlements=Resources/NotchAgentAppStore.entitlements
 for key in \
     com.apple.security.app-sandbox \
     com.apple.security.network.client \
-    com.apple.security.network.server \
     com.apple.security.files.user-selected.read-only \
     com.apple.security.files.bookmarks.app-scope \
     com.apple.security.device.usb \
@@ -30,6 +29,10 @@ for key in \
         exit 1
     }
 done
+! grep -q 'com.apple.security.network.server' "$entitlements" || {
+    echo "FAIL: Store app must not request unused inbound network access." >&2
+    exit 1
+}
 ! grep -q 'temporary-exception' "$entitlements" || {
     echo "FAIL: temporary sandbox exceptions are forbidden." >&2
     exit 1

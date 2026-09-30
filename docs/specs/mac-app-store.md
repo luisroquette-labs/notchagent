@@ -20,7 +20,7 @@ reduced capability must be visible rather than silently returning stale data.
 | Codex official quota through `codex app-server` | Available | Unavailable; local transcript quota fallback remains |
 | API account portals and outbound APIs | Available | Available through sandbox network-client access |
 | Sparkle updates | Available | Removed; updates come from the App Store |
-| Desk network and USB mirroring | Available | Available with local-network, client/server, USB, and serial entitlements |
+| Desk USB mirroring | Available | Available with USB and serial entitlements |
 | Desk firmware recovery helper | Available | Disabled until the embedded helper passes sandbox and App Review validation |
 | Launch at login | Available with explicit user action | Available with explicit user action |
 | Desk crash watchdog | Available | Disabled; no launch agent is bundled in the Store target |
@@ -41,10 +41,10 @@ and has a distinct build number and bundle identifier registered for macOS.
 
 ### MAS-002 — Minimum sandbox permissions
 
-The Store target must request only the permissions it uses: outbound and
-inbound networking, user-selected read-only files, app-scoped bookmarks, USB,
-and serial devices. It must declare local-network and Bonjour usage in its
-Info.plist. Temporary exception entitlements are forbidden.
+The Store target must request only the permissions it uses: outbound networking,
+user-selected read-only files, app-scoped bookmarks, USB, and serial devices.
+Inbound network-server access is forbidden until the app implements a listener.
+Temporary exception entitlements are forbidden.
 
 **Acceptance**
 

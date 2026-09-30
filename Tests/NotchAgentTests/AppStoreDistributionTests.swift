@@ -2,6 +2,19 @@ import XCTest
 @testable import NotchAgent
 
 final class AppStoreDistributionTests: XCTestCase {
+    func testStoreEntitlementsExcludeUnusedNetworkServerPermission() throws {
+        let root = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let data = try Data(contentsOf: root.appendingPathComponent("Resources/NotchAgentAppStore.entitlements"))
+        let entitlements = try XCTUnwrap(
+            PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any]
+        )
+        XCTAssertNil(entitlements["com.apple.security.network.server"])
+        XCTAssertEqual(entitlements["com.apple.security.network.client"] as? Bool, true)
+        let project = try String(contentsOf: root.appendingPathComponent("project.yml"), encoding: .utf8)
+        XCTAssertFalse(project.contains("com.apple.security.network.server"))
+    }
+
     func testDistributionFlagMatchesCompilationCondition() {
         #if APP_STORE
         XCTAssertTrue(DistributionChannel.isAppStore)

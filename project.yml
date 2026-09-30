@@ -52,7 +52,7 @@ targets:
         CFBundleName: AgentMeter
         CFBundleDisplayName: "AgentMeter: NotchAgent"
         CFBundleShortVersionString: "3.5.5"
-        CFBundleVersion: "20"
+        CFBundleVersion: "21"
         # Agent app: menu bar + overlay only, no Dock icon.
         LSUIElement: true
         LSMinimumSystemVersion: "14.0"
@@ -60,7 +60,7 @@ targets:
       PRODUCT_BUNDLE_IDENTIFIER: br.com.lfrprojects.notchagent
       ENABLE_HARDENED_RUNTIME: YES
       MARKETING_VERSION: "3.5.5"
-      CURRENT_PROJECT_VERSION: "20"
+      CURRENT_PROJECT_VERSION: "21"
 
   NotchAgentAppStore:
     type: application
@@ -84,14 +84,13 @@ targets:
         com.apple.security.files.bookmarks.app-scope: true
         com.apple.security.files.user-selected.read-only: true
         com.apple.security.network.client: true
-        com.apple.security.network.server: true
     info:
       path: Generated/NotchAgentAppStore-Info.plist
       properties:
         CFBundleName: NotchAgent
         CFBundleDisplayName: NotchAgent
         CFBundleShortVersionString: "3.5.5"
-        CFBundleVersion: "20"
+        CFBundleVersion: "21"
         ITSAppUsesNonExemptEncryption: false
         LSApplicationCategoryType: public.app-category.developer-tools
         LSUIElement: true
@@ -110,7 +109,7 @@ targets:
       ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
       SWIFT_ACTIVE_COMPILATION_CONDITIONS: APP_STORE
       MARKETING_VERSION: "3.5.5"
-      CURRENT_PROJECT_VERSION: "20"
+      CURRENT_PROJECT_VERSION: "21"
 
   NotchAgentTests:
     type: bundle.unit-test
