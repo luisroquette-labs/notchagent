@@ -19,4 +19,8 @@ public sealed class AppSettings
     public int? ClaudeSessionTokenBudget { get; set; }
     public int? ClaudeWeeklyTokenBudget { get; set; }
     public bool LaunchAtLogin { get; set; }
+    /// Opt-in mirroring of sanitized usage snapshots to a connected
+    /// NotchAgent Desk. Default off, mirrored from the Mac app's deliberate
+    /// privacy stance — Desk discovery/handshake stay automatic either way.
+    public bool NotchAgentDeskEnabled { get; set; }
 }

@@ -18,18 +18,26 @@ enum BundleContext {
 enum LoginItem {
     static var isAvailable: Bool { BundleContext.isBundledApp }
 
+    /// True if either the plain login item or the Desk crash-watchdog (which
+    /// also launches at login, as a side effect of its own RunAtLoad) is
+    /// registered — either one means the app launches at login.
     static var isEnabled: Bool {
         guard isAvailable else { return false }
-        return SMAppService.mainApp.status == .enabled
+        return SMAppService.mainApp.status == .enabled || DeskWatchdog.isRegistered
     }
 
     static func setEnabled(_ enabled: Bool) {
         guard isAvailable else { return }
         do {
             if enabled {
-                try SMAppService.mainApp.register()
+                // Desk watchdog already covers this — registering the plain
+                // login item too would double-launch the app at login.
+                if !DeskWatchdog.isRegistered {
+                    try SMAppService.mainApp.register()
+                }
             } else {
                 try SMAppService.mainApp.unregister()
+                DeskWatchdog.unregister()
             }
             Log.app.info("launch at login \(enabled ? "enabled" : "disabled", privacy: .public)")
         } catch {
@@ -41,10 +49,20 @@ enum LoginItem {
 /// System notifications for warning/critical transitions. All UNUserNotification
 /// calls stay behind the bundle guard — touching the center unbundled crashes.
 @MainActor
-final class NotificationService {
+final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     private var authorizationRequested = false
+    private var deskCategoryRegistered = false
+    /// Fired when the user taps "Mostrar meus dados" on the Desk-detected
+    /// notification (or the notification itself, as a fallback tap target).
+    var onDeskMirroringRequested: (() -> Void)?
 
     static var isAvailable: Bool { BundleContext.isBundledApp }
+
+    override init() {
+        super.init()
+        guard Self.isAvailable else { return }
+        UNUserNotificationCenter.current().delegate = self
+    }
 
     func post(_ alert: ProviderAlert, settings: AppSettings) {
         guard Self.isAvailable, settings.notificationsEnabled, alert.level > .normal else { return }
@@ -97,5 +115,52 @@ final class NotificationService {
             content: content,
             trigger: nil
         ))
+    }
+
+    /// Fired once per Desk that connects for the first time while mirroring
+    /// is still off — the opt-in ask itself, one tap away, no menu to find.
+    func postDeskDetected() {
+        guard Self.isAvailable else { return }
+        let center = UNUserNotificationCenter.current()
+
+        if !authorizationRequested {
+            authorizationRequested = true
+            center.requestAuthorization(options: [.alert, .sound]) { granted, _ in
+                Log.app.info("notification authorization: \(granted, privacy: .public)")
+            }
+        }
+        if !deskCategoryRegistered {
+            deskCategoryRegistered = true
+            let enable = UNNotificationAction(
+                identifier: Self.deskEnableActionID,
+                title: "Mostrar meus dados",
+                options: [.foreground]
+            )
+            center.setNotificationCategories([
+                UNNotificationCategory(identifier: Self.deskCategoryID, actions: [enable], intentIdentifiers: [])
+            ])
+        }
+
+        let content = UNMutableNotificationContent()
+        content.title = "NotchAgent Desk detectada"
+        content.body = "Toque para mostrar sua quota na tela física."
+        content.categoryIdentifier = Self.deskCategoryID
+        center.add(UNNotificationRequest(identifier: "desk-detected", content: content, trigger: nil))
+    }
+
+    private nonisolated static let deskCategoryID = "DESK_DETECTED"
+    private nonisolated static let deskEnableActionID = "ENABLE_DESK_MIRRORING"
+
+    nonisolated func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        defer { completionHandler() }
+        guard response.notification.request.content.categoryIdentifier == Self.deskCategoryID,
+              response.actionIdentifier == Self.deskEnableActionID
+                  || response.actionIdentifier == UNNotificationDefaultActionIdentifier
+        else { return }
+        Task { @MainActor in self.onDeskMirroringRequested?() }
     }
 }

@@ -60,16 +60,25 @@ final class CodexAppServerRateLimitReaderTests: XCTestCase {
         let snapshot = try await CodexProvider(root: sessions, appServerRateLimits: reader)
             .fetchSnapshot(settings: AppSettings())
 
+        #if APP_STORE
+        XCTAssertEqual(snapshot.health, .noData)
+        XCTAssertNil(snapshot.session)
+        XCTAssertNil(snapshot.weekly)
+        #else
         XCTAssertEqual(snapshot.health, .ok)
         XCTAssertEqual(snapshot.session?.tokens, .zero)
         XCTAssertEqual(snapshot.session?.usedPercent, 21)
         XCTAssertEqual(snapshot.weekly?.usedPercent, 69)
+        #endif
     }
 
     // REGRESSÃO (28/09): no EOF do pipe o readabilityHandler recebia Data vazio
     // em loop (100% de CPU) e waitUntilExit() num Task.detached podia não
     // voltar — o swift test travou 6h no CI (16/09) e 11+ min no Mac.
     func testFetchNeverHangsAcrossRepeatedAppServerRuns() async throws {
+        #if APP_STORE
+        throw XCTSkip("App Store builds never execute the external Codex CLI")
+        #else
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         let executable = root.appendingPathComponent("fake-codex")
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
@@ -86,6 +95,7 @@ final class CodexAppServerRateLimitReaderTests: XCTestCase {
             XCTAssertNotNil(limits)
         }
         XCTAssertLessThan(Date().timeIntervalSince(started), 30, "fetch must not hang after the child exits")
+        #endif
     }
 
     func testLiveOfficialRateLimitsWhenExplicitlyEnabled() async throws {
@@ -148,6 +158,9 @@ final class CodexAppServerRateLimitReaderTests: XCTestCase {
     /// exibindo "81% restante" com confiança total enquanto a conta real já
     /// estava em 100% usado / 0% restante. `cached` não tinha teto de idade.
     func testCacheExpiresAfterMaxAgeWhenFetchesKeepFailing() async throws {
+        #if APP_STORE
+        throw XCTSkip("App Store builds never execute the external Codex CLI")
+        #else
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         let executable = root.appendingPathComponent("fake-codex")
         let marker = root.appendingPathComponent("called")
@@ -181,6 +194,7 @@ final class CodexAppServerRateLimitReaderTests: XCTestCase {
         // never frozen indefinitely regardless of how long the process has been up.
         let stale = await reader.currentLimits(now: t0.addingTimeInterval(601))
         XCTAssertNil(stale)
+        #endif
     }
 }
 

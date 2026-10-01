@@ -8,6 +8,11 @@ import XCTest
 /// (br.com.lfrprojects.notchagent) nos dois mundos de empacotamento.
 @MainActor
 final class PreferencesStoreDomainTests: XCTestCase {
+    #if APP_STORE
+    func testDefaultStoreUsesTheSandboxedAppDomain() {
+        XCTAssertTrue(PreferencesStore.defaultStore === UserDefaults.standard)
+    }
+    #else
     func testDefaultStoreSharesTheAppSuiteDomain() {
         let suite = UserDefaults(suiteName: "br.com.lfrprojects.notchagent")
         XCTAssertNotNil(suite, "the suite domain must exist")
@@ -21,4 +26,5 @@ final class PreferencesStoreDomainTests: XCTestCase {
         )
         suite.removeObject(forKey: "na_domain_test_key")
     }
+    #endif
 }
