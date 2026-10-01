@@ -19,7 +19,7 @@ Fixed, and Security sections.
 
 - App tags: `vX.Y.Z` in this repository.
 - Desk firmware/product tags: independent `vX.Y.Z` in
-  [`notchagent-desk`](https://github.com/luisroquette/notchagent-desk).
+  [`notchagent-desk`](https://github.com/luisroquette-labs/notchagent-desk).
 - Desk wire compatibility is governed by that repository's protocol version and
   compatibility matrix, not by matching app and firmware numbers.
 - Published tags and release artifacts are immutable.

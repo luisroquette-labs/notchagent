@@ -51,8 +51,8 @@ controlled by that service's policy and account tools.
 ## Contact
 
 For privacy or support requests, open a public issue without sensitive data at
-<https://github.com/luisroquette/notchagent/issues>. Do not post credentials,
+<https://github.com/luisroquette-labs/notchagent/issues>. Do not post credentials,
 API keys, transcript contents, or other sensitive information in an issue.
 
 Policy URL for App Store Connect:
-<https://github.com/luisroquette/notchagent/blob/master/PRIVACY.md>
+<https://github.com/luisroquette-labs/notchagent/blob/master/PRIVACY.md>

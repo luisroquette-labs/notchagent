@@ -688,12 +688,12 @@ if [[ "$(gate_status onboarding-qr)" == "pass" ]]; then
         "downloadedFirmwareManifestSHA256","artifactSignatureVerified","artifactStapleValidated",
         "artifactGatekeeperAccepted","artifactFirmwareVerified"] | sort) and
       .verificationMethod == "live-download" and
-      .url == "https://github.com/luisroquette/notchagent/blob/master/docs/NOTCHAGENT_DESK_ONBOARDING.md" and
+      .url == "https://github.com/luisroquette-labs/notchagent/blob/master/docs/NOTCHAGENT_DESK_ONBOARDING.md" and
       .qrFile == "docs/img/notchagent-desk-onboarding-qr.svg" and
       (.qrSHA256 | test("^[0-9a-f]{64}$")) and
       (.publishedCommitSHA | test("^[0-9a-f]{40}$")) and
       .guideHTTPStatus == 200 and (.guideContentSHA256 | test("^[0-9a-f]{64}$")) and
-      .releaseAssetURL == ("https://github.com/luisroquette/notchagent/releases/download/v" + $version +
+      .releaseAssetURL == ("https://github.com/luisroquette-labs/notchagent/releases/download/v" + $version +
         "/NotchAgent-Desk-Beta1-" + $version + ".zip") and
       (.releaseAssetSHA256 | test("^[0-9a-f]{64}$")) and
       (.notarizationEvidenceSHA256 | test("^[0-9a-f]{64}$")) and
