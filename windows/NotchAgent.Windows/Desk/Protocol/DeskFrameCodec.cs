@@ -1,4 +1,4 @@
-// Vendored copy — source of truth is luisroquette/notchagent-desk,
+// Vendored copy — source of truth is luisroquette-labs/notchagent-desk,
 // sdk/dotnet/NotchAgent.Desk.Protocol/DeskFrameCodec.cs (protocol 1.3,
 // PROTOCOL_VERSION file). Vendored instead of cross-repo ProjectReference so
 // this repo builds standalone in CI and on any clone — a relative path into
