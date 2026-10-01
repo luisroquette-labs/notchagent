@@ -4,13 +4,13 @@
 
 > **This is the desktop software repository.** The physical ESP32-S3 product,
 > firmware, USB protocol, compatibility matrix, and factory contracts now live
-> in [`luisroquette/notchagent-desk`](https://github.com/luisroquette/notchagent-desk).
+> in [`luisroquette-labs/notchagent-desk`](https://github.com/luisroquette-labs/notchagent-desk).
 > Product pages: [NotchAgent app](https://notchagent.app) ·
 > [NotchAgent Desk](https://cfgauss.com.br/t/notchagent-desk-shop).
 
 <p align="center">
   <a href="https://notchagent.app"><img src="https://img.shields.io/badge/website-live-FF654F?style=flat-square" alt="NotchAgent website" /></a>
-  <a href="https://github.com/luisroquette/RocketLabs"><img src="https://img.shields.io/badge/RocketLabs-flagship%20project-7C5CFC?style=flat-square" alt="RocketLabs flagship project" /></a>
+  <a href="https://github.com/luisroquette-labs/RocketLabs"><img src="https://img.shields.io/badge/RocketLabs-flagship%20project-7C5CFC?style=flat-square" alt="RocketLabs flagship project" /></a>
   <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/version-v3.5.5-38D6C7?style=flat-square" alt="Version v3.5.5" /></a>
   <a href="#install"><img src="https://img.shields.io/badge/install-notarized%20DMG-F3B85A?style=flat-square" alt="Install the notarized DMG" /></a>
 </p>
@@ -27,13 +27,13 @@ companion is under validation. It is not yet offered as a signed installer or
 as equivalent to the macOS release. See [`windows/README.md`](windows/README.md)
 for the implemented feature set, build instructions, and current limits. A
 pre-built, **unsigned** test binary is available for early testers:
-[`NotchAgent.Windows.exe`](https://github.com/luisroquette/notchagent/releases/download/windows-test-build-20260824/NotchAgent.Windows.exe)
+[`NotchAgent.Windows.exe`](https://github.com/luisroquette-labs/notchagent/releases/download/windows-test-build-20260824/NotchAgent.Windows.exe)
 (Windows SmartScreen will warn on first run — this is expected until an
 Authenticode certificate is added).
 
 **NotchAgent Desk Beta 1** consumes the app's same local-first state on a
 Guition JC4832W535 ESP32-S3 touch display over USB. The hardware source of
-truth is [`notchagent-desk`](https://github.com/luisroquette/notchagent-desk).
+truth is [`notchagent-desk`](https://github.com/luisroquette-labs/notchagent-desk).
 This repository retains the 3.1.2 integration snapshot temporarily so the
 signed release remains reproducible; new hardware work belongs there.
 
@@ -41,8 +41,8 @@ Beta 1 adds automatic device identity, visible firmware/protocol/health,
 sanitized diagnostics, a hash-verified local recovery updater, and repeatable
 reconnect/soak-test gates. No device telemetry leaves the Mac.
 See the [live setup guide](https://cfgauss.com.br/t/notchagent-instalar-pagina),
-[Desk BOM](https://github.com/luisroquette/notchagent-desk/blob/main/docs/BOM.md),
-and [compatibility matrix](https://github.com/luisroquette/notchagent-desk/blob/main/COMPATIBILITY.md).
+[Desk BOM](https://github.com/luisroquette-labs/notchagent-desk/blob/main/docs/BOM.md),
+and [compatibility matrix](https://github.com/luisroquette-labs/notchagent-desk/blob/main/COMPATIBILITY.md).
 
 ![The compact notch bar: Claude on the left wing, Codex on the right](docs/img/notch-compact.png)
 
@@ -85,7 +85,7 @@ The DMG's published SHA-256 is
 **Homebrew** (developer channel):
 
 ```bash
-brew install --cask luisroquette/tap/notchagent
+brew install --cask luisroquette-labs/tap/notchagent
 open /Applications/NotchAgent.app
 ```
 
@@ -104,7 +104,7 @@ published SHA-256 is
 **Or build from source** (Xcode 15+ / Swift 6 toolchain):
 
 ```bash
-git clone https://github.com/luisroquette/notchagent.git && cd notchagent
+git clone https://github.com/luisroquette-labs/notchagent.git && cd notchagent
 ./Scripts/audit-public-release.sh
 git config core.hooksPath .githooks
 ./Scripts/make-app.sh && open dist/NotchAgent.app
@@ -294,6 +294,6 @@ Keychain.
 ---
 
 <p align="center">
-  <strong>NotchAgent is a flagship project from <a href="https://github.com/luisroquette/RocketLabs">RocketLabs</a>.</strong><br />
+  <strong>NotchAgent is a flagship project from <a href="https://github.com/luisroquette-labs/RocketLabs">RocketLabs</a>.</strong><br />
   <sub>Applied AI systems built in public.</sub>
 </p>

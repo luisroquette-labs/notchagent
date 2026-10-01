@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://luisroquette.github.io/notchagent/sitemap.xml
+Sitemap: https://luisroquette-labs.github.io/notchagent/sitemap.xml
