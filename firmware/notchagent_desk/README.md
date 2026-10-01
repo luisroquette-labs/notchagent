@@ -1,7 +1,7 @@
 # NotchAgent Desk firmware — 3.1.2 compatibility snapshot
 
 > Development moved to
-> [`luisroquette/notchagent-desk`](https://github.com/luisroquette/notchagent-desk/tree/main/firmware/notchagent_desk).
+> [`luisroquette-labs/notchagent-desk`](https://github.com/luisroquette-labs/notchagent-desk/tree/main/firmware/notchagent_desk).
 > This directory is frozen for reproducibility of NotchAgent app 3.1.2.
 
 USB-only companion firmware for the Guition JC4832W535 (ESP32-S3, 480x320,
