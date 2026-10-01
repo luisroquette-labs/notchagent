@@ -8,21 +8,36 @@ struct CodexProvider: UsageProvider {
         .sessionTokens, .sessionPercent, .weeklyTokens, .weeklyPercent, .costEstimate, .resetSchedule,
     ]
 
-    private let root: URL
+    private let configuredRoot: URL?
     private let appServerRateLimits: CodexAppServerRateLimitReader?
     private let defaultModel = "gpt-5"
     private let cache = FileScanCache<CodexTokenInfo?>()
     private static let lookback: TimeInterval = 8 * 24 * 3600
     static let sharedLimitID = "codex"
 
-    init(root: URL = AppPaths.home.appendingPathComponent(".codex/sessions")) {
-        self.root = root
-        let liveRoot = AppPaths.home.appendingPathComponent(".codex/sessions").standardizedFileURL
-        appServerRateLimits = root.standardizedFileURL == liveRoot ? .shared : nil
+    static let defaultRoot = AppPaths.home.appendingPathComponent(".codex/sessions")
+
+    private var root: URL? {
+        if let configuredRoot { return configuredRoot }
+        return DistributionChannel.isAppStore
+            ? SandboxBookmarkStore.shared.codexRoot
+            : Self.defaultRoot
+    }
+
+    init(root: URL? = nil) {
+        configuredRoot = root
+        #if APP_STORE
+        appServerRateLimits = nil
+        #else
+        let effectiveRoot = root ?? Self.defaultRoot
+        appServerRateLimits = effectiveRoot.standardizedFileURL == Self.defaultRoot.standardizedFileURL
+            ? .shared
+            : nil
+        #endif
     }
 
     init(root: URL, appServerRateLimits: CodexAppServerRateLimitReader) {
-        self.root = root
+        configuredRoot = root
         self.appServerRateLimits = appServerRateLimits
     }
 
@@ -39,7 +54,8 @@ struct CodexProvider: UsageProvider {
     }
 
     func detectInstallation() -> ProviderInstallation {
-        FileManager.default.fileExists(atPath: root.path)
+        guard let root else { return .notInstalled }
+        return FileManager.default.fileExists(atPath: root.path)
             ? .installed(dataPath: root.path)
             : .notInstalled
     }
@@ -47,6 +63,13 @@ struct CodexProvider: UsageProvider {
     func fetchSnapshot(settings: AppSettings) async throws -> UsageSnapshot {
         let now = Date()
         let officialLimits = await appServerRateLimits?.currentLimits(now: now)
+        guard let root else {
+            return UsageSnapshot(
+                provider: id,
+                health: .noData,
+                note: DistributionChannel.isAppStore ? "Folder access required" : nil
+            )
+        }
         let isInstalled: Bool
         if case .installed = detectInstallation() {
             isInstalled = true

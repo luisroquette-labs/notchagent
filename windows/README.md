@@ -22,7 +22,7 @@ as equivalent to the notarized macOS app or the Desk Beta 1 host path.
 
 A pre-built, self-contained, **unsigned** `win-x64` binary is published as a
 GitHub prerelease for early testers who don't want to build from source:
-[`NotchAgent.Windows.exe`](https://github.com/luisroquette/notchagent/releases/download/windows-test-build-20260824/NotchAgent.Windows.exe)
+[`NotchAgent.Windows.exe`](https://github.com/luisroquette-labs/notchagent/releases/download/windows-test-build-20260824/NotchAgent.Windows.exe)
 (tag `windows-test-build-20260824`, not part of the versioned `v*` release
 cycle). SmartScreen will warn on first run — this is expected until an
 Authenticode certificate is added; see Known limitations below, which also

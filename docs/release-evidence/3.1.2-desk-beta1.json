@@ -7,7 +7,7 @@
     "firmwareVersion": "0.6.16",
     "protocolVersion": "1.1",
     "channel": "beta",
-    "releaseUrl": "https://github.com/luisroquette/notchagent/releases/tag/v3.1.2",
+    "releaseUrl": "https://github.com/luisroquette-labs/notchagent/releases/tag/v3.1.2",
     "dmgSHA256": "afc66a576d48b2c1a4bfeb9099d864158e673b9209b1e2db0436b0c709a234f4",
     "zipSHA256": "742b374d570e2474f3ae71532cbfed004255f708151d6ad00e8ae9c44bb29162",
     "developerIdSignature": "pass",

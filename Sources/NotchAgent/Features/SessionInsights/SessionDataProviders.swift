@@ -5,15 +5,22 @@ import AgentMeterCore
 /// e rollouts Codex (~/.codex/sessions). Atribuição de subagente = arquivos
 /// "agent-*.jsonl" vs arquivos principais (estrutura real do diretório).
 final class ClaudeSessionDataProvider: SessionDataProvider, @unchecked Sendable {
-    private let roots: [URL]
+    private let configuredRoots: [URL]?
     private let lookbackHours: Double
     /// Memo incremental por arquivo. Transcripts vivos só leem os bytes novos;
     /// arquivos truncados/reescritos voltam ao parse completo.
     private let lock = NSLock()
     private var memo: [String: (stamp: FileStamp, offset: UInt64, records: [PayloadBuilder.MessageRecord])] = [:]
 
-    init(roots: [URL] = ClaudeProvider.defaultRoots, lookbackHours: Double = 6) {
-        self.roots = roots
+    private var roots: [URL] {
+        if let configuredRoots { return configuredRoots }
+        return DistributionChannel.isAppStore
+            ? SandboxBookmarkStore.shared.claudeRoots
+            : ClaudeProvider.defaultRoots
+    }
+
+    init(roots: [URL]? = nil, lookbackHours: Double = 6) {
+        configuredRoots = roots
         self.lookbackHours = lookbackHours
     }
 
@@ -65,10 +72,17 @@ final class ClaudeSessionDataProvider: SessionDataProvider, @unchecked Sendable 
 }
 
 struct CodexSessionDataProvider: SessionDataProvider {
-    private let root: URL
+    private let configuredRoot: URL?
 
-    init(root: URL = AppPaths.home.appendingPathComponent(".codex/sessions")) {
-        self.root = root
+    private var root: URL? {
+        if let configuredRoot { return configuredRoot }
+        return DistributionChannel.isAppStore
+            ? SandboxBookmarkStore.shared.codexRoot
+            : CodexProvider.defaultRoot
+    }
+
+    init(root: URL? = nil) {
+        configuredRoot = root
     }
 
     /// Registro do rollout mais novo (nome "rollout-<stamp>" = ordem
@@ -87,6 +101,7 @@ struct CodexSessionDataProvider: SessionDataProvider {
     }
 
     func messages(provider: ProviderID) async -> [PayloadBuilder.MessageRecord] {
+        guard let root else { return [] }
         let cutoff = Date().addingTimeInterval(-6 * 3600)
         let files = recentFiles(under: root, ext: "jsonl", modifiedAfter: cutoff, limit: 100)
         guard let newest = files.max(by: { $0.lastPathComponent < $1.lastPathComponent }) else { return [] }

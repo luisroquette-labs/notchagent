@@ -6,10 +6,10 @@ notarization="${1:-docs/evidence/notchagent-desk-beta1-notarization.json}"
 output="${2:-docs/evidence/notchagent-desk-beta1-onboarding.json}"
 release_contract="docs/NOTCHAGENT_DESK_RELEASE.json"
 qr_file="docs/img/notchagent-desk-onboarding-qr.svg"
-url="https://github.com/luisroquette/notchagent/blob/master/docs/NOTCHAGENT_DESK_ONBOARDING.md"
+url="https://github.com/luisroquette-labs/notchagent/blob/master/docs/NOTCHAGENT_DESK_ONBOARDING.md"
 version=$(jq -er '.appVersion' "$release_contract")
 build_number=$(jq -er '.buildNumber' "$release_contract")
-asset_url="https://github.com/luisroquette/notchagent/releases/download/v${version}/NotchAgent-Desk-Beta1-${version}.zip"
+asset_url="https://github.com/luisroquette-labs/notchagent/releases/download/v${version}/NotchAgent-Desk-Beta1-${version}.zip"
 
 [[ -f "$notarization" && ! -e "$output" ]] || {
     echo "NOT READY: notarization evidence must exist and onboarding evidence must not already exist." >&2
@@ -38,12 +38,12 @@ cleanup() {
 }
 trap cleanup EXIT
 
-published_commit=$(git ls-remote https://github.com/luisroquette/notchagent.git refs/heads/master | awk 'NR == 1 {print $1}')
+published_commit=$(git ls-remote https://github.com/luisroquette-labs/notchagent.git refs/heads/master | awk 'NR == 1 {print $1}')
 print -r -- "$published_commit" | grep -Eq '^[0-9a-f]{40}$' || {
     echo "FAIL: public master commit could not be resolved." >&2
     exit 1
 }
-guide_url="https://raw.githubusercontent.com/luisroquette/notchagent/${published_commit}/docs/NOTCHAGENT_DESK_ONBOARDING.md"
+guide_url="https://raw.githubusercontent.com/luisroquette-labs/notchagent/${published_commit}/docs/NOTCHAGENT_DESK_ONBOARDING.md"
 curl --fail --silent --show-error --location --max-time 30 --max-filesize 1048576 \
   "$guide_url" --output "$work/onboarding.md"
 curl --fail --silent --show-error --location --max-time 300 --max-filesize 104857600 \

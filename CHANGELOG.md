@@ -230,7 +230,7 @@ became a minimal 8-bit strip.
   headers are missing, so rejected probes explain themselves.
 - Separated the NotchAgent desktop software from the physical NotchAgent Desk
   product. Hardware, firmware, protocol, compatibility, and factory work now
-  lives in `luisroquette/notchagent-desk`.
+  lives in `luisroquette-labs/notchagent-desk`.
 
 ### Deprecated
 

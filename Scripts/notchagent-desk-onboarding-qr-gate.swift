@@ -14,7 +14,7 @@ let expected = try String(contentsOf: contractURL, encoding: .utf8)
 guard let expectedURL = URL(string: expected),
       expectedURL.scheme == "https",
       expectedURL.host == "github.com",
-      expectedURL.path == "/luisroquette/notchagent/blob/master/docs/NOTCHAGENT_DESK_ONBOARDING.md" else {
+      expectedURL.path == "/luisroquette-labs/notchagent/blob/master/docs/NOTCHAGENT_DESK_ONBOARDING.md" else {
     FileHandle.standardError.write(Data("INVALID: onboarding URL contract is not the canonical public guide.\n".utf8))
     exit(1)
 }

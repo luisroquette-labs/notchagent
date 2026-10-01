@@ -19,7 +19,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Fetch immutable public-history baseline
-        run: git fetch --no-tags https://github.com/luisroquette/notchagent.git master:refs/remotes/public-audit/master
+        run: git fetch --no-tags https://github.com/luisroquette-labs/notchagent.git master:refs/remotes/public-audit/master
       - name: Audit public source and history
         env:
           NOTCHAGENT_PUBLIC_HISTORY_BASE: refs/remotes/public-audit/master

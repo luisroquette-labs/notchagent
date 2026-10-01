@@ -49,6 +49,9 @@ struct CodexOnboardingInspector {
     }
 
     static func executableURL(fileManager: FileManager = .default) -> URL? {
+        #if APP_STORE
+        nil
+        #else
         let home = AppPaths.home
         let candidates = [
             home.appendingPathComponent(".npm-global/bin/codex"),
@@ -57,9 +60,14 @@ struct CodexOnboardingInspector {
             URL(fileURLWithPath: "/usr/local/bin/codex"),
         ]
         return candidates.first { fileManager.isExecutableFile(atPath: $0.path) }
+        #endif
     }
 
     static func inspect() async -> CodexOnboardingStatus {
+        #if APP_STORE
+        guard let sessions = SandboxBookmarkStore.shared.codexRoot else { return .notInstalled }
+        return hasSession(at: sessions) ? .ready : .noSession
+        #else
         guard let executable = executableURL() else { return .notInstalled }
         let authenticated = await Task.detached {
             let process = Process()
@@ -81,6 +89,7 @@ struct CodexOnboardingInspector {
             authenticated: authenticated,
             hasSession: hasSession
         )
+        #endif
     }
 
     static func hasSession(
@@ -111,21 +120,29 @@ struct CodexOnboardingInspector {
     }
 
     static func beginLogin() async throws {
+        #if APP_STORE
+        throw CodexOnboardingLaunchError.codexNotInstalled
+        #else
         guard let executable = executableURL() else {
             throw CodexOnboardingLaunchError.codexNotInstalled
         }
         guard try await run(loginInvocation(executable: executable)) == 0 else {
             throw CodexOnboardingLaunchError.commandFailed
         }
+        #endif
     }
 
     static func beginFirstSession() async throws {
+        #if APP_STORE
+        throw CodexOnboardingLaunchError.codexNotInstalled
+        #else
         guard let executable = executableURL() else {
             throw CodexOnboardingLaunchError.codexNotInstalled
         }
         guard try await run(firstSessionInvocation(executable: executable)) == 0 else {
             throw CodexOnboardingLaunchError.commandFailed
         }
+        #endif
     }
 
     static func waitForStateChange(
@@ -143,6 +160,9 @@ struct CodexOnboardingInspector {
     }
 
     private static func run(_ invocation: CodexProcessInvocation) async throws -> Int32 {
+        #if APP_STORE
+        throw CodexOnboardingLaunchError.commandFailed
+        #else
         try await Task.detached {
             let process = Process()
             process.executableURL = invocation.executableURL
@@ -153,5 +173,6 @@ struct CodexOnboardingInspector {
             process.waitUntilExit()
             return process.terminationStatus
         }.value
+        #endif
     }
 }

@@ -101,19 +101,24 @@ public struct RestoreMoment: Sendable, Equatable {
     public var remaining: Double
     public var isWeekly: Bool
     public var firedAt: Date
+    /// The model active when the window reset, if the provider reports one
+    /// (e.g. "claude-opus-4"). Nil when unknown.
+    public var activeModel: String?
 
     public init(
         provider: ProviderID,
         previousRemaining: Double,
         remaining: Double,
         isWeekly: Bool,
-        firedAt: Date = Date()
+        firedAt: Date = Date(),
+        activeModel: String? = nil
     ) {
         self.provider = provider
         self.previousRemaining = previousRemaining
         self.remaining = remaining
         self.isWeekly = isWeekly
         self.firedAt = firedAt
+        self.activeModel = activeModel
     }
 
     public var message: String {

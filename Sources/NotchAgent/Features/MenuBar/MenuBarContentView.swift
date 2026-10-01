@@ -139,11 +139,13 @@ struct MenuBarContentView: View {
             }
             Button("Abrir todos os ajustes", systemImage: "gearshape") { router.openSettings() }
                 .controlSize(.small)
-            Button("Buscar atualização…", systemImage: "arrow.down.circle") {
-                AppEnvironment.shared.appUpdates.checkForUpdates()
+            if !AppEnvironment.shared.appUpdates.isManagedByStore {
+                Button("Buscar atualização…", systemImage: "arrow.down.circle") {
+                    AppEnvironment.shared.appUpdates.checkForUpdates()
+                }
+                .controlSize(.small)
+                .disabled(!AppEnvironment.shared.appUpdates.isConfigured)
             }
-            .controlSize(.small)
-            .disabled(!AppEnvironment.shared.appUpdates.isConfigured)
         }
     }
 
