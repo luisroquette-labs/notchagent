@@ -16,5 +16,13 @@ struct NotchAgentApp: App {
                 .environment(AppEnvironment.shared.store)
         }
         .menuBarExtraStyle(.window)
+        .commands {
+            CommandGroup(replacing: .appSettings) {
+                Button("Settings…") {
+                    AppEnvironment.shared.router.openSettings()
+                }
+                .keyboardShortcut(",", modifiers: .command)
+            }
+        }
     }
 }

@@ -5,6 +5,7 @@ cd "$(dirname "$0")/.."
 version=$(tr -d '[:space:]' < VERSION)
 build_number=$(tr -d '[:space:]' < BUILD_NUMBER)
 entitlements=Resources/NotchAgentAppStore.entitlements
+metadata=docs/app-store/metadata.md
 
 [[ "$version" =~ '^[0-9]+\.[0-9]+\.[0-9]+$' ]] || exit 1
 [[ "$build_number" =~ '^[1-9][0-9]*$' ]] || exit 1
@@ -35,6 +36,23 @@ done
 }
 ! grep -q 'temporary-exception' "$entitlements" || {
     echo "FAIL: temporary sandbox exceptions are forbidden." >&2
+    exit 1
+}
+
+grep -q 'CommandGroup(replacing: .appSettings)' Sources/NotchAgent/App/NotchAgentApp.swift || {
+    echo "FAIL: native Settings command is not routed." >&2
+    exit 1
+}
+grep -q 'AppEnvironment.shared.router.openSettings()' Sources/NotchAgent/App/NotchAgentApp.swift || {
+    echo "FAIL: native Settings command does not open the real Settings window." >&2
+    exit 1
+}
+! sed -n '/## Portuguese (Brazil)/,/## Review notes/p' "$metadata" | grep -Eiq '(^|[^[:alnum:]_])Mac([^[:alnum:]_]|$)|OpenAI' || {
+    echo "FAIL: Portuguese customer-facing metadata contains a restricted product/provider term." >&2
+    exit 1
+}
+! sed -n '/## English (U.S.)/,/## Review notes/p' "$metadata" | grep -Eiq '(^|[^[:alnum:]_])Mac([^[:alnum:]_]|$)|OpenAI' || {
+    echo "FAIL: English customer-facing metadata contains a restricted product/provider term." >&2
     exit 1
 }
 

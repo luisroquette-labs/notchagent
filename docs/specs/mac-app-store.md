@@ -115,6 +115,29 @@ App Store Connect build, TestFlight result, and review status.
 - Given a relevant source change, when the preflight runs, then unit tests and both distribution-contract checks pass.
 - Given an uploaded build, when evidence is recorded, then its version/build and commit match the local artifact.
 
+### MAS-008 — Native Settings command
+
+The standard application Settings command and Command-comma shortcut must open
+the same AppKit-managed Settings window used by the menu-bar and notch actions.
+Repeated activation must reuse and foreground one window.
+
+**Acceptance**
+
+- Given the app is running, when Settings is selected from the application menu, then a visible Settings window becomes key.
+- Given Settings is already open, when Command-comma is pressed repeatedly, then exactly one Settings window remains visible.
+- Given a clean Store Release build, when the native Settings smoke test runs three times, then all three activations succeed.
+
+### MAS-009 — Storefront-safe metadata
+
+Customer-facing metadata must not use Apple product names as promotional terms.
+The mainland China storefront must remain disabled while metadata or features
+refer to providers that do not meet its generative-AI licensing requirements.
+
+**Acceptance**
+
+- Given the canonical metadata, when the release gate scans subtitles and descriptions, then no customer-facing copy contains the word `Mac` or `OpenAI`.
+- Given App Store Connect availability, when the candidate is submitted, then China mainland is not selected.
+
 ## Design
 
 1. Keep one source tree and use the `APP_STORE` compilation condition only at distribution boundaries.
