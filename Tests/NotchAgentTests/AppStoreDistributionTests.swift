@@ -2,6 +2,47 @@ import XCTest
 @testable import NotchAgent
 
 final class AppStoreDistributionTests: XCTestCase {
+    func testNativeSettingsCommandRoutesToWindowRouter() throws {
+        let root = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let app = try String(
+            contentsOf: root.appendingPathComponent("Sources/NotchAgent/App/NotchAgentApp.swift"),
+            encoding: .utf8
+        )
+
+        XCTAssertTrue(app.contains("CommandGroup(replacing: .appSettings)"))
+        XCTAssertTrue(app.contains("AppEnvironment.shared.router.openSettings()"))
+        XCTAssertTrue(app.contains(".keyboardShortcut(\",\", modifiers: .command)"))
+    }
+
+    @MainActor
+    func testSettingsRouterOpensAndReusesOneWindow() {
+        let application = NSApplication.shared
+        let title = "NotchAgent — Settings"
+        application.windows.filter { $0.title == title }.forEach { $0.close() }
+
+        AppEnvironment.shared.router.openSettings()
+        AppEnvironment.shared.router.openSettings()
+
+        let windows = application.windows.filter { $0.title == title }
+        XCTAssertEqual(windows.count, 1)
+        XCTAssertTrue(windows[0].isVisible)
+        windows[0].close()
+    }
+
+    func testStoreEntitlementsExcludeUnusedNetworkServerPermission() throws {
+        let root = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let data = try Data(contentsOf: root.appendingPathComponent("Resources/NotchAgentAppStore.entitlements"))
+        let entitlements = try XCTUnwrap(
+            PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any]
+        )
+        XCTAssertNil(entitlements["com.apple.security.network.server"])
+        XCTAssertEqual(entitlements["com.apple.security.network.client"] as? Bool, true)
+        let project = try String(contentsOf: root.appendingPathComponent("project.yml"), encoding: .utf8)
+        XCTAssertFalse(project.contains("com.apple.security.network.server"))
+    }
+
     func testDistributionFlagMatchesCompilationCondition() {
         #if APP_STORE
         XCTAssertTrue(DistributionChannel.isAppStore)

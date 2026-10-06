@@ -20,7 +20,7 @@ reduced capability must be visible rather than silently returning stale data.
 | Codex official quota through `codex app-server` | Available | Unavailable; local transcript quota fallback remains |
 | API account portals and outbound APIs | Available | Available through sandbox network-client access |
 | Sparkle updates | Available | Removed; updates come from the App Store |
-| Desk network and USB mirroring | Available | Available with local-network, client/server, USB, and serial entitlements |
+| Desk USB mirroring | Available | Available with USB and serial entitlements |
 | Desk firmware recovery helper | Available | Disabled until the embedded helper passes sandbox and App Review validation |
 | Launch at login | Available with explicit user action | Available with explicit user action |
 | Desk crash watchdog | Available | Disabled; no launch agent is bundled in the Store target |
@@ -41,10 +41,10 @@ and has a distinct build number and bundle identifier registered for macOS.
 
 ### MAS-002 — Minimum sandbox permissions
 
-The Store target must request only the permissions it uses: outbound and
-inbound networking, user-selected read-only files, app-scoped bookmarks, USB,
-and serial devices. It must declare local-network and Bonjour usage in its
-Info.plist. Temporary exception entitlements are forbidden.
+The Store target must request only the permissions it uses: outbound networking,
+user-selected read-only files, app-scoped bookmarks, USB, and serial devices.
+Inbound network-server access is forbidden until the app implements a listener.
+Temporary exception entitlements are forbidden.
 
 **Acceptance**
 
@@ -114,6 +114,29 @@ App Store Connect build, TestFlight result, and review status.
 
 - Given a relevant source change, when the preflight runs, then unit tests and both distribution-contract checks pass.
 - Given an uploaded build, when evidence is recorded, then its version/build and commit match the local artifact.
+
+### MAS-008 — Native Settings command
+
+The standard application Settings command and Command-comma shortcut must open
+the same AppKit-managed Settings window used by the menu-bar and notch actions.
+Repeated activation must reuse and foreground one window.
+
+**Acceptance**
+
+- Given the app is running, when Settings is selected from the application menu, then a visible Settings window becomes key.
+- Given Settings is already open, when Command-comma is pressed repeatedly, then exactly one Settings window remains visible.
+- Given a clean Store Release build, when the native Settings smoke test runs three times, then all three activations succeed.
+
+### MAS-009 — Storefront-safe metadata
+
+Customer-facing metadata must not use Apple product names as promotional terms.
+The mainland China storefront must remain disabled while metadata or features
+refer to providers that do not meet its generative-AI licensing requirements.
+
+**Acceptance**
+
+- Given the canonical metadata, when the release gate scans subtitles and descriptions, then no customer-facing copy contains the word `Mac` or `OpenAI`.
+- Given App Store Connect availability, when the candidate is submitted, then China mainland is not selected.
 
 ## Design
 

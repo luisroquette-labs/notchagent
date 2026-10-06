@@ -1,7 +1,7 @@
 # Mac App Store metadata
 
 Version: 3.5.5
-Build: 17
+Build: 22
 Bundle ID: `br.com.lfrprojects.notchagent.appstore`
 Primary category: Developer Tools
 Secondary category: Productivity
@@ -16,7 +16,7 @@ Price: Free
 ## Portuguese (Brazil)
 
 Name: `NotchAgent`
-Subtitle: `Uso de IA no seu Mac`
+Subtitle: `Cotas, ritmo e custos de IA`
 Keywords: `tokens,cota,custo,limite,produtividade,notch,menu bar,monitor,IA,agentes`
 
 Promotional text:
@@ -28,7 +28,7 @@ Description:
 
 > Saiba quanto de IA você está usando antes de atingir o limite. O NotchAgent
 > reúne o uso do Claude e do Codex em um painel nativo no notch e na barra de
-> menus do Mac.
+> menus.
 >
 > • Acompanhe tokens, sessões, cotas, ritmo e estimativas de custo
 > • Compare o uso por modelo e identifique picos ao longo do dia
@@ -36,7 +36,7 @@ Description:
 > • Consulte o essencial no notch ou abra o dashboard detalhado
 > • Monitore contas e conecte o NotchAgent Desk, se quiser
 >
-> Os dados de uso são processados localmente no Mac. O acesso às pastas do
+> Os dados de uso são processados localmente no dispositivo. O acesso às pastas do
 > Claude Code, Claude Desktop e Codex é somente leitura e depende da sua
 > autorização. Recursos online opcionais e seus destinos estão descritos na
 > política de privacidade. Sem anúncios, rastreamento ou conta NotchAgent.
@@ -44,12 +44,12 @@ Description:
 > A edição da App Store não executa CLIs externos. As atualizações chegam pela
 > própria App Store.
 >
-> NotchAgent é independente e não é afiliado à Anthropic nem à OpenAI.
+> NotchAgent é independente e não é afiliado aos provedores monitorados.
 
 ## English (U.S.)
 
 Name: `NotchAgent`
-Subtitle: `AI usage on your Mac`
+Subtitle: `AI quotas, pace, and costs`
 Keywords: `tokens,quota,cost,limits,productivity,notch,menu bar,monitor,AI,agents`
 
 Promotional text:
@@ -60,8 +60,8 @@ Promotional text:
 Description:
 
 > Know how much AI you are using before you hit a limit. NotchAgent brings
-> Claude and Codex usage together in a native dashboard for your Mac's notch
-> and menu bar.
+> Claude and Codex usage together in a native dashboard for the notch and menu
+> bar.
 >
 > • Track tokens, sessions, quotas, pace, and cost estimates
 > • Compare usage by model and spot peaks throughout your day
@@ -69,7 +69,7 @@ Description:
 > • Check the essentials in the notch or open the detailed dashboard
 > • Optionally monitor accounts and connect NotchAgent Desk
 >
-> Usage data is processed locally on your Mac. Read-only access to Claude Code,
+> Usage data is processed locally on the device. Read-only access to Claude Code,
 > Claude Desktop, and Codex folders requires your authorization. Optional
 > online features and their destinations are described in the privacy policy.
 > No ads, tracking, or NotchAgent account.
@@ -77,7 +77,7 @@ Description:
 > The App Store edition does not run external CLIs. Updates arrive through the
 > App Store.
 >
-> NotchAgent is independent and is not affiliated with Anthropic or OpenAI.
+> NotchAgent is independent and is not affiliated with the monitored providers.
 
 ## Review notes
 
@@ -98,7 +98,7 @@ support links are available in Settings.
 NotchAgent Desk hardware is not required for review. If no device is present,
 the Desk section remains in a disconnected state.
 
-NotchAgent is independent and is not affiliated with Anthropic or OpenAI.
+NotchAgent is independent and is not affiliated with the monitored providers.
 
 ## App privacy answers
 
