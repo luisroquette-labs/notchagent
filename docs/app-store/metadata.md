@@ -1,7 +1,7 @@
 # Mac App Store metadata
 
-Version: 3.5.5
-Build: 22
+Version: 3.6.0
+Build: 23
 Bundle ID: `br.com.lfrprojects.notchagent.appstore`
 Primary category: Developer Tools
 Secondary category: Productivity
@@ -107,6 +107,26 @@ NotchAgent Desk hardware is not required for review. If no device is present,
 the Desk section remains in a disconnected state.
 
 NotchAgent is independent and is not affiliated with the monitored providers.
+
+## What's new in 3.6.0
+
+Portuguese (Brazil):
+
+> A configuração inicial agora mostra quais pastas do Claude e do Codex
+> autorizar. Cada conexão confirma se encontrou sessões e explica como corrigir
+> pastas vazias ou incorretas. O guia também pode ser reaberto em Ajustes.
+
+English (U.S.):
+
+> Guided setup now shows which Claude and Codex folders to authorize. Each
+> connection confirms whether sessions were found and explains how to fix an
+> empty or incorrect folder. You can reopen the guide from Settings.
+
+Spanish:
+
+> La configuración guiada muestra qué carpetas de Claude y Codex autorizar.
+> Cada conexión confirma si encontró sesiones y explica cómo corregir una
+> carpeta vacía o incorrecta. Puedes volver a abrir la guía desde Ajustes.
 
 ## App privacy answers
 

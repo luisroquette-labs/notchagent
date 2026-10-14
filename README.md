@@ -11,11 +11,11 @@
 <p align="center">
   <a href="https://notchagent.app"><img src="https://img.shields.io/badge/website-live-FF654F?style=flat-square" alt="NotchAgent website" /></a>
   <a href="https://github.com/luisroquette-labs/RocketLabs"><img src="https://img.shields.io/badge/RocketLabs-flagship%20project-7C5CFC?style=flat-square" alt="RocketLabs flagship project" /></a>
-  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/version-v3.5.5-38D6C7?style=flat-square" alt="Version v3.5.5" /></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/source-v3.6.0-38D6C7?style=flat-square" alt="Source version v3.6.0" /></a>
   <a href="#install"><img src="https://img.shields.io/badge/install-notarized%20DMG-F3B85A?style=flat-square" alt="Install the notarized DMG" /></a>
 </p>
 
-**Current version: 3.5.5** · Desk protocol 1.3 · pairs with Desk firmware 0.8.0 · source updated 2026-08-31 · [version history](CHANGELOG.md)
+**Current version: 3.6.0** (App Store update candidate; Direct download remains 3.5.5) · Desk protocol 1.3 · pairs with Desk firmware 0.8.0 · source updated 2026-10-14 · [version history](CHANGELOG.md)
 
 A native macOS menu-bar + notch overlay for Claude Code/Codex quotas and
 financial monitoring of external API accounts. It shows provider-reported
