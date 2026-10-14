@@ -22,9 +22,10 @@
   both were read back through the API. EN-US and Spanish copy remains drafted
   in `metadata.md` for later localization.
 - The draft inherited the four current `APP_DESKTOP` screenshots; all four
-  assets are `COMPLETE`. A signed-build first-launch/Settings smoke test and
-  App Store Connect privacy and storefront read-back remain required before
-  submission.
+  assets are `COMPLETE`. App availability read-back shows Brazil and the USA
+  enabled, China mainland disabled, and 175 territories configured.
+- A signed-build first-launch/Settings smoke test and App Store Connect privacy
+  read-back remain required before submission.
 
 The App Store submission is a separate publication step requiring the owner's
 final authorization.
