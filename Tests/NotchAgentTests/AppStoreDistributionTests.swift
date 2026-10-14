@@ -2,6 +2,24 @@ import XCTest
 @testable import NotchAgent
 
 final class AppStoreDistributionTests: XCTestCase {
+    func testDistributionVersionsMatchTheirOwnTargets() throws {
+        let root = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let directVersion = try String(contentsOf: root.appendingPathComponent("VERSION"), encoding: .utf8)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let storeVersion = try String(contentsOf: root.appendingPathComponent("APP_STORE_VERSION"), encoding: .utf8)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let project = try String(contentsOf: root.appendingPathComponent("project.yml"), encoding: .utf8)
+        let direct = try XCTUnwrap(project.range(of: "\n  NotchAgent:\n"))
+        let store = try XCTUnwrap(project.range(of: "\n  NotchAgentAppStore:\n"))
+        let tests = try XCTUnwrap(project.range(of: "\n  NotchAgentTests:\n"))
+
+        XCTAssertTrue(project[direct.upperBound..<store.lowerBound]
+            .contains("CFBundleShortVersionString: \"\(directVersion)\""))
+        XCTAssertTrue(project[store.upperBound..<tests.lowerBound]
+            .contains("CFBundleShortVersionString: \"\(storeVersion)\""))
+    }
+
     func testNativeSettingsCommandRoutesToWindowRouter() throws {
         let root = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()

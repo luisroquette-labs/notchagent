@@ -2,15 +2,16 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-version=$(tr -d '[:space:]' < VERSION)
+version=$(tr -d '[:space:]' < APP_STORE_VERSION)
 build_number=$(tr -d '[:space:]' < BUILD_NUMBER)
 entitlements=Resources/NotchAgentAppStore.entitlements
 metadata=docs/app-store/metadata.md
 
 [[ "$version" =~ '^[0-9]+\.[0-9]+\.[0-9]+$' ]] || exit 1
 [[ "$build_number" =~ '^[1-9][0-9]*$' ]] || exit 1
-[[ $(grep -c "CFBundleShortVersionString: \"$version\"" project.yml) -ge 2 ]] || {
-    echo "FAIL: project.yml Store and Direct versions must match VERSION." >&2
+sed -n '/^  NotchAgentAppStore:/,/^  NotchAgentTests:/p' project.yml |
+    grep -Fq "CFBundleShortVersionString: \"$version\"" || {
+    echo "FAIL: project.yml Store version must match APP_STORE_VERSION." >&2
     exit 1
 }
 [[ $(grep -c "CFBundleVersion: \"$build_number\"" project.yml) -ge 2 ]] || {

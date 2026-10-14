@@ -1,6 +1,6 @@
 # Changelog
 
-## 3.6.0 — 2026-10-14
+## 3.6.0 (App Store candidate) — 2026-10-14
 
 The App Store edition now guides first-time users through local folder access.
 
