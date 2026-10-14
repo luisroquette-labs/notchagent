@@ -35,18 +35,21 @@ Description:
 > • Acompanhe tokens, sessões, ritmo e estimativas de custo
 > • Compare o uso por modelo e identifique picos ao longo do dia
 > • Veja cotas do Codex quando a ferramenta fornece esses dados
+> • Ative no guia o percentual da cota oficial do Claude Code
 > • Consulte o essencial no notch ou abra o dashboard detalhado
 > • Monitore contas e conecte o NotchAgent Desk, se quiser
 >
-> Os dados de uso são processados localmente no dispositivo. O acesso às pastas do
+> Os dados de uso são processados localmente no dispositivo. O acesso salvo às pastas do
 > Claude Code, Claude Desktop e Codex é somente leitura e depende da sua
-> autorização. Na primeira abertura, um guia mostra a pasta certa para cada
+> autorização. Ao conectar Claude Code, o guia ativa a exportação da cota oficial
+> em `.claude/settings.json`, preservando as demais opções. Na primeira abertura,
+> o guia mostra a pasta certa para cada
 > ferramenta e confirma quando encontra sessões. É preciso já ter usado uma
 > dessas ferramentas neste computador para ver dados locais; contas de API são
 > opcionais e configuradas à parte. Recursos online opcionais e seus destinos estão descritos na
 > política de privacidade. Sem anúncios, rastreamento ou conta NotchAgent.
-> A cota oficial do Claude Code não pode ser calculada a partir dos arquivos
-> locais; esta edição mostra seus tokens sem inventar um percentual de cota.
+> A cota oficial do Claude Code aparece depois da próxima resposta do Claude Code,
+> quando a conta fornece essa informação. O app não estima percentuais a partir de tokens.
 >
 > A edição da App Store não executa CLIs externos. As atualizações chegam pela
 > própria App Store.
@@ -73,18 +76,20 @@ Description:
 > • Track tokens, sessions, pace, and cost estimates
 > • Compare usage by model and spot peaks throughout your day
 > • See Codex quotas when the tool provides that data
+> • Enable Claude Code's official quota percentage in guided setup
 > • Check the essentials in the notch or open the detailed dashboard
 > • Optionally monitor accounts and connect NotchAgent Desk
 >
-> Usage data is processed locally on the device. Read-only access to Claude Code,
-> Claude Desktop, and Codex folders requires your authorization. Guided
+> Usage data is processed locally on the device. Saved read-only access to Claude Code,
+> Claude Desktop, and Codex folders requires your authorization. Connecting Claude Code
+> enables official quota export in `.claude/settings.json` while preserving your other options. Guided
 > first-launch setup takes you to each folder and confirms when it finds
 > sessions. You need to have used one of these tools on this computer to see
 > local data; API accounts are optional and configured separately. Optional online
 > features and their destinations are described in the privacy policy.
 > No ads, tracking, or NotchAgent account.
-> The official Claude Code quota cannot be calculated from local files; this
-> edition shows local tokens without inventing a quota percentage.
+> Claude Code's official quota appears after its next response when the account
+> provides this data. The app does not infer quota percentages from tokens.
 >
 > The App Store edition does not run external CLIs. Updates arrive through the
 > App Store.
@@ -102,6 +107,12 @@ is authorized; click Connect for Codex or Claude Code and choose the suggested
 checks for readable session records. An empty or missing sessions folder shows
 a specific message and Choose another folder; it does not block the app. The
 same guide can be reopened from Settings or a provider card.
+Connecting Claude Code adds a static `statusLine` command to the user-selected
+`.claude/settings.json`. If a custom status line exists, the app asks before
+replacing that one setting and preserves all other settings. Claude Code then
+writes its official `rate_limits` subset to `.claude/.notchagent-quota.json` after
+a response. The app itself does not run a CLI, read credentials, or make quota API
+calls. If the person keeps their custom status line, the app leaves it intact.
 To quit this menu-bar app, use the highlighted Encerrar/Quit button in the
 notch panel or the Encerrar NotchAgent/Quit NotchAgent button in the menu-bar item.
 
@@ -111,8 +122,9 @@ delivery, and Sparkle updates are absent from this edition. Weather starts
 disabled and makes network requests only after the user enables it. Privacy and
 support links are available in Settings.
 Claude Code's official subscription quota is unavailable from local transcripts;
-the app shows local tokens without a fabricated percentage. Codex quota data
-is shown only when present in its session records.
+the app reads the official status-line export when configured. It never fabricates
+a quota percentage from tokens. Codex quota data is shown only when present in
+its session records.
 
 NotchAgent Desk hardware is not required for review. If no device is present,
 the Desk section remains in a disconnected state.
@@ -127,7 +139,7 @@ Portuguese (Brazil):
 > autorizar. Cada conexão confirma se encontrou sessões e explica como corrigir
 > pastas vazias ou incorretas. O guia também pode ser reaberto em Ajustes.
 > O botão Encerrar agora aparece claramente no painel e na barra de menus.
-> O uso local do Claude Code não aparece mais como percentual de cota oficial.
+> Ative a cota oficial do Claude Code pelo próprio guia, sem Terminal ou chave de API.
 
 English (U.S.):
 
@@ -135,7 +147,7 @@ English (U.S.):
 > connection confirms whether sessions were found and explains how to fix an
 > empty or incorrect folder. You can reopen the guide from Settings.
 > Quit is now clearly available in the panel and menu bar.
-> Claude Code local usage is no longer presented as an official quota percentage.
+> Enable Claude Code's official quota in the guide, without Terminal or an API key.
 
 Spanish:
 
@@ -143,7 +155,7 @@ Spanish:
 > Cada conexión confirma si encontró sesiones y explica cómo corregir una
 > carpeta vacía o incorrecta. Puedes volver a abrir la guía desde Ajustes.
 > El botón para cerrar la app ahora está visible en el panel y la barra de menús.
-> El uso local de Claude Code ya no aparece como porcentaje de cuota oficial.
+> Activa la cuota oficial de Claude Code desde la guía, sin Terminal ni clave de API.
 
 ## App privacy answers
 

@@ -42,7 +42,8 @@ and has a distinct build number and bundle identifier registered for macOS.
 ### MAS-002 — Minimum sandbox permissions
 
 The Store target must request only the permissions it uses: outbound networking,
-user-selected read-only files, app-scoped bookmarks, USB, and serial devices.
+user-selected read/write files for the one-time Claude Code settings edit,
+read-only app-scoped bookmarks for ongoing scans, USB, and serial devices.
 Inbound network-server access is forbidden until the app implements a listener.
 Temporary exception entitlements are forbidden.
 

@@ -22,7 +22,7 @@ sed -n '/^  NotchAgentAppStore:/,/^  NotchAgentTests:/p' project.yml |
 for key in \
     com.apple.security.app-sandbox \
     com.apple.security.network.client \
-    com.apple.security.files.user-selected.read-only \
+    com.apple.security.files.user-selected.read-write \
     com.apple.security.files.bookmarks.app-scope \
     com.apple.security.device.usb \
     com.apple.security.device.serial; do

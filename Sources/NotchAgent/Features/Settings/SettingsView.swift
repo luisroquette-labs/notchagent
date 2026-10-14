@@ -376,10 +376,13 @@ struct SettingsView: View {
             Section {
                 #if APP_STORE
                 Text(pt
-                    ? "A pasta .claude contém atividade local, não a cota oficial. O percentual aparece quando o Claude Code exporta rate_limits pela barra de status para .claude/.notchagent-quota.json. Confira a cota em claude.ai/settings/usage até conectar essa fonte."
-                    : "The .claude folder contains local activity, not the official quota. Percentages appear when Claude Code exports rate_limits through its status line to .claude/.notchagent-quota.json. Check claude.ai/settings/usage until that source is connected.")
+                    ? "Conecte Claude Code em Pastas autorizadas para ativar a cota oficial. O percentual aparece após a próxima resposta do Claude Code; nenhuma chave de API é necessária."
+                    : "Connect Claude Code under Authorized folders to enable official quota. The percentage appears after Claude Code's next response; no API key is needed.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                Button(pt ? "Conectar cota do Claude…" : "Connect Claude quota…") {
+                    AppEnvironment.shared.router.openStoreOnboarding(focus: .claudeCode)
+                }
                 #else
                 Toggle("Read real quota from the Anthropic API", isOn: $preferences.settings.claudeQuotaProbeEnabled)
                 budgetField(

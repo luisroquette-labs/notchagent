@@ -2,6 +2,15 @@
 
 ## Guided setup update candidate — 3.6.0 (23)
 
+- New source change pending final archive: guided Claude Code connection now
+  adds a static status-line command to the user-selected `.claude/settings.json`
+  automatically when no custom status line exists. It asks before replacing a
+  custom status line, preserves all other settings, and saves
+  only a read-only folder bookmark for subsequent quota reads. This changes
+  the Store target to a user-selected read/write sandbox entitlement for that
+  one-time file edit. App Review acceptance under guideline 2.5.2 remains
+  unproven; do not describe this source change as a published Store build.
+
 - On 2026-10-14, the local preview was rebuilt and visually checked after
   replacing the empty spending header `PAGO R$ 0` with `CUSTOS NÃO CONFIG.`
   (and `CUSTOS —` in the compact view). The value is a ledger of confirmed

@@ -57,6 +57,8 @@ final class AppStoreDistributionTests: XCTestCase {
         )
         XCTAssertNil(entitlements["com.apple.security.network.server"])
         XCTAssertEqual(entitlements["com.apple.security.network.client"] as? Bool, true)
+        XCTAssertEqual(entitlements["com.apple.security.files.user-selected.read-write"] as? Bool, true)
+        XCTAssertNil(entitlements["com.apple.security.files.user-selected.read-only"])
         let project = try String(contentsOf: root.appendingPathComponent("project.yml"), encoding: .utf8)
         XCTAssertFalse(project.contains("com.apple.security.network.server"))
     }
