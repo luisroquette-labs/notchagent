@@ -57,9 +57,8 @@ final class WindowRouter {
             UserDefaults.standard.set(true, forKey: StoreOnboardingState.completedKey)
             self?.onboardingWindow?.close()
         }
-            .environment(environment.store)
         onboardingWindow = makeWindow(
-            title: "NotchAgent — Setup",
+            title: "NotchAgent",
             content: AnyView(view),
             size: NSSize(width: 620, height: 500)
         )

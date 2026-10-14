@@ -372,19 +372,29 @@ struct ProviderCardView: View {
         VStack(alignment: .leading, spacing: 5) {
             #if APP_STORE
             if needsStoreFolderAccess {
-                let portuguese = store.settings.interfaceLanguage == .ptBR
+                let language = SetupLanguage.current
                 Text(provider == .codex
-                    ? (portuguese ? "Conecte o Codex para ver seu uso" : "Connect Codex to see usage")
-                    : (portuguese ? "Conecte o Claude Code para ver seu uso" : "Connect Claude Code to see usage"))
+                    ? language.text("Conecte o Codex para ver seu uso", "Connect Codex to see usage", "Conecta Codex para ver tu uso")
+                    : language.text("Conecte o Claude Code para ver seu uso", "Connect Claude Code to see usage", "Conecta Claude Code para ver tu uso"))
                     .font(Theme.body(10))
                     .foregroundStyle(Theme.textSecondary)
-                Button(portuguese ? "Terminar configuração" : "Finish setup") {
+                Button(language.text("Conectar", "Connect", "Conectar")) {
                     AppEnvironment.shared.router.openStoreOnboarding(
                         focus: provider == .codex ? .codex : .claudeCode
                     )
                 }
                 .font(Theme.body(10, weight: .semibold))
-                .accessibilityHint(portuguese ? "Abre o guia de acesso às pastas" : "Opens the folder access guide")
+                .accessibilityHint(language.text("Abre o guia de acesso às pastas", "Opens the folder access guide", "Abre la guía de acceso a carpetas"))
+            } else if provider == .codex || provider == .claudeCode {
+                Text(storeSetupMessage)
+                    .font(Theme.body(10))
+                    .foregroundStyle(Theme.textSecondary)
+                Button(SetupLanguage.current.text("Verificar pasta", "Check folder", "Comprobar carpeta")) {
+                    AppEnvironment.shared.router.openStoreOnboarding(
+                        focus: provider == .codex ? .codex : .claudeCode
+                    )
+                }
+                .font(Theme.body(10, weight: .semibold))
             } else {
                 unavailableDetails
             }
@@ -409,6 +419,22 @@ struct ProviderCardView: View {
     }
 
     #if APP_STORE
+    private var storeSetupMessage: String {
+        let language = SetupLanguage.current
+        switch snapshot?.health {
+        case nil:
+            return language.text("Lendo sessões…", "Reading sessions…", "Leyendo sesiones…")
+        case .ok, .degraded:
+            return language.text("Uso local encontrado; limite pode estar indisponível", "Local usage found; quota may be unavailable", "Uso local encontrado; la cuota puede no estar disponible")
+        case .notInstalled:
+            return language.text("Pasta de sessões não encontrada", "Session folder not found", "No se encontró la carpeta de sesiones")
+        case .parseError:
+            return language.text("Não foi possível ler as sessões", "Could not read sessions", "No se pudieron leer las sesiones")
+        case .noData:
+            return language.text("Nenhuma sessão recente encontrada", "No recent sessions found", "No se encontraron sesiones recientes")
+        }
+    }
+
     private var needsStoreFolderAccess: Bool {
         switch provider {
         case .codex:
