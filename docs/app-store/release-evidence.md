@@ -2,18 +2,23 @@
 
 ## Guided setup update candidate — 3.6.0 (23)
 
-- Source commit: `6428860a084aa16f2cb96567c1fa18bbd931a64c`
-- Canonical gate: PASS on 2026-10-14; 617 Direct tests (9 opt-in skips),
-  619 App Store tests (11 opt-in skips), zero failures; Release build and
+- Source commit: `bfd21773385d4549030bcece0609f264604b3e6a`
+- Canonical gate: PASS on 2026-10-14; 618 Direct tests (9 opt-in skips),
+  620 App Store tests (11 opt-in skips), zero failures; Release build and
   sandbox bundle inspection passed.
-- Archive: `dist/NotchAgentAppStore-3.6.0-23-6428860.xcarchive`; signed,
+- Distribution contract: PASS; the Direct `3.5.5` appcast remains aligned with
+  `VERSION`, while `APP_STORE_VERSION` independently selects `3.6.0`.
+- Full NotchAgent Desk gate: PASS with an isolated ESP32 `3.3.8` toolchain and
+  pinned libraries; firmware packaging, 618 Swift tests, Sparkle contract, and
+  public-source audit passed without changing the user's Arduino installation.
+- Archive: `dist/NotchAgentAppStore-3.6.0-23-bfd2177.xcarchive`; signed,
   strict deep verification passed, universal `x86_64 arm64`.
-- Exported App Store package: `dist/app-store-export-6428860/NotchAgent.pkg`;
-  SHA-256 `e43ef8ef9b0c8062c3a172faa6b9144d6397c1ed244e19d1f894ab9ae0bfd2fd`.
+- Exported App Store package: `dist/app-store-export-bfd2177/NotchAgent.pkg`;
+  SHA-256 `04dfc9e2891a8462c50b41be2cf26167350ff55307fa68f84cf7144420be64ba`.
 - Exported app: Apple Distribution signature verified; version `3.6.0 (23)`,
   sandbox and read-only user-selected folder access embedded; no inbound
   network-server entitlement. Binary SHA-256:
-  `c66d538eb571e44cb742c345cd38b76c8ced3dbe55da9a4282109500313559e5`.
+  `ab76e3db4be763cc2c5510e415255167024e8fc6d66a92cdbaba3cbacae1b903`.
 - App Store Connect read-back on 2026-10-14: macOS `3.5.5 (22)` is
   `READY_FOR_SALE` and build 22 is `VALID`. Draft version `3.6.0` is
   `PREPARE_FOR_SUBMISSION` with manual release and no selected build.
