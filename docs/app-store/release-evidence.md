@@ -2,6 +2,49 @@
 
 ## Guided setup update candidate — 3.6.0 (23)
 
+- Current source fix `2ebd6ad`: the Store Claude card leads with local session
+  tokens and seven-day local tokens, then links to Claude's official Usage
+  settings. It no longer displays the API-equivalent dollar estimate beside
+  subscription activity. The link opened `https://claude.ai/settings/usage`
+  on the live Mac; Claude's own page showed 5% used for the session and week
+  at the time of inspection. The Store app does not claim those percentages
+  are derivable from local transcripts.
+- Canonical gate: PASS on 2026-10-14, 620 Direct tests (9 opt-in skips), 623
+  Store tests (11 opt-in skips), zero failures; Release sandbox build passed.
+  Signed universal archive passed strict deep verification. The exported
+  package has a valid Apple installer signature and no network-server
+  entitlement. It has not been uploaded or submitted to Apple.
+- Current archive: `dist/NotchAgentAppStore-3.6.0-23-2ebd6ad.xcarchive`.
+  Current package: `dist/app-store-export-2ebd6ad/NotchAgent.pkg`; SHA-256
+  `cc51006b80a570645ab2e5e5a6db1f54c3dd053be744ffd1bda336f8033a2854`.
+  Current local preview: `~/Applications/NotchAgent 3.6 Preview.app`.
+  Visual inspection confirmed the Claude card shows live local session usage,
+  seven-day usage, and the official-usage button without a dollar estimate;
+  Codex remains visible beside it and Quit is present at the panel bottom.
+
+- Current source fix `5f184e2`: the Store build no longer labels local Claude
+  token budgets as subscription quota. A live Mac showed a false 0% weekly
+  remainder from 2.34 billion local tokens versus an 8 million token default
+  budget. The Store build now shows local usage and explicitly says the
+  official Claude quota is unavailable; persisted estimates are sanitized on
+  launch. Direct distribution behavior is unchanged. Localized product copy
+  and review notes were corrected to match.
+- Canonical gate after the quota fix: PASS on 2026-10-14, 619 Direct tests
+  (9 opt-in skips), 622 Store tests (11 opt-in skips), zero failures; Release
+  build and sandbox bundle inspection passed. The signed archive passed strict
+  deep verification and the exported package has a valid Apple installer
+  signature. No network-server entitlement is present.
+- Previous archive: `dist/NotchAgentAppStore-3.6.0-23-5f184e2.xcarchive`.
+  Previous App Store package: `dist/app-store-export-5f184e2/NotchAgent.pkg`;
+  SHA-256 `f5250d726079a8eb8cb89b53f5e76220d71cd245df50b095594ec8e478158b30`.
+  It supersedes the `9bd28f7` package below and has not been uploaded.
+- Earlier local preview: `~/Applications/NotchAgent 3.6 Preview.app` from the
+  development-signed `5f184e2` archive. After the user authorized `.claude`
+  and `.codex`, Settings confirmed 130 Claude Code session files and 300 Codex
+  session files. The compact notch announced “Claude Code: cota oficial
+  indisponível” while continuing to show Codex's weekly quota. Settings no
+  longer exposes arbitrary Claude token budgets and explains the limitation.
+
 - Source fix `9bd28f7`: Settings now refreshes its folder inspection when
   guided setup changes the saved authorization. The earlier candidate showed
   stale “Acesso necessário” in Settings after the Codex folder had been
@@ -11,8 +54,8 @@
   App Store tests, zero failures; unsigned Release build and sandbox checks
   passed. Signed archive passed strict deep verification; the exported package
   has a valid Apple installer signature and the app is universal `x86_64 arm64`.
-- Current archive: `dist/NotchAgentAppStore-3.6.0-23-9bd28f7.xcarchive`.
-  Current App Store package: `dist/app-store-export-9bd28f7/NotchAgent.pkg`;
+- Previous archive: `dist/NotchAgentAppStore-3.6.0-23-9bd28f7.xcarchive`.
+  Previous App Store package: `dist/app-store-export-9bd28f7/NotchAgent.pkg`;
   SHA-256 `1328e0619d9dd5751767254c2c97b7a77a6258aee2deaea2d6abff7bcb96c3f6`.
   It supersedes the `ddd071d` package below and has not been uploaded.
 - Updated local preview at `~/Applications/NotchAgent 3.6 Preview.app` from
