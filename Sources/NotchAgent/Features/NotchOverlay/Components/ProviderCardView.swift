@@ -104,11 +104,6 @@ struct ProviderCardView: View {
         provider == .claudeCode && probeEnabled && !hasQuota
     }
 
-    static func localSessionTokens(_ snapshot: UsageSnapshot) -> Int? {
-        guard let tokens = snapshot.session?.tokens.total, tokens > 0 else { return nil }
-        return tokens
-    }
-
     static func mascotName(for model: String?) -> String {
         let families = ["fable", "opus", "haiku", "sonnet"]
         let lower = model?.lowercased() ?? ""
@@ -172,8 +167,7 @@ struct ProviderCardView: View {
     }
 
     /// TOP block, always present: the 5h session window — official percent
-    /// (or budget estimate marked "~"), else session tokens when the plan
-    /// reports no daily cap, else an honest empty state.
+    /// (or budget estimate marked "~"), else an honest empty state.
     @ViewBuilder
     private func sessionWindowBlock(_ snapshot: UsageSnapshot) -> some View {
         let settings = store.settings
@@ -202,18 +196,10 @@ struct ProviderCardView: View {
                 }
             }
         } else if DistributionChannel.isAppStore && provider == .claudeCode {
-            if let tokens = Self.localSessionTokens(snapshot) {
-                Text(Format.tokens(tokens))
-                    .font(Theme.numeral(24))
-                    .monospacedDigit()
-                    .foregroundStyle(Theme.textPrimary)
-                GaugeLabel(text: SetupLanguage.current.text("TOKENS LOCAIS · SESSÃO ATUAL", "LOCAL TOKENS · CURRENT SESSION", "TOKENS LOCALES · SESIÓN ACTUAL"), color: Theme.textFaint, size: 8)
-            } else {
-                Text("—")
-                    .font(Theme.numeral(24))
-                    .foregroundStyle(Theme.textDim)
-                GaugeLabel(text: SetupLanguage.current.text("SEM SESSÃO RECENTE", "NO RECENT SESSION", "SIN SESIÓN RECIENTE"), color: Theme.textFaint, size: 8)
-            }
+            Text(SetupLanguage.current.text("COTA INDISPONÍVEL", "QUOTA UNAVAILABLE", "CUOTA NO DISPONIBLE"))
+                .font(Theme.numeral(18))
+                .foregroundStyle(Theme.textDim)
+            GaugeLabel(text: SetupLanguage.current.text("CLAUDE NÃO INFORMA A COTA NESTES ARQUIVOS", "CLAUDE DOES NOT REPORT QUOTA IN THESE FILES", "CLAUDE NO INFORMA LA CUOTA EN ESTOS ARCHIVOS"), color: Theme.textFaint, size: 8)
         } else if Self.quotaUnavailable(
             for: provider,
             probeEnabled: settings.claudeQuotaProbeEnabled,
@@ -258,11 +244,7 @@ struct ProviderCardView: View {
                 criticalAt: settings.criticalThresholdPercent
             )
         } else if DistributionChannel.isAppStore && provider == .claudeCode {
-            if let tokens = snapshot.weekly?.tokens.total, tokens > 0 {
-                Text(SetupLanguage.current.text("7 DIAS · \(Format.tokens(tokens)) TOKENS LOCAIS", "7 DAYS · \(Format.tokens(tokens)) LOCAL TOKENS", "7 DÍAS · \(Format.tokens(tokens)) TOKENS LOCALES"))
-                    .font(Theme.body(10))
-                    .foregroundStyle(Theme.textSecondary)
-            }
+            GaugeLabel(text: SetupLanguage.current.text("COTA SEMANAL INDISPONÍVEL", "WEEKLY QUOTA UNAVAILABLE", "CUOTA SEMANAL NO DISPONIBLE"), color: Theme.textFaint, size: 8)
             Button {} label: {
                 Text(SetupLanguage.current.text("Ver cota oficial no Claude ↗", "View official quota in Claude ↗", "Ver cuota oficial en Claude ↗"))
                     .font(Theme.body(10, weight: .semibold))

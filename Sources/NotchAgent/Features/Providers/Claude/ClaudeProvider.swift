@@ -85,6 +85,10 @@ struct ClaudeProvider: UsageProvider {
         // expired token or dead network must never freeze yesterday's 60%
         // as today's truth. Stale quota degrades to the local heuristics.
         var quota: ClaudeQuota?
+        if DistributionChannel.isAppStore,
+           let root = SandboxBookmarkStore.shared.selectedRoot(for: .claudeCode) {
+            quota = ClaudeStatuslineQuotaReader.read(root: root, now: now)
+        }
         if settings.claudeQuotaProbeEnabled, Self.paidProbeAllowed, let probe {
             quota = await probe.currentQuota()
             if let fetched = quota?.fetchedAt, now.timeIntervalSince(fetched) > 15 * 60 {

@@ -186,9 +186,9 @@ struct StoreOnboardingView: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
             Text(language.text(
-                "O uso local aparece após encontrar sessões. Percentuais de cotas podem não estar disponíveis nesta edição.",
-                "Local usage appears after sessions are found. Quota percentages may be unavailable in this edition.",
-                "El uso local aparece al encontrar sesiones. Los porcentajes de cuota pueden no estar disponibles en esta edición."
+                "A pasta mostra atividade local, mas não contém a cota oficial do Claude. Confira a cota no Claude.",
+                "The folder shows local activity, but does not contain Claude's official quota. Check the quota in Claude.",
+                "La carpeta muestra actividad local, pero no contiene la cuota oficial de Claude. Consulta la cuota en Claude."
             ))
                 .font(.caption).foregroundStyle(.secondary)
             if let error {

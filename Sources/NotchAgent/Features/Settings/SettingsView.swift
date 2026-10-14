@@ -376,8 +376,8 @@ struct SettingsView: View {
             Section {
                 #if APP_STORE
                 Text(pt
-                    ? "O uso local de tokens aparece após conectar a pasta .claude. A cota oficial do Claude Code não pode ser calculada a partir desses arquivos."
-                    : "Local token usage appears after connecting the .claude folder. The official Claude Code quota cannot be calculated from those files.")
+                    ? "A pasta .claude contém atividade local, não a cota oficial. O percentual aparece quando o Claude Code exporta rate_limits pela barra de status para .claude/.notchagent-quota.json. Confira a cota em claude.ai/settings/usage até conectar essa fonte."
+                    : "The .claude folder contains local activity, not the official quota. Percentages appear when Claude Code exports rate_limits through its status line to .claude/.notchagent-quota.json. Check claude.ai/settings/usage until that source is connected.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 #else

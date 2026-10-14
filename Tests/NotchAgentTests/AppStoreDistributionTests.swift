@@ -111,6 +111,24 @@ final class AppStoreDistributionTests: XCTestCase {
     }
 
     #if APP_STORE
+    func testClaudeStoreCardDoesNotPresentLocalTokensAsQuota() throws {
+        let root = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let card = try String(contentsOf: root.appendingPathComponent(
+            "Sources/NotchAgent/Features/NotchOverlay/Components/ProviderCardView.swift"
+        ), encoding: .utf8)
+        let session = try XCTUnwrap(card.range(of: "private func sessionWindowBlock"))
+        let weekly = try XCTUnwrap(card.range(of: "private func weeklyWindowBlock"))
+        let nextSection = try XCTUnwrap(card.range(of: "private func namedQuotas"))
+        let quotaBlocks = String(card[session.lowerBound..<nextSection.lowerBound])
+        XCTAssertTrue(quotaBlocks.contains("COTA INDISPONÍVEL"))
+        XCTAssertTrue(quotaBlocks.contains("COTA SEMANAL INDISPONÍVEL"))
+        let storeSession = String(card[session.lowerBound..<weekly.lowerBound])
+        XCTAssertFalse(storeSession.contains("localSessionTokens"))
+        let storeWeekly = String(card[weekly.lowerBound..<nextSection.lowerBound])
+        XCTAssertFalse(storeWeekly.contains("TOKENS LOCAIS"))
+    }
+
     func testGuidedSetupUsesThreeLanguagesAndEnglishFallback() {
         XCTAssertEqual(SetupLanguage.preferred(for: "pt-BR"), .pt)
         XCTAssertEqual(SetupLanguage.preferred(for: "en-US"), .en)

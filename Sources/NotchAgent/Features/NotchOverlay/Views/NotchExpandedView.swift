@@ -1080,9 +1080,9 @@ struct NotchExpandedView: View {
             && provider == .claudeCode && metric == nil
         let verdict = storeClaudeWithoutQuota
             ? (text: SetupLanguage.current.text(
-                "Cota oficial indisponível; veja o uso local de tokens.",
-                "Official quota unavailable; see local token usage.",
-                "Cuota oficial no disponible; consulta los tokens locales."
+                "Cota oficial indisponível; confira no Claude.",
+                "Official quota unavailable; check Claude.",
+                "Cuota oficial no disponible; consulta Claude."
             ), color: Theme.textDim)
             : Self.burnVerdict(
                 projection: projection,
@@ -1104,7 +1104,7 @@ struct NotchExpandedView: View {
                     HStack(spacing: 5) {
                         burnGlyph(provider)
                         GaugeLabel(
-                            text: storeClaudeWithoutQuota ? "CLAUDE · LOCAL USAGE" : "BURN · WILL THE 5H SESSION LAST?",
+                            text: storeClaudeWithoutQuota ? "CLAUDE · QUOTA UNAVAILABLE" : "BURN · WILL THE 5H SESSION LAST?",
                             color: Theme.textSecondary,
                             size: 9
                         )
