@@ -17,7 +17,19 @@
   Apple Distribution installer: `dist/app-store-export-71d20d5/NotchAgent.pkg`,
   SHA-256 `f74d69276d29b8d1e8305bde11ed9b5503f07628c065a0e607f0a626e8bd49ee`.
   The exported app passed strict signature verification and includes the
-  user-selected read/write entitlement. It has **not** been uploaded to Apple.
+  user-selected read/write entitlement. Apple package validation passed with
+  no errors on 2026-10-14. Upload succeeded with delivery UUID
+  `284ffbda-5613-40f9-80e0-3dacd7632323`. App Store Connect reports build
+  23 `VALID` and associates it with macOS 3.6.0.
+- The PT-BR product description, What's New, and reviewer notes were updated
+  and read back in App Store Connect. Two inherited screenshots showing the
+  former unverified Claude quota were removed from the 3.6.0 version; two
+  screenshots of local rhythm and model usage remain. Removed images remain
+  recoverable in the Asset Library.
+- Submitted for App Review on 2026-10-14 at 15:33 BRT. Submission ID:
+  `db9969bd-25bf-47e1-922f-31285fd53cd2`. The submission detail page
+  reports one item, `macOS App 3.6.0 (23)`, **Waiting for Review**. Release
+  remains manual, so approval alone will not publish the update.
 - The matching privacy and support copy is public on `notchagent.app` after
   `notchagent-site` PR #4; Vercel and main CI passed. Apple's public listing
   still reports `3.5.5`. App Review acceptance under guideline 2.5.2 remains
