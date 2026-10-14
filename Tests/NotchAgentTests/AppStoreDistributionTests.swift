@@ -118,6 +118,30 @@ final class AppStoreDistributionTests: XCTestCase {
         XCTAssertEqual(SetupLanguage.preferred(for: "fr-FR"), .en)
     }
 
+    func testRestoredStoreSnapshotCannotShowOldEstimatedClaudeQuota() async throws {
+        let file = FileManager.default.temporaryDirectory
+            .appendingPathComponent("notchagent-store-snapshot-\(UUID().uuidString).json")
+        defer { try? FileManager.default.removeItem(at: file) }
+        let storage = SnapshotStore(fileURL: file)
+        let old = UsageSnapshot(
+            provider: .claudeCode,
+            health: .ok,
+            session: SessionUsage(tokens: TokenUsage(input: 500), usedPercent: 100),
+            weekly: WeeklyUsage(tokens: TokenUsage(input: 1_000), usedPercent: 100),
+            quotaStatus: .blocked
+        )
+        await storage.save([.claudeCode: old])
+
+        let loaded = await storage.load()
+        let restored = try XCTUnwrap(loaded[.claudeCode])
+        XCTAssertEqual(restored.session?.tokens.total, 500)
+        XCTAssertEqual(restored.weekly?.tokens.total, 1_000)
+        XCTAssertNil(restored.session?.usedPercent)
+        XCTAssertNil(restored.weekly?.usedPercent)
+        XCTAssertNil(restored.quotaStatus)
+        XCTAssertNil(GaugeMetric.from(restored))
+    }
+
     @MainActor
     func testClosingGuidedSetupDoesNotRepeatOnNextLaunch() throws {
         let defaults = UserDefaults.standard

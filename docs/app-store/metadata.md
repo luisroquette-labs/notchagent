@@ -18,23 +18,23 @@ is prepared locally and is not published as a separate locale.
 ## Portuguese (Brazil)
 
 Name: `NotchAgent`
-Subtitle: `Cotas, ritmo e custos de IA`
+Subtitle: `Uso, ritmo e custos de IA`
 Keywords: `tokens,cota,custo,limite,produtividade,notch,menu bar,monitor,IA,agentes`
 
 Promotional text:
 
-> Veja cotas, tokens, ritmo e custos no notch. Antecipe limites e mantenha o
+> Veja tokens, ritmo e custos no notch. Consulte cotas quando disponíveis e mantenha o
 > controle sem anúncios, rastreamento ou conta NotchAgent.
 
 Description:
 
-> Saiba quanto de IA você está usando antes de atingir o limite. O NotchAgent
+> Acompanhe quanto de IA você está usando. O NotchAgent
 > reúne o uso do Claude e do Codex em um painel nativo no notch e na barra de
 > menus.
 >
-> • Acompanhe tokens, sessões, cotas, ritmo e estimativas de custo
+> • Acompanhe tokens, sessões, ritmo e estimativas de custo
 > • Compare o uso por modelo e identifique picos ao longo do dia
-> • Antecipe limites com histórico e projeções de consumo
+> • Veja cotas do Codex quando a ferramenta fornece esses dados
 > • Consulte o essencial no notch ou abra o dashboard detalhado
 > • Monitore contas e conecte o NotchAgent Desk, se quiser
 >
@@ -45,6 +45,8 @@ Description:
 > dessas ferramentas neste computador para ver dados locais; contas de API são
 > opcionais e configuradas à parte. Recursos online opcionais e seus destinos estão descritos na
 > política de privacidade. Sem anúncios, rastreamento ou conta NotchAgent.
+> A cota oficial do Claude Code não pode ser calculada a partir dos arquivos
+> locais; esta edição mostra seus tokens sem inventar um percentual de cota.
 >
 > A edição da App Store não executa CLIs externos. As atualizações chegam pela
 > própria App Store.
@@ -54,23 +56,23 @@ Description:
 ## English (U.S.)
 
 Name: `NotchAgent`
-Subtitle: `AI quotas, pace, and costs`
+Subtitle: `AI usage, pace, and costs`
 Keywords: `tokens,quota,cost,limits,productivity,notch,menu bar,monitor,AI,agents`
 
 Promotional text:
 
-> See quotas, tokens, pace, and costs in the notch. Anticipate limits and stay
+> See tokens, pace, and costs in the notch. Check quotas when available and stay
 > in control with no ads, tracking, or NotchAgent account.
 
 Description:
 
-> Know how much AI you are using before you hit a limit. NotchAgent brings
+> See how much AI you are using. NotchAgent brings
 > Claude and Codex usage together in a native dashboard for the notch and menu
 > bar.
 >
-> • Track tokens, sessions, quotas, pace, and cost estimates
+> • Track tokens, sessions, pace, and cost estimates
 > • Compare usage by model and spot peaks throughout your day
-> • Anticipate limits with history and consumption projections
+> • See Codex quotas when the tool provides that data
 > • Check the essentials in the notch or open the detailed dashboard
 > • Optionally monitor accounts and connect NotchAgent Desk
 >
@@ -81,6 +83,8 @@ Description:
 > local data; API accounts are optional and configured separately. Optional online
 > features and their destinations are described in the privacy policy.
 > No ads, tracking, or NotchAgent account.
+> The official Claude Code quota cannot be calculated from local files; this
+> edition shows local tokens without inventing a quota percentage.
 >
 > The App Store edition does not run external CLIs. Updates arrive through the
 > App Store.
@@ -106,6 +110,9 @@ firmware helpers, or launch agents. Paid Anthropic probe requests, Resend email
 delivery, and Sparkle updates are absent from this edition. Weather starts
 disabled and makes network requests only after the user enables it. Privacy and
 support links are available in Settings.
+Claude Code's official subscription quota is unavailable from local transcripts;
+the app shows local tokens without a fabricated percentage. Codex quota data
+is shown only when present in its session records.
 
 NotchAgent Desk hardware is not required for review. If no device is present,
 the Desk section remains in a disconnected state.
@@ -120,6 +127,7 @@ Portuguese (Brazil):
 > autorizar. Cada conexão confirma se encontrou sessões e explica como corrigir
 > pastas vazias ou incorretas. O guia também pode ser reaberto em Ajustes.
 > O botão Encerrar agora aparece claramente no painel e na barra de menus.
+> O uso local do Claude Code não aparece mais como percentual de cota oficial.
 
 English (U.S.):
 
@@ -127,6 +135,7 @@ English (U.S.):
 > connection confirms whether sessions were found and explains how to fix an
 > empty or incorrect folder. You can reopen the guide from Settings.
 > Quit is now clearly available in the panel and menu bar.
+> Claude Code local usage is no longer presented as an official quota percentage.
 
 Spanish:
 
@@ -134,6 +143,7 @@ Spanish:
 > Cada conexión confirma si encontró sesiones y explica cómo corregir una
 > carpeta vacía o incorrecta. Puedes volver a abrir la guía desde Ajustes.
 > El botón para cerrar la app ahora está visible en el panel y la barra de menús.
+> El uso local de Claude Code ya no aparece como porcentaje de cuota oficial.
 
 ## App privacy answers
 

@@ -108,6 +108,13 @@ struct NotchCompactView: View {
                         meter(metric, tint: tint)
                     }
                 }
+            } else if DistributionChannel.isAppStore && provider == .claudeCode {
+                HStack(spacing: 4) {
+                    Text("—")
+                        .font(Theme.body(11, weight: .semibold))
+                        .foregroundStyle(Theme.textDim)
+                    GaugeLabel(text: SetupLanguage.current.text("COTA", "QUOTA", "CUOTA"), color: Theme.textFaint, size: 6.5)
+                }
             } else {
                 // Same "current window" concept as the percent wings — this
                 // provider just has no official cap to compute a % against.
@@ -139,6 +146,13 @@ struct NotchCompactView: View {
     }
 
     private func accessibilitySummary(provider: ProviderID, metric: GaugeMetric?) -> String {
+        if DistributionChannel.isAppStore && provider == .claudeCode && metric == nil {
+            return SetupLanguage.current.text(
+                "Claude Code: cota oficial indisponível",
+                "Claude Code: official quota unavailable",
+                "Claude Code: cuota oficial no disponible"
+            )
+        }
         guard let metric else { return "\(provider.displayName): no limit data" }
         let window = metric.isWeekly ? "weekly limit" : "5 hour session"
         return "\(provider.displayName): \(Int(metric.remaining.rounded())) percent of the \(window) left"

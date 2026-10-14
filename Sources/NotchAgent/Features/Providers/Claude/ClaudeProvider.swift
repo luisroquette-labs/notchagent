@@ -98,7 +98,7 @@ struct ClaudeProvider: UsageProvider {
             }
         }
         #if os(macOS)
-        if quota == nil,
+        if !DistributionChannel.isAppStore, quota == nil,
            let accountID = settings.apiAccounts.first(where: {
                $0.enabled && $0.service == .anthropicConsole
            })?.id {
@@ -180,7 +180,8 @@ struct ClaudeProvider: UsageProvider {
         if let window = sessionWindow {
             let (tokens, cost) = Self.sumBuckets(merged, from: window.start, to: window.end)
             let (usedPercent, usedPercentIsFromQuota) = Self.sessionUsedPercent(
-                quota: quota, tokens: tokens.total, budget: settings.claudeSessionTokenBudget
+                quota: quota, tokens: tokens.total,
+                budget: DistributionChannel.isAppStore ? nil : settings.claudeSessionTokenBudget
             )
             session = SessionUsage(
                 tokens: tokens,
@@ -215,7 +216,7 @@ struct ClaudeProvider: UsageProvider {
             cost: CostEstimate(amountUSD: weekCost),
             usedPercent: Self.weeklyUsedPercent(
                 quotaWeekly: quota?.weeklyPercent,
-                budget: settings.claudeWeeklyTokenBudget,
+                budget: DistributionChannel.isAppStore ? nil : settings.claudeWeeklyTokenBudget,
                 weekTokens: weekTokens.total
             ),
             resetsAt: freshWeeklyReset,

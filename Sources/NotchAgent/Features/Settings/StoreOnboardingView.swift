@@ -8,9 +8,6 @@ enum StoreOnboardingState {
     }
 }
 
-#if APP_STORE
-import SwiftUI
-
 enum SetupLanguage: String, CaseIterable, Identifiable {
     case pt, en, es
 
@@ -46,6 +43,9 @@ enum SetupLanguage: String, CaseIterable, Identifiable {
         }
     }
 }
+
+#if APP_STORE
+import SwiftUI
 
 extension StoreFolderReadiness {
     func message(_ language: SetupLanguage) -> String {

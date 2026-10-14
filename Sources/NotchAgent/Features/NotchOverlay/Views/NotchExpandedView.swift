@@ -1071,12 +1071,20 @@ struct NotchExpandedView: View {
         let weeklyBlocked = metric?.isWeekly == true && gaugeExhausted
         let weeklyReset = snapshot?.weekly?.resetsAt
         let used = gaugeExhausted ? metric?.used : session?.usedPercent
-        let verdict = Self.burnVerdict(
-            projection: projection,
-            hasSamples: !samples.isEmpty,
-            gaugeExhausted: gaugeExhausted,
-            isWeekly: metric?.isWeekly ?? false
-        )
+        let storeClaudeWithoutQuota = DistributionChannel.isAppStore
+            && provider == .claudeCode && metric == nil
+        let verdict = storeClaudeWithoutQuota
+            ? (text: SetupLanguage.current.text(
+                "Cota oficial indisponível; veja o uso local de tokens.",
+                "Official quota unavailable; see local token usage.",
+                "Cuota oficial no disponible; consulta los tokens locales."
+            ), color: Theme.textDim)
+            : Self.burnVerdict(
+                projection: projection,
+                hasSamples: !samples.isEmpty,
+                gaugeExhausted: gaugeExhausted,
+                isWeekly: metric?.isWeekly ?? false
+            )
         let dominantModel = session?.usedPercentIsFromQuota == true
             ? session?.modelTokens.flatMap { ModelProjection.dominantModel(modelTokens: $0) }
             : nil
@@ -1090,7 +1098,11 @@ struct NotchExpandedView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 5) {
                         burnGlyph(provider)
-                        GaugeLabel(text: "BURN · WILL THE 5H SESSION LAST?", color: Theme.textSecondary, size: 9)
+                        GaugeLabel(
+                            text: storeClaudeWithoutQuota ? "CLAUDE · LOCAL USAGE" : "BURN · WILL THE 5H SESSION LAST?",
+                            color: Theme.textSecondary,
+                            size: 9
+                        )
                     }
                     if let used {
                         HStack(alignment: .firstTextBaseline, spacing: 5) {

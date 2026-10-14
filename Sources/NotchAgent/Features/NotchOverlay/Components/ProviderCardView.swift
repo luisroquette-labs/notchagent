@@ -195,6 +195,11 @@ struct ProviderCardView: View {
                         .foregroundStyle(Theme.textPrimary)
                 }
             }
+        } else if DistributionChannel.isAppStore && provider == .claudeCode {
+            Text(SetupLanguage.current.text("COTA INDISPONÍVEL", "QUOTA UNAVAILABLE", "CUOTA NO DISPONIBLE"))
+                .font(Theme.numeral(18))
+                .foregroundStyle(Theme.textDim)
+            GaugeLabel(text: SetupLanguage.current.text("USO LOCAL ABAIXO", "LOCAL USAGE BELOW", "USO LOCAL ABAJO"), color: Theme.textFaint, size: 8)
         } else if Self.quotaUnavailable(
             for: provider,
             probeEnabled: settings.claudeQuotaProbeEnabled,
@@ -238,6 +243,11 @@ struct ProviderCardView: View {
                 warningAt: settings.warningThresholdPercent,
                 criticalAt: settings.criticalThresholdPercent
             )
+        } else if DistributionChannel.isAppStore && provider == .claudeCode {
+            Text(SetupLanguage.current.text("Cota semanal indisponível", "Weekly quota unavailable", "Cuota semanal no disponible"))
+                .font(Theme.body(10))
+                .foregroundStyle(Theme.textDim)
+                .padding(.top, 1)
         } else {
             VStack(alignment: .leading, spacing: 3) {
                 HStack(alignment: .firstTextBaseline, spacing: 5) {
