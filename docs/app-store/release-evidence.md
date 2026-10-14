@@ -1,15 +1,29 @@
 # Mac App Store release evidence
 
-## Guided setup update candidate — 3.6.0 (23)
+## Current candidate — 3.6.0 (23), source `71d20d5`
 
-- New source change pending final archive: guided Claude Code connection now
-  adds a static status-line command to the user-selected `.claude/settings.json`
-  automatically when no custom status line exists. It asks before replacing a
-  custom status line, preserves all other settings, and saves
-  only a read-only folder bookmark for subsequent quota reads. This changes
-  the Store target to a user-selected read/write sandbox entitlement for that
-  one-time file edit. App Review acceptance under guideline 2.5.2 remains
-  unproven; do not describe this source change as a published Store build.
+- Guided Claude Code connection adds a static status-line command to the
+  user-selected `.claude/settings.json`. An existing custom status line requires
+  explicit replacement consent; other settings are preserved. The app stores a
+  read-only folder bookmark after the one-time user-selected read/write edit.
+- `mac-gate Scripts/check-notchagent-desk.sh` passed: 625 Direct tests,
+  distribution contract and public audit. `mac-gate Scripts/check-mac-app-store.sh`
+  passed: 625 Direct and 629 Store tests, Release build and sandbox inspection.
+  PR #26 checks passed on `71d20d5`.
+- The development-signed preview is running at
+  `~/Applications/NotchAgent 3.6 Preview.app`; Settings and the guided setup
+  show the official Claude quota connection as active on this Mac.
+- Universal signed archive: `dist/NotchAgentAppStore-3.6.0-23-71d20d5.xcarchive`.
+  Apple Distribution installer: `dist/app-store-export-71d20d5/NotchAgent.pkg`,
+  SHA-256 `f74d69276d29b8d1e8305bde11ed9b5503f07628c065a0e607f0a626e8bd49ee`.
+  The exported app passed strict signature verification and includes the
+  user-selected read/write entitlement. It has **not** been uploaded to Apple.
+- The matching privacy and support copy is public on `notchagent.app` after
+  `notchagent-site` PR #4; Vercel and main CI passed. Apple's public listing
+  still reports `3.5.5`. App Review acceptance under guideline 2.5.2 remains
+  unproven until Apple evaluates the submitted build.
+
+## Earlier preparation — 3.6.0 (23)
 
 - On 2026-10-14, the local preview was rebuilt and visually checked after
   replacing the empty spending header `PAGO R$ 0` with `CUSTOS NÃO CONFIG.`
@@ -20,10 +34,9 @@
   preview passed strict code-signature verification and launched on the Mac.
   No updated build was uploaded or submitted to Apple.
 - Claude Code's supported status-line JSON can expose official 5h/7d quota,
-  but local transcript files do not contain it. A script installer that changes
-  Claude Code settings was excluded from this Store candidate because it would
-  introduce App Review guideline 2.5.2 risk. The Store preview continues to
-  identify local tokens and links to Claude's own Usage page for official quota.
+  but local transcript files do not contain it. At this earlier stage, automatic
+  setup was excluded because of App Review guideline 2.5.2 risk; the current
+  candidate above uses a user-selected configuration edit instead.
 
 - Current source fix `2ebd6ad`: the Store Claude card leads with local session
   tokens and seven-day local tokens, then links to Claude's official Usage
