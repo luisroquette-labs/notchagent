@@ -15,6 +15,7 @@ struct ProviderCardView: View {
     /// NotchAgent never spends a reset itself — it opens OpenAI's own flow so
     /// the account owner picks which of the (scarce, non-refundable) credits to use.
     static let codexUsageSettingsURL = URL(string: "https://chatgpt.com/codex/settings/usage")!
+    static let claudeUsageSettingsURL = URL(string: "https://claude.ai/settings/usage")!
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -103,6 +104,11 @@ struct ProviderCardView: View {
         provider == .claudeCode && probeEnabled && !hasQuota
     }
 
+    static func localSessionTokens(_ snapshot: UsageSnapshot) -> Int? {
+        guard let tokens = snapshot.session?.tokens.total, tokens > 0 else { return nil }
+        return tokens
+    }
+
     static func mascotName(for model: String?) -> String {
         let families = ["fable", "opus", "haiku", "sonnet"]
         let lower = model?.lowercased() ?? ""
@@ -131,7 +137,7 @@ struct ProviderCardView: View {
             sessionWindowBlock(snapshot)
             weeklyWindowBlock(snapshot)
 
-            if let usage = usageLine(snapshot) {
+            if !(DistributionChannel.isAppStore && provider == .claudeCode), let usage = usageLine(snapshot) {
                 Text(usage)
                     .font(Theme.body(9.5))
                     .monospacedDigit()
@@ -196,10 +202,18 @@ struct ProviderCardView: View {
                 }
             }
         } else if DistributionChannel.isAppStore && provider == .claudeCode {
-            Text(SetupLanguage.current.text("COTA INDISPONÍVEL", "QUOTA UNAVAILABLE", "CUOTA NO DISPONIBLE"))
-                .font(Theme.numeral(18))
-                .foregroundStyle(Theme.textDim)
-            GaugeLabel(text: SetupLanguage.current.text("USO LOCAL ABAIXO", "LOCAL USAGE BELOW", "USO LOCAL ABAJO"), color: Theme.textFaint, size: 8)
+            if let tokens = Self.localSessionTokens(snapshot) {
+                Text(Format.tokens(tokens))
+                    .font(Theme.numeral(24))
+                    .monospacedDigit()
+                    .foregroundStyle(Theme.textPrimary)
+                GaugeLabel(text: SetupLanguage.current.text("TOKENS LOCAIS · SESSÃO ATUAL", "LOCAL TOKENS · CURRENT SESSION", "TOKENS LOCALES · SESIÓN ACTUAL"), color: Theme.textFaint, size: 8)
+            } else {
+                Text("—")
+                    .font(Theme.numeral(24))
+                    .foregroundStyle(Theme.textDim)
+                GaugeLabel(text: SetupLanguage.current.text("SEM SESSÃO RECENTE", "NO RECENT SESSION", "SIN SESIÓN RECIENTE"), color: Theme.textFaint, size: 8)
+            }
         } else if Self.quotaUnavailable(
             for: provider,
             probeEnabled: settings.claudeQuotaProbeEnabled,
@@ -244,10 +258,21 @@ struct ProviderCardView: View {
                 criticalAt: settings.criticalThresholdPercent
             )
         } else if DistributionChannel.isAppStore && provider == .claudeCode {
-            Text(SetupLanguage.current.text("Cota semanal indisponível", "Weekly quota unavailable", "Cuota semanal no disponible"))
-                .font(Theme.body(10))
-                .foregroundStyle(Theme.textDim)
-                .padding(.top, 1)
+            if let tokens = snapshot.weekly?.tokens.total, tokens > 0 {
+                Text(SetupLanguage.current.text("7 DIAS · \(Format.tokens(tokens)) TOKENS LOCAIS", "7 DAYS · \(Format.tokens(tokens)) LOCAL TOKENS", "7 DÍAS · \(Format.tokens(tokens)) TOKENS LOCALES"))
+                    .font(Theme.body(10))
+                    .foregroundStyle(Theme.textSecondary)
+            }
+            Button {} label: {
+                Text(SetupLanguage.current.text("Ver cota oficial no Claude ↗", "View official quota in Claude ↗", "Ver cuota oficial en Claude ↗"))
+                    .font(Theme.body(10, weight: .semibold))
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(Theme.coral)
+            .highPriorityGesture(TapGesture().onEnded {
+                _ = NSWorkspace.shared.open(Self.claudeUsageSettingsURL)
+            })
+            .accessibilityHint(SetupLanguage.current.text("Abre Configurações > Uso no Claude", "Opens Settings > Usage in Claude", "Abre Configuración > Uso en Claude"))
         } else {
             VStack(alignment: .leading, spacing: 3) {
                 HStack(alignment: .firstTextBaseline, spacing: 5) {

@@ -10,6 +10,18 @@ import XCTest
 /// de outra janela) e o bloco de baixo é SEMPRE o semanal.
 @MainActor
 final class ProviderCardHeadlineTests: XCTestCase {
+    func testStoreClaudeHeadlineUsesCurrentSessionTokensNotWeeklyTotal() {
+        let snapshot = UsageSnapshot(
+            provider: .claudeCode,
+            health: .ok,
+            session: SessionUsage(tokens: TokenUsage(input: 10, output: 0, cacheWrite: 0, cacheRead: 0), startedAt: Date(), resetsAt: Date()),
+            weekly: WeeklyUsage(tokens: TokenUsage(input: 1_000_000, output: 0, cacheWrite: 0, cacheRead: 0))
+        )
+        XCTAssertEqual(ProviderCardView.localSessionTokens(snapshot), 10)
+        XCTAssertNil(ProviderCardView.localSessionTokens(UsageSnapshot(provider: .claudeCode, health: .ok, weekly: snapshot.weekly)))
+        XCTAssertEqual(ProviderCardView.claudeUsageSettingsURL.absoluteString, "https://claude.ai/settings/usage")
+    }
+
     // REGRESSÃO: probe ligado sem credencial OAuth → sem quota → o card
     // exibia tokens como se fossem a cota. Deve declarar indisponibilidade.
     func testQuotaUnavailableOnlyWhenProbeOnAndNoQuota() {
