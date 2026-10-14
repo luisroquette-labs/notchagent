@@ -2,35 +2,49 @@
 
 ## Guided setup update candidate — 3.6.0 (23)
 
-- Source commit: `bfd21773385d4549030bcece0609f264604b3e6a`
-- Canonical gate: PASS on 2026-10-14; 618 Direct tests (9 opt-in skips),
+- Source commit: `ddd071d93335dff4050d6aadcc9c40e0b9ce3a57` (visible Quit action and review metadata); prior
+  distribution-version fix: `bfd21773385d4549030bcece0609f264604b3e6a`.
+- Canonical gate: PASS again on 2026-10-14; 618 Direct tests (9 opt-in skips),
   620 App Store tests (11 opt-in skips), zero failures; Release build and
   sandbox bundle inspection passed.
-- Distribution contract: PASS; the Direct `3.5.5` appcast remains aligned with
+- Distribution contract: PASS again; the Direct `3.5.5` appcast remains aligned with
   `VERSION`, while `APP_STORE_VERSION` independently selects `3.6.0`.
-- Full NotchAgent Desk gate: PASS with an isolated ESP32 `3.3.8` toolchain and
+- Full NotchAgent Desk gate on `bfd2177`: PASS with an isolated ESP32 `3.3.8` toolchain and
   pinned libraries; firmware packaging, 618 Swift tests, Sparkle contract, and
   public-source audit passed without changing the user's Arduino installation.
-- Archive: `dist/NotchAgentAppStore-3.6.0-23-bfd2177.xcarchive`; signed,
+- Archive: `dist/NotchAgentAppStore-3.6.0-23-ddd071d.xcarchive`; signed,
   strict deep verification passed, universal `x86_64 arm64`.
-- Exported App Store package: `dist/app-store-export-bfd2177/NotchAgent.pkg`;
-  SHA-256 `04dfc9e2891a8462c50b41be2cf26167350ff55307fa68f84cf7144420be64ba`.
+- Exported App Store package: `dist/app-store-export-ddd071d/NotchAgent.pkg`;
+  SHA-256 `64d9e595ba2619b586f56d64e2a86a83ce4b9b8789029746a75e6029275c189e`.
 - Exported app: Apple Distribution signature verified; version `3.6.0 (23)`,
   sandbox and read-only user-selected folder access embedded; no inbound
   network-server entitlement. Binary SHA-256:
-  `ab76e3db4be763cc2c5510e415255167024e8fc6d66a92cdbaba3cbacae1b903`.
+  `8066e922f7bf55a92aca19a6d0a86632b25d8a58f70b91ac8d8191e376457400`.
+- Local smoke test: copied the development-signed archive app to
+  `~/Applications/NotchAgent 3.6 Preview.app`. Closed running Store `3.5.5`,
+  launched preview `3.6.0 (23)`, observed guided setup in Portuguese, English,
+  and Spanish; Codex Connect opened the home folder with `.codex` visible and
+  an explicit authorization prompt. No folder access was granted during this
+  test. Quit button appeared in the expanded notch panel and terminated the
+  preview process; relaunched it and reopened guided setup from Settings.
+- App info privacy-policy URL read back from App Store Connect API on
+  2026-10-14: `https://notchagent.app/privacy`; marketing, support and privacy
+  URLs returned HTTP 200.
 - App Store Connect read-back on 2026-10-14: macOS `3.5.5 (22)` is
   `READY_FOR_SALE` and build 22 is `VALID`. Draft version `3.6.0` is
   `PREPARE_FOR_SUBMISSION` with manual release and no selected build.
   Version ID: `ebf1e59b-6377-4130-902e-a64abc8d86c0`.
 - The draft's PT-BR description and What's New text describe the guided setup;
-  both were read back through the API. EN-US and Spanish copy remains drafted
-  in `metadata.md` for later localization.
+  both were read back through the API. On 2026-10-14, What's New and reviewer
+  notes were updated to describe the Quit control and 3.6.0 setup, replacing
+  stale reviewer notes that referred to build 22; both were read back exactly.
+  EN-US and Spanish copy remains drafted in `metadata.md` for later localization.
 - The draft inherited the four current `APP_DESKTOP` screenshots; all four
   assets are `COMPLETE`. App availability read-back shows Brazil and the USA
   enabled, China mainland disabled, and 175 territories configured.
-- A signed-build first-launch/Settings smoke test and App Store Connect privacy
-  read-back remain required before submission.
+- The developer-signed app passed the first-launch/Settings smoke test. An
+  App Store installed-build smoke test and App Store Connect data-collection
+  label read-back remain before submission.
 
 The App Store submission is a separate publication step requiring the owner's
 final authorization.
