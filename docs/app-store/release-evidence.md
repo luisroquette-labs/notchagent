@@ -2,6 +2,25 @@
 
 ## Guided setup update candidate — 3.6.0 (23)
 
+- Source fix `9bd28f7`: Settings now refreshes its folder inspection when
+  guided setup changes the saved authorization. The earlier candidate showed
+  stale “Acesso necessário” in Settings after the Codex folder had been
+  authorized; the wizard had already confirmed session data. A regression
+  contract test covers the notification subscription.
+- Canonical gate after the fix: PASS on 2026-10-14, 618 Direct tests and 620
+  App Store tests, zero failures; unsigned Release build and sandbox checks
+  passed. Signed archive passed strict deep verification; the exported package
+  has a valid Apple installer signature and the app is universal `x86_64 arm64`.
+- Current archive: `dist/NotchAgentAppStore-3.6.0-23-9bd28f7.xcarchive`.
+  Current App Store package: `dist/app-store-export-9bd28f7/NotchAgent.pkg`;
+  SHA-256 `1328e0619d9dd5751767254c2c97b7a77a6258aee2deaea2d6abff7bcb96c3f6`.
+  It supersedes the `ddd071d` package below and has not been uploaded.
+- Updated local preview at `~/Applications/NotchAgent 3.6 Preview.app` from
+  the development-signed archive. After the user authorized `~/.codex`, the
+  guided setup confirmed 298 Codex session files. The updated preview then
+  displayed 299 session files with verified usage in Settings and showed
+  Codex quota data in the notch panel. Claude Code access remains ungranted.
+
 - Source commit: `ddd071d93335dff4050d6aadcc9c40e0b9ce3a57` (visible Quit action and review metadata); prior
   distribution-version fix: `bfd21773385d4549030bcece0609f264604b3e6a`.
 - Canonical gate: PASS again on 2026-10-14; 618 Direct tests (9 opt-in skips),
