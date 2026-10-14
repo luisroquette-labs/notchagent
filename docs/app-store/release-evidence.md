@@ -2,6 +2,20 @@
 
 ## Guided setup update candidate — 3.6.0 (23)
 
+- On 2026-10-14, the local preview was rebuilt and visually checked after
+  replacing the empty spending header `PAGO R$ 0` with `CUSTOS NÃO CONFIG.`
+  (and `CUSTOS —` in the compact view). The value is a ledger of confirmed
+  charges, not Claude quota or token usage. Existing charge history still shows
+  its actual paid amount. The Store gate passed again: 620 Direct and 623 Store
+  tests, zero failures, plus sandbox Release build. The development-signed
+  preview passed strict code-signature verification and launched on the Mac.
+  No updated build was uploaded or submitted to Apple.
+- Claude Code's supported status-line JSON can expose official 5h/7d quota,
+  but local transcript files do not contain it. A script installer that changes
+  Claude Code settings was excluded from this Store candidate because it would
+  introduce App Review guideline 2.5.2 risk. The Store preview continues to
+  identify local tokens and links to Claude's own Usage page for official quota.
+
 - Current source fix `2ebd6ad`: the Store Claude card leads with local session
   tokens and seven-day local tokens, then links to Claude's official Usage
   settings. It no longer displays the API-equivalent dollar estimate beside

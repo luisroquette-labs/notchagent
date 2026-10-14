@@ -88,7 +88,12 @@ struct NotchExpandedView: View {
             Button {
                 router.openSpending()
             } label: {
-                GaugeLabel(text: "PAGO " + spending.format(spending.monthlySpend.paidBRL, compact: true), color: Theme.coral, size: 8)
+                GaugeLabel(
+                    text: spending.subscriptions.isEmpty && spending.expenses.isEmpty && spending.history.isEmpty
+                        ? "CUSTOS NÃO CONFIG."
+                        : "PAGO " + spending.format(spending.monthlySpend.paidBRL, compact: true),
+                    color: Theme.coral, size: 8
+                )
             }
             .buttonStyle(.plain)
             .help("Gasto confirmado neste mês")
