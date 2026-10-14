@@ -1615,6 +1615,18 @@ struct NotchExpandedView: View {
             actionChip("gearshape", "Settings") {
                 router.openSettings()
             }
+            Button {
+                NSApp.terminate(nil)
+            } label: {
+                Label(preferences.settings.interfaceLanguage == .ptBR ? "Encerrar" : "Quit", systemImage: "power")
+                    .font(Theme.body(10, weight: .semibold))
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 5)
+                    .background(Capsule().fill(Theme.coral.opacity(0.18)))
+                    .foregroundStyle(Theme.coral)
+            }
+            .buttonStyle(.plain)
+            .help(preferences.settings.interfaceLanguage == .ptBR ? "Encerrar o NotchAgent" : "Quit NotchAgent")
         }
     }
 

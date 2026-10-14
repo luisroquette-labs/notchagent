@@ -98,6 +98,8 @@ is authorized; click Connect for Codex or Claude Code and choose the suggested
 checks for readable session records. An empty or missing sessions folder shows
 a specific message and Choose another folder; it does not block the app. The
 same guide can be reopened from Settings or a provider card.
+To quit this menu-bar app, use the highlighted Encerrar/Quit button in the
+notch panel or the Encerrar NotchAgent/Quit NotchAgent button in the menu-bar item.
 
 The build is sandboxed. It does not execute `codex`, `gcloud`, Terminal,
 firmware helpers, or launch agents. Paid Anthropic probe requests, Resend email
@@ -117,18 +119,21 @@ Portuguese (Brazil):
 > A configuração inicial agora mostra quais pastas do Claude e do Codex
 > autorizar. Cada conexão confirma se encontrou sessões e explica como corrigir
 > pastas vazias ou incorretas. O guia também pode ser reaberto em Ajustes.
+> O botão Encerrar agora aparece claramente no painel e na barra de menus.
 
 English (U.S.):
 
 > Guided setup now shows which Claude and Codex folders to authorize. Each
 > connection confirms whether sessions were found and explains how to fix an
 > empty or incorrect folder. You can reopen the guide from Settings.
+> Quit is now clearly available in the panel and menu bar.
 
 Spanish:
 
 > La configuración guiada muestra qué carpetas de Claude y Codex autorizar.
 > Cada conexión confirma si encontró sesiones y explica cómo corregir una
 > carpeta vacía o incorrecta. Puedes volver a abrir la guía desde Ajustes.
+> El botón para cerrar la app ahora está visible en el panel y la barra de menús.
 
 ## App privacy answers
 

@@ -38,8 +38,9 @@ struct MenuBarContentView: View {
             tabContent(preferences: $preferences)
             Divider()
             HStack {
-                Button("Sair") { NSApp.terminate(nil) }
-                    .foregroundStyle(.secondary)
+                Button(preferences.settings.interfaceLanguage == .ptBR ? "Encerrar NotchAgent" : "Quit NotchAgent",
+                       systemImage: "power") { NSApp.terminate(nil) }
+                    .foregroundStyle(.orange)
                 Spacer()
                 Button(selectedTab == .costs ? "Abrir gastos" : "Dashboard") {
                     selectedTab == .costs ? router.openSpending() : router.openDashboard()
