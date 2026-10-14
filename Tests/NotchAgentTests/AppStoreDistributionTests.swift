@@ -69,7 +69,27 @@ final class AppStoreDistributionTests: XCTestCase {
         XCTAssertEqual(StoreDataFolder.claudeDesktop.dataSubpath, "local-agent-mode-sessions")
         XCTAssertEqual(StoreDataFolder.codex.expectedFolderName, ".codex")
         XCTAssertEqual(StoreDataFolder.codex.dataSubpath, "sessions")
+        let home = URL(fileURLWithPath: "/Users/example", isDirectory: true)
+        XCTAssertEqual(StoreDataFolder.codex.suggestedRoot(in: home).path, "/Users/example/.codex")
+        XCTAssertEqual(StoreDataFolder.claudeCode.suggestedRoot(in: home).path, "/Users/example/.claude")
+        XCTAssertEqual(StoreDataFolder.claudeDesktop.suggestedRoot(in: home).path,
+                       "/Users/example/Library/Application Support/Claude")
     }
+
+    func testGuidedSetupAppearsOnlyBeforeCompletionAndWithoutExistingAccess() {
+        XCTAssertTrue(StoreOnboardingState.shouldPresent(completed: false, hasAuthorizedFolder: false))
+        XCTAssertFalse(StoreOnboardingState.shouldPresent(completed: true, hasAuthorizedFolder: false))
+        XCTAssertFalse(StoreOnboardingState.shouldPresent(completed: false, hasAuthorizedFolder: true))
+    }
+
+    #if APP_STORE
+    func testGuidedSetupUsesThreeLanguagesAndEnglishFallback() {
+        XCTAssertEqual(SetupLanguage.preferred(for: "pt-BR"), .pt)
+        XCTAssertEqual(SetupLanguage.preferred(for: "en-US"), .en)
+        XCTAssertEqual(SetupLanguage.preferred(for: "es-ES"), .es)
+        XCTAssertEqual(SetupLanguage.preferred(for: "fr-FR"), .en)
+    }
+    #endif
 
     func testBookmarkStoreRejectsWrongFolder() throws {
         let defaults = try makeDefaults()

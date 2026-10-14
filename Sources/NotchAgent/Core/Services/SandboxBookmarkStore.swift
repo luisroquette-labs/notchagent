@@ -20,15 +20,25 @@ enum StoreDataFolder: String, CaseIterable, Sendable {
         case .codex: "sessions"
         }
     }
+
+    func suggestedRoot(in userHome: URL) -> URL {
+        let parent = self == .claudeDesktop
+            ? userHome.appendingPathComponent("Library/Application Support", isDirectory: true)
+            : userHome
+        return parent.appendingPathComponent(expectedFolderName, isDirectory: true)
+    }
 }
 
 enum SandboxBookmarkError: LocalizedError, Equatable {
     case unexpectedFolder(expected: String)
+    case accessDenied
 
     var errorDescription: String? {
         switch self {
         case let .unexpectedFolder(expected):
             "Select the \(expected) folder."
+        case .accessDenied:
+            "Folder access was not granted. Select the folder again."
         }
     }
 }
@@ -100,7 +110,10 @@ final class SandboxBookmarkStore: @unchecked Sendable {
                 )
                 defaults.set(refreshed, forKey: key(for: folder))
             }
-            _ = url.startAccessingSecurityScopedResource()
+            guard url.startAccessingSecurityScopedResource() else {
+                defaults.removeObject(forKey: key(for: folder))
+                return nil
+            }
             activeRoots[folder] = url
             return url
         } catch {

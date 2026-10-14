@@ -12,6 +12,9 @@ final class WindowRouter {
     @ObservationIgnored private var dashboardWindow: NSWindow?
     @ObservationIgnored private var settingsWindow: NSWindow?
     @ObservationIgnored private var spendingWindow: NSWindow?
+    #if APP_STORE
+    @ObservationIgnored private var onboardingWindow: NSWindow?
+    #endif
 
     func openDashboard() {
         guard let environment else { return }
@@ -46,6 +49,24 @@ final class WindowRouter {
         present(settingsWindow)
     }
 
+    #if APP_STORE
+    func openStoreOnboarding(focus: StoreDataFolder? = nil) {
+        guard let environment else { return }
+        onboardingWindow?.close()
+        let view = StoreOnboardingView(focus: focus) { [weak self] in
+            UserDefaults.standard.set(true, forKey: StoreOnboardingState.completedKey)
+            self?.onboardingWindow?.close()
+        }
+            .environment(environment.store)
+        onboardingWindow = makeWindow(
+            title: "NotchAgent — Setup",
+            content: AnyView(view),
+            size: NSSize(width: 620, height: 500)
+        )
+        present(onboardingWindow)
+    }
+    #endif
+
     func openSpending() {
         guard let environment else { return }
         if spendingWindow == nil {
@@ -65,6 +86,9 @@ final class WindowRouter {
         dashboardWindow?.appearance = appearance
         settingsWindow?.appearance = appearance
         spendingWindow?.appearance = appearance
+        #if APP_STORE
+        onboardingWindow?.appearance = appearance
+        #endif
     }
 
     private func makeWindow(title: String, content: AnyView, size: NSSize) -> NSWindow {
