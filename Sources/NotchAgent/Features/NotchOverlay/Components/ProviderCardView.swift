@@ -370,6 +370,32 @@ struct ProviderCardView: View {
 
     private var unavailable: some View {
         VStack(alignment: .leading, spacing: 5) {
+            #if APP_STORE
+            if needsStoreFolderAccess {
+                let portuguese = store.settings.interfaceLanguage == .ptBR
+                Text(provider == .codex
+                    ? (portuguese ? "Conecte o Codex para ver seu uso" : "Connect Codex to see usage")
+                    : (portuguese ? "Conecte o Claude Code para ver seu uso" : "Connect Claude Code to see usage"))
+                    .font(Theme.body(10))
+                    .foregroundStyle(Theme.textSecondary)
+                Button(portuguese ? "Terminar configuração" : "Finish setup") {
+                    AppEnvironment.shared.router.openStoreOnboarding(
+                        focus: provider == .codex ? .codex : .claudeCode
+                    )
+                }
+                .font(Theme.body(10, weight: .semibold))
+                .accessibilityHint(portuguese ? "Abre o guia de acesso às pastas" : "Opens the folder access guide")
+            } else {
+                unavailableDetails
+            }
+            #else
+            unavailableDetails
+            #endif
+        }
+    }
+
+    private var unavailableDetails: some View {
+        Group {
             Text(snapshot?.health.badgeText ?? "Waiting for data…")
                 .font(Theme.body(11))
                 .foregroundStyle(Theme.textDim)
@@ -381,6 +407,19 @@ struct ProviderCardView: View {
             }
         }
     }
+
+    #if APP_STORE
+    private var needsStoreFolderAccess: Bool {
+        switch provider {
+        case .codex:
+            SandboxBookmarkStore.shared.selectedRoot(for: .codex) == nil
+        case .claudeCode:
+            SandboxBookmarkStore.shared.selectedRoot(for: .claudeCode) == nil &&
+                SandboxBookmarkStore.shared.selectedRoot(for: .claudeDesktop) == nil
+        default: false
+        }
+    }
+    #endif
 
     private var footer: some View {
         HStack(spacing: 6) {
