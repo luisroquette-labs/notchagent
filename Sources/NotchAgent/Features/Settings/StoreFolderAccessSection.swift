@@ -60,6 +60,7 @@ struct StoreFolderAccessSection: View {
         .onAppear { language = .current; inspectAuthorizedFolders() }
         .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
             language = .current
+            inspectAuthorizedFolders()
         }
     }
 

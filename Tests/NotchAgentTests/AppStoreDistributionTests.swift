@@ -100,6 +100,16 @@ final class AppStoreDistributionTests: XCTestCase {
         XCTAssertFalse(StoreOnboardingState.shouldPresent(completed: false, hasAuthorizedFolder: true))
     }
 
+    func testSettingsRefreshesFolderStatusAfterGuidedAuthorization() throws {
+        let root = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let source = try String(
+            contentsOf: root.appendingPathComponent("Sources/NotchAgent/Features/Settings/StoreFolderAccessSection.swift"),
+            encoding: .utf8
+        )
+        XCTAssertTrue(source.contains(".onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in\n            language = .current\n            inspectAuthorizedFolders()"))
+    }
+
     #if APP_STORE
     func testGuidedSetupUsesThreeLanguagesAndEnglishFallback() {
         XCTAssertEqual(SetupLanguage.preferred(for: "pt-BR"), .pt)
