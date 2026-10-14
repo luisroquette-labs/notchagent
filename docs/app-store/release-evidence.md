@@ -1,5 +1,30 @@
 # Mac App Store release evidence
 
+## Guided setup update candidate — 3.6.0 (23)
+
+- Source commit: `6428860a084aa16f2cb96567c1fa18bbd931a64c`
+- Canonical gate: PASS on 2026-10-14; 617 Direct tests (9 opt-in skips),
+  619 App Store tests (11 opt-in skips), zero failures; Release build and
+  sandbox bundle inspection passed.
+- Archive: `dist/NotchAgentAppStore-3.6.0-23-6428860.xcarchive`; signed,
+  strict deep verification passed, universal `x86_64 arm64`.
+- Exported App Store package: `dist/app-store-export-6428860/NotchAgent.pkg`;
+  SHA-256 `e43ef8ef9b0c8062c3a172faa6b9144d6397c1ed244e19d1f894ab9ae0bfd2fd`.
+- Exported app: Apple Distribution signature verified; version `3.6.0 (23)`,
+  sandbox and read-only user-selected folder access embedded; no inbound
+  network-server entitlement. Binary SHA-256:
+  `c66d538eb571e44cb742c345cd38b76c8ced3dbe55da9a4282109500313559e5`.
+- App Store Connect read-back on 2026-10-14: macOS `3.5.5 (22)` is
+  `READY_FOR_SALE` and build 22 is `VALID`. Version 3.6.0 is not yet created;
+  this package has not been uploaded or submitted.
+- PT-BR, EN-US, and Spanish update copy is drafted in `metadata.md`. The four
+  existing Store screenshots remain the current public set. A signed-build
+  first-launch/Settings smoke test and App Store Connect metadata, privacy,
+  storefront, and screenshot read-back remain required before submission.
+
+The App Store submission is a separate publication step requiring the owner's
+final authorization.
+
 ## Local artifact
 
 - Branch: `feat/mac-app-store-sdd`
