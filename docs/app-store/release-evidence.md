@@ -15,12 +15,16 @@
   network-server entitlement. Binary SHA-256:
   `c66d538eb571e44cb742c345cd38b76c8ced3dbe55da9a4282109500313559e5`.
 - App Store Connect read-back on 2026-10-14: macOS `3.5.5 (22)` is
-  `READY_FOR_SALE` and build 22 is `VALID`. Version 3.6.0 is not yet created;
-  this package has not been uploaded or submitted.
-- PT-BR, EN-US, and Spanish update copy is drafted in `metadata.md`. The four
-  existing Store screenshots remain the current public set. A signed-build
-  first-launch/Settings smoke test and App Store Connect metadata, privacy,
-  storefront, and screenshot read-back remain required before submission.
+  `READY_FOR_SALE` and build 22 is `VALID`. Draft version `3.6.0` is
+  `PREPARE_FOR_SUBMISSION` with manual release and no selected build.
+  Version ID: `ebf1e59b-6377-4130-902e-a64abc8d86c0`.
+- The draft's PT-BR description and What's New text describe the guided setup;
+  both were read back through the API. EN-US and Spanish copy remains drafted
+  in `metadata.md` for later localization.
+- The draft inherited the four current `APP_DESKTOP` screenshots; all four
+  assets are `COMPLETE`. A signed-build first-launch/Settings smoke test and
+  App Store Connect privacy and storefront read-back remain required before
+  submission.
 
 The App Store submission is a separate publication step requiring the owner's
 final authorization.

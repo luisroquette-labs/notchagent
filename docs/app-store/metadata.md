@@ -6,6 +6,8 @@ Bundle ID: `br.com.lfrprojects.notchagent.appstore`
 Primary category: Developer Tools
 Secondary category: Productivity
 Price: Free
+App Store Connect 3.6.0 draft locale: `pt-BR`; English and Spanish copy below
+is prepared locally and is not published as a separate locale.
 
 ## URLs
 
