@@ -143,9 +143,8 @@ struct StoreOnboardingView: View {
         .padding(24)
         .frame(minWidth: 600, minHeight: 440)
         .task { inspectAuthorizedFolders() }
-        .onDisappear {
-            UserDefaults.standard.set(language.rawValue, forKey: SetupLanguage.savedKey)
-            UserDefaults.standard.set(true, forKey: StoreOnboardingState.completedKey)
+        .onChange(of: language) { _, newValue in
+            UserDefaults.standard.set(newValue.rawValue, forKey: SetupLanguage.savedKey)
         }
     }
 
@@ -183,7 +182,7 @@ struct StoreOnboardingView: View {
                     .font(.caption.monospaced())
             }
             if language == .es {
-                Text("La configuración está en español; otras secciones de la aplicación siguen en inglés.")
+                Text("La configuración está en español; otras secciones pueden aparecer en portugués o inglés.")
                     .font(.caption).foregroundStyle(.secondary)
             }
             Text(language.text(

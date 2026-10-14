@@ -89,6 +89,26 @@ final class AppStoreDistributionTests: XCTestCase {
         XCTAssertEqual(SetupLanguage.preferred(for: "es-ES"), .es)
         XCTAssertEqual(SetupLanguage.preferred(for: "fr-FR"), .en)
     }
+
+    @MainActor
+    func testClosingGuidedSetupDoesNotRepeatOnNextLaunch() throws {
+        let defaults = UserDefaults.standard
+        let key = StoreOnboardingState.completedKey
+        let previous = defaults.object(forKey: key)
+        defer {
+            if let previous { defaults.set(previous, forKey: key) }
+            else { defaults.removeObject(forKey: key) }
+        }
+        defaults.removeObject(forKey: key)
+
+        AppEnvironment.shared.router.openStoreOnboarding()
+        let window = try XCTUnwrap(NSApplication.shared.windows.first {
+            $0.title == "NotchAgent" && $0.isVisible
+        })
+        window.close()
+
+        XCTAssertTrue(defaults.bool(forKey: key))
+    }
     #endif
 
     func testBookmarkStoreRejectsWrongFolder() throws {
