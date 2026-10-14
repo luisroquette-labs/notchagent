@@ -14,6 +14,7 @@ final class WindowRouter {
     @ObservationIgnored private var spendingWindow: NSWindow?
     #if APP_STORE
     @ObservationIgnored private var onboardingWindow: NSWindow?
+    @ObservationIgnored private var onboardingCloseObserver: NSObjectProtocol?
     #endif
 
     func openDashboard() {
@@ -51,19 +52,27 @@ final class WindowRouter {
 
     #if APP_STORE
     func openStoreOnboarding(focus: StoreDataFolder? = nil) {
-        guard let environment else { return }
+        guard environment != nil else { return }
+        if let onboardingCloseObserver {
+            NotificationCenter.default.removeObserver(onboardingCloseObserver)
+        }
         onboardingWindow?.close()
         let view = StoreOnboardingView(focus: focus) { [weak self] in
             UserDefaults.standard.set(true, forKey: StoreOnboardingState.completedKey)
             self?.onboardingWindow?.close()
         }
-            .environment(environment.store)
-        onboardingWindow = makeWindow(
-            title: "NotchAgent — Setup",
+        let window = makeWindow(
+            title: "NotchAgent",
             content: AnyView(view),
             size: NSSize(width: 620, height: 500)
         )
-        present(onboardingWindow)
+        onboardingWindow = window
+        onboardingCloseObserver = NotificationCenter.default.addObserver(
+            forName: NSWindow.willCloseNotification, object: window, queue: .main
+        ) { _ in
+            UserDefaults.standard.set(true, forKey: StoreOnboardingState.completedKey)
+        }
+        present(window)
     }
     #endif
 

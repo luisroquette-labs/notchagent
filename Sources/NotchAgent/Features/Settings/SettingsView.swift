@@ -95,7 +95,7 @@ struct SettingsView: View {
             }
 
             #if APP_STORE
-            StoreFolderAccessSection(portuguese: pt)
+            StoreFolderAccessSection()
             #endif
 
             Section(pt ? "Atualização" : "Refresh") {

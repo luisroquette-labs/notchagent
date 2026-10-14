@@ -38,7 +38,10 @@ Description:
 >
 > Os dados de uso são processados localmente no dispositivo. O acesso às pastas do
 > Claude Code, Claude Desktop e Codex é somente leitura e depende da sua
-> autorização. Recursos online opcionais e seus destinos estão descritos na
+> autorização. Na primeira abertura, um guia mostra a pasta certa para cada
+> ferramenta e confirma quando encontra sessões. É preciso já ter usado uma
+> dessas ferramentas neste computador para ver dados locais; contas de API são
+> opcionais e configuradas à parte. Recursos online opcionais e seus destinos estão descritos na
 > política de privacidade. Sem anúncios, rastreamento ou conta NotchAgent.
 >
 > A edição da App Store não executa CLIs externos. As atualizações chegam pela
@@ -70,8 +73,11 @@ Description:
 > • Optionally monitor accounts and connect NotchAgent Desk
 >
 > Usage data is processed locally on the device. Read-only access to Claude Code,
-> Claude Desktop, and Codex folders requires your authorization. Optional
-> online features and their destinations are described in the privacy policy.
+> Claude Desktop, and Codex folders requires your authorization. Guided
+> first-launch setup takes you to each folder and confirms when it finds
+> sessions. You need to have used one of these tools on this computer to see
+> local data; API accounts are optional and configured separately. Optional online
+> features and their destinations are described in the privacy policy.
 > No ads, tracking, or NotchAgent account.
 >
 > The App Store edition does not run external CLIs. Updates arrive through the
@@ -84,10 +90,12 @@ Description:
 NotchAgent is a menu-bar app (`LSUIElement`) and does not show a Dock icon.
 After launch, click its menu-bar item or the top-center notch area.
 
-No account is required. To test local usage, open Settings > Data folders and
-choose a `.claude`, `Claude`, or `.codex` folder if present. The picker validates
-the folder name and grants read-only access. Empty or missing folders produce a
-no-data state and do not block the rest of the interface.
+No account is required. First-launch setup opens automatically when no folder
+is authorized; click Connect for Codex or Claude Code and choose the suggested
+`.codex` or `.claude` folder. Claude Desktop is optional. Each row separately
+checks for readable session records. An empty or missing sessions folder shows
+a specific message and Choose another folder; it does not block the app. The
+same guide can be reopened from Settings or a provider card.
 
 The build is sandboxed. It does not execute `codex`, `gcloud`, Terminal,
 firmware helpers, or launch agents. Paid Anthropic probe requests, Resend email

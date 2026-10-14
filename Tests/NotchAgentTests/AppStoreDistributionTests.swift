@@ -89,6 +89,26 @@ final class AppStoreDistributionTests: XCTestCase {
         XCTAssertEqual(SetupLanguage.preferred(for: "es-ES"), .es)
         XCTAssertEqual(SetupLanguage.preferred(for: "fr-FR"), .en)
     }
+
+    @MainActor
+    func testClosingGuidedSetupDoesNotRepeatOnNextLaunch() throws {
+        let defaults = UserDefaults.standard
+        let key = StoreOnboardingState.completedKey
+        let previous = defaults.object(forKey: key)
+        defer {
+            if let previous { defaults.set(previous, forKey: key) }
+            else { defaults.removeObject(forKey: key) }
+        }
+        defaults.removeObject(forKey: key)
+
+        AppEnvironment.shared.router.openStoreOnboarding()
+        let window = try XCTUnwrap(NSApplication.shared.windows.first {
+            $0.title == "NotchAgent" && $0.isVisible
+        })
+        window.close()
+
+        XCTAssertTrue(defaults.bool(forKey: key))
+    }
     #endif
 
     func testBookmarkStoreRejectsWrongFolder() throws {
@@ -114,6 +134,70 @@ final class AppStoreDistributionTests: XCTestCase {
 
         XCTAssertNil(store.selectedRoot(for: .codex))
         XCTAssertNil(defaults.data(forKey: "\(prefix).codex"))
+    }
+
+    func testFolderInspectionSeparatesAuthorizationFromUsableData() throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("notchagent-setup-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        XCTAssertEqual(StoreFolderInspector.inspect(.codex, root: root), .missingSessionsFolder)
+
+        let sessions = root.appendingPathComponent("sessions", isDirectory: true)
+        try FileManager.default.createDirectory(at: sessions, withIntermediateDirectories: true)
+        XCTAssertEqual(StoreFolderInspector.inspect(.codex, root: root), .noRecentSessions)
+
+        let empty = sessions.appendingPathComponent("rollout-empty.jsonl")
+        try Data("{}\n".utf8).write(to: empty)
+        XCTAssertEqual(StoreFolderInspector.inspect(.codex, root: root), .noUsageRecords)
+
+        let fixture = try XCTUnwrap(Bundle.module.url(
+            forResource: "codex-rollout", withExtension: "jsonl", subdirectory: "Fixtures"
+        ))
+        let valid = sessions.appendingPathComponent("rollout-valid.jsonl")
+        try FileManager.default.copyItem(at: fixture, to: valid)
+        try FileManager.default.setAttributes([.modificationDate: Date()], ofItemAtPath: valid.path)
+        guard case let .found(files, latest) = StoreFolderInspector.inspect(.codex, root: root) else {
+            return XCTFail("A valid Codex rollout must be recognized independently of the bookmark")
+        }
+        XCTAssertEqual(files, 2)
+        XCTAssertNotNil(latest)
+    }
+
+    func testClaudeDesktopInspectionDoesNotBorrowClaudeCodeData() throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("notchagent-desktop-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let sessions = root.appendingPathComponent("local-agent-mode-sessions", isDirectory: true)
+        try FileManager.default.createDirectory(at: sessions, withIntermediateDirectories: true)
+        XCTAssertEqual(StoreFolderInspector.inspect(.claudeDesktop, root: root), .noRecentSessions)
+
+        let fixture = try XCTUnwrap(Bundle.module.url(
+            forResource: "claude-session", withExtension: "jsonl", subdirectory: "Fixtures"
+        ))
+        let valid = sessions.appendingPathComponent("session.jsonl")
+        try FileManager.default.copyItem(at: fixture, to: valid)
+        try FileManager.default.setAttributes([.modificationDate: Date()], ofItemAtPath: valid.path)
+        guard case let .found(files, _) = StoreFolderInspector.inspect(.claudeDesktop, root: root) else {
+            return XCTFail("Claude Desktop must use only its own selected folder")
+        }
+        XCTAssertEqual(files, 1)
+    }
+
+    func testFolderInspectionReportsUnreadableSession() throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("notchagent-unreadable-\(UUID().uuidString)", isDirectory: true)
+        let sessions = root.appendingPathComponent("sessions", isDirectory: true)
+        try FileManager.default.createDirectory(at: sessions, withIntermediateDirectories: true)
+        let file = sessions.appendingPathComponent("rollout-unreadable.jsonl")
+        try Data("{}\n".utf8).write(to: file)
+        try FileManager.default.setAttributes([.posixPermissions: 0], ofItemAtPath: file.path)
+        defer {
+            try? FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: file.path)
+            try? FileManager.default.removeItem(at: root)
+        }
+
+        XCTAssertEqual(StoreFolderInspector.inspect(.codex, root: root), .readFailed)
     }
 
     private func makeDefaults() throws -> UserDefaults {

@@ -30,13 +30,14 @@ enum StoreFolderPicker {
 }
 
 struct StoreFolderAccessSection: View {
-    let portuguese: Bool
+    @State private var language = SetupLanguage.current
+    @State private var inspections: [StoreDataFolder: StoreFolderReadiness] = [:]
+    @State private var inspectionIDs: [StoreDataFolder: UUID] = [:]
     @State private var message: String?
-    @State private var revision = 0
 
     var body: some View {
         Section {
-            Button(portuguese ? "Abrir configuração guiada…" : "Open guided setup…") {
+            Button(language.text("Abrir configuração guiada…", "Open guided setup…", "Abrir configuración guiada…")) {
                 AppEnvironment.shared.router.openStoreOnboarding()
             }
             folderRow(.claudeCode)
@@ -46,15 +47,20 @@ struct StoreFolderAccessSection: View {
                 Text(message).font(.caption).foregroundStyle(.secondary)
             }
         } header: {
-            Text(portuguese ? "Pastas autorizadas" : "Authorized folders")
+            Text(language.text("Pastas autorizadas", "Authorized folders", "Carpetas autorizadas"))
         } footer: {
-            Text(portuguese
-                ? "A Mac App Store exige que você escolha cada pasta. O acesso é somente leitura e pode ser revogado aqui."
-                : "The Mac App Store requires you to choose each folder. Access is read-only and can be revoked here.")
+            Text(language.text(
+                "A Mac App Store exige que você escolha cada pasta. O acesso é somente leitura e pode ser revogado aqui.",
+                "The Mac App Store requires you to choose each folder. Access is read-only and can be revoked here.",
+                "La Mac App Store exige que elijas cada carpeta. El acceso es de solo lectura y puedes revocarlo aquí."
+            ))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
-        .id(revision)
+        .onAppear { language = .current; inspectAuthorizedFolders() }
+        .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
+            language = .current
+        }
     }
 
     @ViewBuilder
@@ -64,20 +70,26 @@ struct StoreFolderAccessSection: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title(folder))
                 Text(selected == nil
-                    ? (portuguese ? "Acesso necessário" : "Access required")
-                    : (portuguese ? "Autorizada" : "Authorized"))
+                    ? language.text("Acesso necessário", "Access required", "Acceso necesario")
+                    : (inspections[folder] ?? .checking).message(language))
                     .font(.caption)
                     .foregroundStyle(selected == nil ? .orange : .secondary)
             }
             Spacer()
             if selected == nil {
-                Button(portuguese ? "Conectar" : "Connect") { authorize(folder) }
+                Button(language.text("Conectar", "Connect", "Conectar")) { authorize(folder) }
             } else {
-                Button(portuguese ? "Revogar" : "Revoke") {
-                    SandboxBookmarkStore.shared.revoke(folder)
-                    AppEnvironment.shared.scheduler.refreshNow()
-                    message = portuguese ? "Acesso revogado." : "Access revoked."
-                    revision += 1
+                Menu(language.text("Gerenciar", "Manage", "Gestionar")) {
+                    Button(language.text("Atualizar", "Refresh", "Actualizar")) { inspect(folder) }
+                    Button(language.text("Escolher outra pasta", "Choose another folder", "Elegir otra carpeta")) { authorize(folder) }
+                    Divider()
+                    Button(language.text("Revogar", "Revoke", "Revocar"), role: .destructive) {
+                        SandboxBookmarkStore.shared.revoke(folder)
+                        inspections[folder] = nil
+                        inspectionIDs[folder] = nil
+                        AppEnvironment.shared.scheduler.refreshNow()
+                        message = language.text("Acesso revogado.", "Access revoked.", "Acceso revocado.")
+                    }
                 }
             }
         }
@@ -85,20 +97,41 @@ struct StoreFolderAccessSection: View {
 
     private func authorize(_ folder: StoreDataFolder) {
         do {
-            guard try StoreFolderPicker.choose(folder, portuguese: portuguese) else { return }
+            guard try StoreFolderPicker.choose(folder, portuguese: language == .pt, spanish: language == .es) else { return }
             AppEnvironment.shared.scheduler.refreshNow()
-            message = portuguese ? "Pasta autorizada." : "Folder authorized."
-            revision += 1
+            inspect(folder)
+            message = nil
         } catch {
-            message = error.localizedDescription
+            message = language.text(
+                "Não foi possível usar essa pasta. Escolha \(folder.expectedFolderName) e tente novamente.",
+                "Could not use that folder. Choose \(folder.expectedFolderName) and try again.",
+                "No se pudo usar esa carpeta. Elige \(folder.expectedFolderName) e inténtalo de nuevo."
+            )
         }
     }
 
     private func title(_ folder: StoreDataFolder) -> String {
-        switch folder {
-        case .claudeCode: "Claude Code"
-        case .claudeDesktop: portuguese ? "Claude Desktop (opcional)" : "Claude Desktop (optional)"
-        case .codex: "Codex"
+        folder.title(language)
+    }
+
+    private func inspectAuthorizedFolders() {
+        for folder in StoreDataFolder.allCases where SandboxBookmarkStore.shared.selectedRoot(for: folder) != nil {
+            inspect(folder)
+        }
+    }
+
+    private func inspect(_ folder: StoreDataFolder) {
+        guard let root = SandboxBookmarkStore.shared.selectedRoot(for: folder) else { return }
+        let id = UUID()
+        inspectionIDs[folder] = id
+        inspections[folder] = .checking
+        Task { @MainActor in
+            let result = await Task.detached(priority: .userInitiated) {
+                StoreFolderInspector.inspect(folder, root: root)
+            }.value
+            guard inspectionIDs[folder] == id,
+                  SandboxBookmarkStore.shared.selectedRoot(for: folder) == root else { return }
+            inspections[folder] = result
         }
     }
 }

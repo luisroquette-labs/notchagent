@@ -14,6 +14,8 @@ import SwiftUI
 enum SetupLanguage: String, CaseIterable, Identifiable {
     case pt, en, es
 
+    static let savedKey = "appStore.setupLanguage"
+
     var id: String { rawValue }
     var label: String {
         switch self {
@@ -25,6 +27,10 @@ enum SetupLanguage: String, CaseIterable, Identifiable {
 
     static var system: Self {
         preferred(for: Locale.preferredLanguages.first)
+    }
+
+    static var current: Self {
+        UserDefaults.standard.string(forKey: savedKey).flatMap(Self.init(rawValue:)) ?? system
     }
 
     static func preferred(for identifier: String?) -> Self {
@@ -41,24 +47,56 @@ enum SetupLanguage: String, CaseIterable, Identifiable {
     }
 }
 
+extension StoreFolderReadiness {
+    func message(_ language: SetupLanguage) -> String {
+        switch self {
+        case .checking:
+            return language.text("Verificando sessões…", "Checking sessions…", "Comprobando sesiones…")
+        case .missingSessionsFolder:
+            return language.text("A pasta não contém os dados esperados.", "This folder has no expected session data.", "Esta carpeta no contiene los datos esperados.")
+        case .noRecentSessions:
+            return language.text("Nenhuma sessão nos últimos 8 dias. Use a ferramenta e atualize.", "No sessions in the last 8 days. Use the tool, then refresh.", "No hay sesiones en los últimos 8 días. Usa la herramienta y actualiza.")
+        case .noUsageRecords:
+            return language.text("Arquivos encontrados, mas sem dados de uso legíveis.", "Files found, but no readable usage records.", "Hay archivos, pero no datos de uso legibles.")
+        case .readFailed:
+            return language.text("Não foi possível ler as sessões.", "Could not read sessions.", "No se pudieron leer las sesiones.")
+        case let .found(files, verifiedActivity):
+            let number = files == 500 ? "500+" : "\(files)"
+            let count = language.text(
+                "\(number) \(files == 1 ? "arquivo" : "arquivos") de sessão · uso confirmado",
+                "\(number) session \(files == 1 ? "file" : "files") · usage confirmed",
+                "\(number) \(files == 1 ? "archivo" : "archivos") de sesión · uso confirmado"
+            )
+            guard let verifiedActivity else { return count }
+            let date = verifiedActivity.formatted(.dateTime.day().month().hour().minute().locale(Locale(identifier: language.rawValue)))
+            return count + language.text(" em \(date)", " at \(date)", " el \(date)")
+        }
+    }
+}
+
+extension StoreDataFolder {
+    func title(_ language: SetupLanguage) -> String {
+        switch self {
+        case .codex: "Codex"
+        case .claudeCode: "Claude Code"
+        case .claudeDesktop: language.text("Claude Desktop (opcional)", "Claude Desktop (optional)", "Claude Desktop (opcional)")
+        }
+    }
+}
+
 struct StoreOnboardingView: View {
     let finish: () -> Void
 
-    @Environment(UsageStore.self) private var store
-    @State private var language = SetupLanguage.system
-    @State private var step: Int
-    @State private var selected: Set<StoreDataFolder>
-    @State private var authorizedAt: [StoreDataFolder: Date] = [:]
+    @State private var language = SetupLanguage.current
+    @State private var inspections: [StoreDataFolder: StoreFolderReadiness] = [:]
+    @State private var inspectionIDs: [StoreDataFolder: UUID] = [:]
     @State private var error: String?
     @State private var showExample = false
-    @State private var revision = 0
+    private let focus: StoreDataFolder?
 
     init(focus: StoreDataFolder? = nil, finish: @escaping () -> Void) {
+        self.focus = focus
         self.finish = finish
-        _step = State(initialValue: focus == nil ? 0 : 1)
-        _selected = State(initialValue: focus.map { Set([$0]) } ?? Set(
-            StoreDataFolder.allCases.filter { SandboxBookmarkStore.shared.selectedRoot(for: $0) != nil }
-        ))
     }
 
     var body: some View {
@@ -76,57 +114,65 @@ struct StoreOnboardingView: View {
                 .accessibilityLabel(language.text("Idioma", "Language", "Idioma"))
                 .frame(width: 135)
             }
-            Text(language.text("Etapa \(step + 1) de 2", "Step \(step + 1) of 2", "Paso \(step + 1) de 2"))
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
-
-            if step == 0 { sourceStep } else { accessStep }
-
-            Spacer(minLength: 0)
-            HStack {
-                if step == 1 {
-                    Button(language.text("Voltar", "Back", "Volver")) { step = 0 }
-                }
-                Spacer()
-                Button(language.text("Fazer depois", "Do later", "Hacerlo después")) { finishSetup() }
-                if step == 0 {
-                    Button(language.text("Continuar", "Continue", "Continuar")) { step = 1 }
-                        .buttonStyle(.borderedProminent)
-                        .disabled(selected.isEmpty)
-                } else {
-                    Button(language.text("Concluir", "Finish", "Terminar")) { finishSetup() }
-                        .buttonStyle(.borderedProminent)
-                        .disabled(!selected.allSatisfy { SandboxBookmarkStore.shared.selectedRoot(for: $0) != nil })
-                }
-            }
-        }
-        .padding(24)
-        .frame(minWidth: 560, minHeight: 440)
-        .id(revision)
-    }
-
-    private var sourceStep: some View {
-        VStack(alignment: .leading, spacing: 13) {
             Text(language.text(
-                "O NotchAgent lê os dados de uso salvos neste computador. Quais ferramentas você usa?",
-                "NotchAgent reads usage data saved on this computer. Which tools do you use?",
-                "NotchAgent lee los datos de uso guardados en este equipo. ¿Qué herramientas usas?"
-            ))
-            sourceToggle(.codex, title: "Codex")
-            sourceToggle(.claudeCode, title: "Claude Code")
-            sourceToggle(.claudeDesktop, title: language.text(
-                "Claude Desktop (opcional)", "Claude Desktop (optional)", "Claude Desktop (opcional)"
+                "Escolha a ferramenta que você usa. Cada botão abre o seletor na pasta esperada.",
+                "Choose a tool you use. Each button opens the picker at the expected folder.",
+                "Elige la herramienta que usas. Cada botón abre el selector en la carpeta esperada."
             ))
             Text(language.text(
-                "Acesso somente leitura. Você escolhe cada pasta e pode revogar o acesso nos Ajustes. Não precisa de senha nem chave de API.",
-                "Read-only access. You choose each folder and can revoke access in Settings. No password or API key needed.",
-                "Acceso de solo lectura. Tú eliges cada carpeta y puedes revocarlo en Ajustes. No necesitas contraseña ni clave de API."
+                "Acesso somente leitura. Você pode revogar nos Ajustes. Não precisa de senha nem chave de API.",
+                "Read-only access. Revoke it in Settings. No password or API key needed.",
+                "Acceso de solo lectura. Puedes revocarlo en Ajustes. No necesitas contraseña ni clave de API."
             ))
                 .font(.caption)
                 .foregroundStyle(.secondary)
-            Button(language.text("Ver exemplo", "See example", "Ver ejemplo")) {
-                showExample.toggle()
+            ScrollView {
+                accessStep.frame(maxWidth: .infinity, alignment: .leading)
             }
+
+            HStack {
+                Spacer()
+                Button(language.text("Fazer depois", "Do later", "Hacerlo después")) { finishSetup() }
+                Button(language.text("Concluir", "Finish", "Terminar")) { finishSetup() }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(!StoreDataFolder.allCases.contains {
+                        SandboxBookmarkStore.shared.selectedRoot(for: $0) != nil
+                    })
+            }
+        }
+        .padding(24)
+        .frame(minWidth: 600, minHeight: 440)
+        .task { inspectAuthorizedFolders() }
+        .onChange(of: language) { _, newValue in
+            UserDefaults.standard.set(newValue.rawValue, forKey: SetupLanguage.savedKey)
+        }
+    }
+
+    private var accessStep: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            ForEach(orderedFolders, id: \.self) { folder in
+                HStack {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(folder.title(language))
+                            .fontWeight(.semibold)
+                        Text(status(for: folder))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    if SandboxBookmarkStore.shared.selectedRoot(for: folder) != nil {
+                        Button(language.text("Atualizar", "Refresh", "Actualizar")) { inspect(folder) }
+                    }
+                    Button(SandboxBookmarkStore.shared.selectedRoot(for: folder) == nil
+                        ? language.text("Conectar", "Connect", "Conectar")
+                        : language.text("Escolher outra pasta", "Choose another folder", "Elegir otra carpeta")) {
+                        authorize(folder)
+                    }
+                }
+                .padding(10)
+                .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
+            }
+            Button(language.text("Ver exemplo", "See example", "Ver ejemplo")) { showExample.toggle() }
             if showExample {
                 Text(language.text(
                     "EXEMPLO · Codex · sessão de 5h: 43% usado · semana: 28% usado",
@@ -134,115 +180,41 @@ struct StoreOnboardingView: View {
                     "EJEMPLO · Codex · sesión de 5 h: 43% usado · semana: 28% usado"
                 ))
                     .font(.caption.monospaced())
-                    .padding(10)
-                    .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
             }
             if language == .es {
-                Text("La guía está en español; el resto de la interfaz está disponible en inglés.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-        }
-    }
-
-    private func sourceToggle(_ folder: StoreDataFolder, title: String) -> some View {
-        Toggle(title, isOn: Binding(
-            get: { selected.contains(folder) },
-            set: { enabled in
-                if enabled { selected.insert(folder) } else { selected.remove(folder) }
-            }
-        ))
-    }
-
-    private var accessStep: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(language.text(
-                "Confirme o acesso. O seletor já abre no lugar certo; escolha a pasta indicada.",
-                "Confirm access. The picker opens in the right place; select the named folder.",
-                "Confirma el acceso. El selector se abre en el lugar correcto; elige la carpeta indicada."
-            ))
-            ForEach(StoreDataFolder.allCases.filter { selected.contains($0) }, id: \.self) { folder in
-                HStack {
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(folder == .codex ? "Codex" : folder == .claudeCode ? "Claude Code" : "Claude Desktop")
-                            .fontWeight(.semibold)
-                        Text(status(for: folder))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    Spacer()
-                    if SandboxBookmarkStore.shared.selectedRoot(for: folder) == nil {
-                        Button(language.text("Conectar", "Connect", "Conectar")) { authorize(folder) }
-                    } else if hasReadError(for: folder) {
-                        Button(language.text("Tentar novamente", "Try again", "Reintentar")) {
-                            authorizedAt[folder] = Date()
-                            AppEnvironment.shared.scheduler.refreshNow()
-                        }
-                    }
-                }
-                .padding(10)
-                .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
+                Text("La configuración está en español; otras secciones pueden aparecer en portugués o inglés.")
+                    .font(.caption).foregroundStyle(.secondary)
             }
             Text(language.text(
-                "\(connectedCount) de \(selected.count) conectado(s)",
-                "\(connectedCount) of \(selected.count) connected",
-                "\(connectedCount) de \(selected.count) conectado(s)"
+                "O uso local aparece após encontrar sessões. Percentuais de cotas podem não estar disponíveis nesta edição.",
+                "Local usage appears after sessions are found. Quota percentages may be unavailable in this edition.",
+                "El uso local aparece al encontrar sesiones. Los porcentajes de cuota pueden no estar disponibles en esta edición."
             ))
-                .font(.caption.weight(.semibold))
+                .font(.caption).foregroundStyle(.secondary)
             if let error {
                 Text(error).foregroundStyle(.red).font(.caption)
             }
         }
     }
 
-    private var connectedCount: Int {
-        selected.filter { SandboxBookmarkStore.shared.selectedRoot(for: $0) != nil }.count
+    private var orderedFolders: [StoreDataFolder] {
+        guard let focus else { return [.codex, .claudeCode, .claudeDesktop] }
+        return [focus] + StoreDataFolder.allCases.filter { $0 != focus }
     }
 
     private func status(for folder: StoreDataFolder) -> String {
         guard SandboxBookmarkStore.shared.selectedRoot(for: folder) != nil else {
             return language.text(
-                "Selecione a pasta \(folder.expectedFolderName)",
-                "Select the \(folder.expectedFolderName) folder",
-                "Elige la carpeta \(folder.expectedFolderName)"
+                "Selecione \(folder.expectedFolderName) para ler o uso local",
+                "Select \(folder.expectedFolderName) to read local usage",
+                "Elige \(folder.expectedFolderName) para leer el uso local"
             )
         }
-        guard let authorizedAt = authorizedAt[folder] else {
-            return language.text("Conectado", "Connected", "Conectado")
-        }
-        let provider: ProviderID = folder == .codex ? .codex : .claudeCode
-        switch store.refreshStates[provider] {
-        case .success(let date) where date >= authorizedAt:
-            let health = store.snapshots[provider]?.health
-            switch health {
-            case .ok, .degraded:
-                return language.text("Dados encontrados", "Data found", "Datos encontrados")
-            case .parseError:
-                return language.text("Não foi possível ler as sessões", "Could not read sessions", "No se pudieron leer las sesiones")
-            case .notInstalled:
-                return language.text("Pasta de sessões não encontrada", "Session folder not found", "No se encontró la carpeta de sesiones")
-            default:
-                return language.text("Nenhuma sessão recente", "No recent sessions", "No hay sesiones recientes")
-            }
-        case .failure(let date, _) where date >= authorizedAt:
-            return language.text("Falha na leitura", "Could not read sessions", "No se pudieron leer las sesiones")
-        default:
-            return language.text("Lendo sessões…", "Reading sessions…", "Leyendo sesiones…")
-        }
-    }
-
-    private func hasReadError(for folder: StoreDataFolder) -> Bool {
-        guard let authorizedAt = authorizedAt[folder] else { return false }
-        let provider: ProviderID = folder == .codex ? .codex : .claudeCode
-        switch store.refreshStates[provider] {
-        case .failure(let date, _) where date >= authorizedAt: return true
-        case .success(let date) where date >= authorizedAt:
-            return store.snapshots[provider]?.health == .parseError
-        default: return false
-        }
+        return (inspections[folder] ?? .checking).message(language)
     }
 
     private func finishSetup() {
+        UserDefaults.standard.set(language.rawValue, forKey: SetupLanguage.savedKey)
         AppEnvironment.shared.preferences.settings.interfaceLanguage = language == .pt ? .ptBR : .en
         finish()
     }
@@ -250,16 +222,36 @@ struct StoreOnboardingView: View {
     private func authorize(_ folder: StoreDataFolder) {
         do {
             guard try StoreFolderPicker.choose(folder, portuguese: language == .pt, spanish: language == .es) else { return }
-            authorizedAt[folder] = Date()
+            inspect(folder)
             AppEnvironment.shared.scheduler.refreshNow()
             error = nil
-            revision += 1
         } catch {
             self.error = language.text(
                 "Não foi possível usar essa pasta. Escolha \(folder.expectedFolderName) e tente novamente.",
                 "Could not use that folder. Choose \(folder.expectedFolderName) and try again.",
                 "No se pudo usar esa carpeta. Elige \(folder.expectedFolderName) e inténtalo de nuevo."
             )
+        }
+    }
+
+    private func inspectAuthorizedFolders() {
+        for folder in StoreDataFolder.allCases where SandboxBookmarkStore.shared.selectedRoot(for: folder) != nil {
+            inspect(folder)
+        }
+    }
+
+    private func inspect(_ folder: StoreDataFolder) {
+        guard let root = SandboxBookmarkStore.shared.selectedRoot(for: folder) else { return }
+        let id = UUID()
+        inspectionIDs[folder] = id
+        inspections[folder] = .checking
+        Task { @MainActor in
+            let result = await Task.detached(priority: .userInitiated) {
+                StoreFolderInspector.inspect(folder, root: root)
+            }.value
+            guard inspectionIDs[folder] == id,
+                  SandboxBookmarkStore.shared.selectedRoot(for: folder) == root else { return }
+            inspections[folder] = result
         }
     }
 }
