@@ -15,7 +15,7 @@
   <a href="#install"><img src="https://img.shields.io/badge/install-notarized%20DMG-F3B85A?style=flat-square" alt="Install the notarized DMG" /></a>
 </p>
 
-**Current version: 3.5.5** · Desk protocol 1.3 · pairs with Desk firmware 0.8.0 · source updated 2026-08-31 · [version history](CHANGELOG.md)
+**Current version: 3.5.5** · App Store update candidate: 3.6.0 · Desk protocol 1.3 · pairs with Desk firmware 0.8.0 · source updated 2026-10-14 · [version history](CHANGELOG.md)
 
 A native macOS menu-bar + notch overlay for Claude Code/Codex quotas and
 financial monitoring of external API accounts. It shows provider-reported

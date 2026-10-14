@@ -374,9 +374,17 @@ struct SettingsView: View {
             }
 
             Section {
-                #if !APP_STORE
+                #if APP_STORE
+                Text(pt
+                    ? "Conecte Claude Code em Pastas autorizadas para ativar a cota oficial. O percentual aparece após a próxima resposta do Claude Code; nenhuma chave de API é necessária."
+                    : "Connect Claude Code under Authorized folders to enable official quota. The percentage appears after Claude Code's next response; no API key is needed.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Button(pt ? "Conectar cota do Claude…" : "Connect Claude quota…") {
+                    AppEnvironment.shared.router.openStoreOnboarding(focus: .claudeCode)
+                }
+                #else
                 Toggle("Read real quota from the Anthropic API", isOn: $preferences.settings.claudeQuotaProbeEnabled)
-                #endif
                 budgetField(
                     "Session budget (tokens)",
                     value: $preferences.settings.claudeSessionTokenBudget
@@ -385,14 +393,11 @@ struct SettingsView: View {
                     "Weekly budget (tokens)",
                     value: $preferences.settings.claudeWeeklyTokenBudget
                 )
+                #endif
             } header: {
                 Text(pt ? "Quota do Claude Code" : "Claude Code quota")
             } footer: {
-                #if APP_STORE
-                Text("The App Store edition estimates quota from the token budgets you provide and never sends paid probe requests.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                #else
+                #if !APP_STORE
                 Text("The API probe sends a 1-token request using your local Claude Code OAuth token and reads the official 5h/7d utilization headers (macOS will ask for Keychain access once). The token never leaves this Mac except toward api.anthropic.com. Budgets below are only used as fallback when the probe is off or no token is found.")
                     .font(.caption)
                     .foregroundStyle(.secondary)

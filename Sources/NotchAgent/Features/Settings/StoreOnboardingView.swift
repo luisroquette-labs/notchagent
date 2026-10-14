@@ -8,9 +8,6 @@ enum StoreOnboardingState {
     }
 }
 
-#if APP_STORE
-import SwiftUI
-
 enum SetupLanguage: String, CaseIterable, Identifiable {
     case pt, en, es
 
@@ -46,6 +43,9 @@ enum SetupLanguage: String, CaseIterable, Identifiable {
         }
     }
 }
+
+#if APP_STORE
+import SwiftUI
 
 extension StoreFolderReadiness {
     func message(_ language: SetupLanguage) -> String {
@@ -120,9 +120,9 @@ struct StoreOnboardingView: View {
                 "Elige la herramienta que usas. Cada botón abre el selector en la carpeta esperada."
             ))
             Text(language.text(
-                "Acesso somente leitura. Você pode revogar nos Ajustes. Não precisa de senha nem chave de API.",
-                "Read-only access. Revoke it in Settings. No password or API key needed.",
-                "Acceso de solo lectura. Puedes revocarlo en Ajustes. No necesitas contraseña ni clave de API."
+                "Sem senha nem chave de API. O acesso salvo é somente leitura; para mostrar a cota oficial do Claude, o app ativa a barra de status em .claude/settings.json.",
+                "No password or API key. Saved access is read-only; to show Claude's official quota, the app enables the status line in .claude/settings.json.",
+                "Sin contraseña ni clave de API. El acceso guardado es de solo lectura; para mostrar la cuota oficial de Claude, la app activa la barra de estado en .claude/settings.json."
             ))
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -151,6 +151,8 @@ struct StoreOnboardingView: View {
     private var accessStep: some View {
         VStack(alignment: .leading, spacing: 12) {
             ForEach(orderedFolders, id: \.self) { folder in
+                let selected = SandboxBookmarkStore.shared.selectedRoot(for: folder)
+                let quotaEnabled = folder == .claudeCode && selected.map { ClaudeStatuslineSetup.isInstalled(root: $0) } == true
                 HStack {
                     VStack(alignment: .leading, spacing: 3) {
                         Text(folder.title(language))
@@ -158,14 +160,25 @@ struct StoreOnboardingView: View {
                         Text(status(for: folder))
                             .font(.caption)
                             .foregroundStyle(.secondary)
+                        if folder == .claudeCode, selected != nil {
+                            Text(quotaEnabled
+                                ? language.text("Cota oficial ativada · aparece após a próxima resposta do Claude Code", "Official quota enabled · appears after Claude Code's next response", "Cuota oficial activada · aparece tras la próxima respuesta de Claude Code")
+                                : language.text("Cota não ativada · conecte novamente", "Quota not enabled · connect again", "Cuota no activada · conecta de nuevo"))
+                                .font(.caption)
+                                .foregroundStyle(quotaEnabled ? .green : .orange)
+                        }
                     }
                     Spacer()
-                    if SandboxBookmarkStore.shared.selectedRoot(for: folder) != nil {
+                    if selected != nil {
                         Button(language.text("Atualizar", "Refresh", "Actualizar")) { inspect(folder) }
                     }
-                    Button(SandboxBookmarkStore.shared.selectedRoot(for: folder) == nil
-                        ? language.text("Conectar", "Connect", "Conectar")
-                        : language.text("Escolher outra pasta", "Choose another folder", "Elegir otra carpeta")) {
+                    Button(selected == nil
+                        ? (folder == .claudeCode
+                            ? language.text("Conectar + ativar cota", "Connect + enable quota", "Conectar + activar cuota")
+                            : language.text("Conectar", "Connect", "Conectar"))
+                        : (folder == .claudeCode && !quotaEnabled
+                            ? language.text("Reativar cota", "Enable quota again", "Reactivar cuota")
+                            : language.text("Escolher outra pasta", "Choose another folder", "Elegir otra carpeta"))) {
                         authorize(folder)
                     }
                 }
@@ -186,9 +199,9 @@ struct StoreOnboardingView: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
             Text(language.text(
-                "O uso local aparece após encontrar sessões. Percentuais de cotas podem não estar disponíveis nesta edição.",
-                "Local usage appears after sessions are found. Quota percentages may be unavailable in this edition.",
-                "El uso local aparece al encontrar sesiones. Los porcentajes de cuota pueden no estar disponibles en esta edición."
+                "O percentual vem da barra de status do Claude Code após uma resposta. Se você já usa outra barra, o app pede sua escolha antes de substituí-la.",
+                "The percentage comes from Claude Code's status line after a response. If you already use another status line, the app asks before replacing it.",
+                "El porcentaje llega desde la barra de Claude Code tras una respuesta. Si ya usas otra barra, la app pide permiso antes de reemplazarla."
             ))
                 .font(.caption).foregroundStyle(.secondary)
             if let error {
@@ -226,11 +239,16 @@ struct StoreOnboardingView: View {
             AppEnvironment.shared.scheduler.refreshNow()
             error = nil
         } catch {
-            self.error = language.text(
+            self.error = error is ClaudeStatuslineSetupError ? language.text(
+                "Pasta conectada, mas a cota não foi ativada. Confira settings.json ou tente Reativar cota; suas outras opções foram preservadas.",
+                "Folder connected, but quota was not enabled. Check settings.json or choose Enable quota again; your other settings were preserved.",
+                "Carpeta conectada, pero no se activó la cuota. Revisa settings.json o elige Reactivar cuota; las demás opciones se conservaron."
+            ) : language.text(
                 "Não foi possível usar essa pasta. Escolha \(folder.expectedFolderName) e tente novamente.",
                 "Could not use that folder. Choose \(folder.expectedFolderName) and try again.",
                 "No se pudo usar esa carpeta. Elige \(folder.expectedFolderName) e inténtalo de nuevo."
             )
+            inspect(folder)
         }
     }
 

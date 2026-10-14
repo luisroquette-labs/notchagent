@@ -15,6 +15,11 @@ Commits follow [Conventional Commits 1.0.0](https://www.conventionalcommits.org/
 `CHANGELOG.md` remains human-curated using Added, Changed, Deprecated, Removed,
 Fixed, and Security sections.
 
+`VERSION` tracks the Developer ID/Direct release and its Sparkle appcast.
+`APP_STORE_VERSION` tracks the independently released App Store edition; the
+two may differ while an App Store update is in preparation. Both targets use
+`BUILD_NUMBER` until their build-number cycles also need to diverge.
+
 ## Product boundary
 
 - App tags: `vX.Y.Z` in this repository.
@@ -26,7 +31,9 @@ Fixed, and Security sections.
 
 ## Release gates
 
-1. `VERSION`, bundle metadata, changelog and tag agree.
+1. `VERSION` agrees with the Direct bundle and appcast;
+   `APP_STORE_VERSION` agrees with the Store bundle and App Store metadata.
+   Published tags and artifacts agree with their released channel.
 2. Swift and affected integration tests pass with paid probes disabled.
 3. Public-release audit reports no credentials or personal identifiers.
 4. macOS artifacts are signed, notarized and stapled before stable distribution.

@@ -15,6 +15,7 @@ struct ProviderCardView: View {
     /// NotchAgent never spends a reset itself — it opens OpenAI's own flow so
     /// the account owner picks which of the (scarce, non-refundable) credits to use.
     static let codexUsageSettingsURL = URL(string: "https://chatgpt.com/codex/settings/usage")!
+    static let claudeUsageSettingsURL = URL(string: "https://claude.ai/settings/usage")!
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -131,7 +132,7 @@ struct ProviderCardView: View {
             sessionWindowBlock(snapshot)
             weeklyWindowBlock(snapshot)
 
-            if let usage = usageLine(snapshot) {
+            if !(DistributionChannel.isAppStore && provider == .claudeCode), let usage = usageLine(snapshot) {
                 Text(usage)
                     .font(Theme.body(9.5))
                     .monospacedDigit()
@@ -166,8 +167,7 @@ struct ProviderCardView: View {
     }
 
     /// TOP block, always present: the 5h session window — official percent
-    /// (or budget estimate marked "~"), else session tokens when the plan
-    /// reports no daily cap, else an honest empty state.
+    /// (or budget estimate marked "~"), else an honest empty state.
     @ViewBuilder
     private func sessionWindowBlock(_ snapshot: UsageSnapshot) -> some View {
         let settings = store.settings
@@ -195,6 +195,11 @@ struct ProviderCardView: View {
                         .foregroundStyle(Theme.textPrimary)
                 }
             }
+        } else if DistributionChannel.isAppStore && provider == .claudeCode {
+            Text(SetupLanguage.current.text("COTA INDISPONÍVEL", "QUOTA UNAVAILABLE", "CUOTA NO DISPONIBLE"))
+                .font(Theme.numeral(18))
+                .foregroundStyle(Theme.textDim)
+            GaugeLabel(text: SetupLanguage.current.text("CLAUDE NÃO INFORMA A COTA NESTES ARQUIVOS", "CLAUDE DOES NOT REPORT QUOTA IN THESE FILES", "CLAUDE NO INFORMA LA CUOTA EN ESTOS ARCHIVOS"), color: Theme.textFaint, size: 8)
         } else if Self.quotaUnavailable(
             for: provider,
             probeEnabled: settings.claudeQuotaProbeEnabled,
@@ -238,6 +243,18 @@ struct ProviderCardView: View {
                 warningAt: settings.warningThresholdPercent,
                 criticalAt: settings.criticalThresholdPercent
             )
+        } else if DistributionChannel.isAppStore && provider == .claudeCode {
+            GaugeLabel(text: SetupLanguage.current.text("COTA SEMANAL INDISPONÍVEL", "WEEKLY QUOTA UNAVAILABLE", "CUOTA SEMANAL NO DISPONIBLE"), color: Theme.textFaint, size: 8)
+            Button {} label: {
+                Text(SetupLanguage.current.text("Ver cota oficial no Claude ↗", "View official quota in Claude ↗", "Ver cuota oficial en Claude ↗"))
+                    .font(Theme.body(10, weight: .semibold))
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(Theme.coral)
+            .highPriorityGesture(TapGesture().onEnded {
+                _ = NSWorkspace.shared.open(Self.claudeUsageSettingsURL)
+            })
+            .accessibilityHint(SetupLanguage.current.text("Abre Configurações > Uso no Claude", "Opens Settings > Usage in Claude", "Abre Configuración > Uso en Claude"))
         } else {
             VStack(alignment: .leading, spacing: 3) {
                 HStack(alignment: .firstTextBaseline, spacing: 5) {

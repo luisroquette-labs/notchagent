@@ -24,7 +24,18 @@ actor SnapshotStore {
         guard let data = try? Data(contentsOf: fileURL),
               let snapshots = try? decoder.decode([ProviderID: UsageSnapshot].self, from: data)
         else { return [:] }
-        return snapshots
+        guard DistributionChannel.isAppStore, var claude = snapshots[.claudeCode] else {
+            return snapshots
+        }
+        // Older Store builds persisted token-budget estimates as quota percentages.
+        claude.session?.usedPercent = nil
+        claude.session?.namedQuotas = nil
+        claude.weekly?.usedPercent = nil
+        claude.weekly?.namedQuotas = nil
+        claude.quotaStatus = nil
+        var sanitized = snapshots
+        sanitized[.claudeCode] = claude
+        return sanitized
     }
 
     func save(_ snapshots: [ProviderID: UsageSnapshot]) {

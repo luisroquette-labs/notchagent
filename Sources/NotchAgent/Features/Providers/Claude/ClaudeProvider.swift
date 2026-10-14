@@ -85,6 +85,10 @@ struct ClaudeProvider: UsageProvider {
         // expired token or dead network must never freeze yesterday's 60%
         // as today's truth. Stale quota degrades to the local heuristics.
         var quota: ClaudeQuota?
+        if DistributionChannel.isAppStore,
+           let root = SandboxBookmarkStore.shared.selectedRoot(for: .claudeCode) {
+            quota = ClaudeStatuslineQuotaReader.read(root: root, now: now)
+        }
         if settings.claudeQuotaProbeEnabled, Self.paidProbeAllowed, let probe {
             quota = await probe.currentQuota()
             if let fetched = quota?.fetchedAt, now.timeIntervalSince(fetched) > 15 * 60 {
@@ -98,7 +102,7 @@ struct ClaudeProvider: UsageProvider {
             }
         }
         #if os(macOS)
-        if quota == nil,
+        if !DistributionChannel.isAppStore, quota == nil,
            let accountID = settings.apiAccounts.first(where: {
                $0.enabled && $0.service == .anthropicConsole
            })?.id {
@@ -180,7 +184,8 @@ struct ClaudeProvider: UsageProvider {
         if let window = sessionWindow {
             let (tokens, cost) = Self.sumBuckets(merged, from: window.start, to: window.end)
             let (usedPercent, usedPercentIsFromQuota) = Self.sessionUsedPercent(
-                quota: quota, tokens: tokens.total, budget: settings.claudeSessionTokenBudget
+                quota: quota, tokens: tokens.total,
+                budget: DistributionChannel.isAppStore ? nil : settings.claudeSessionTokenBudget
             )
             session = SessionUsage(
                 tokens: tokens,
@@ -215,7 +220,7 @@ struct ClaudeProvider: UsageProvider {
             cost: CostEstimate(amountUSD: weekCost),
             usedPercent: Self.weeklyUsedPercent(
                 quotaWeekly: quota?.weeklyPercent,
-                budget: settings.claudeWeeklyTokenBudget,
+                budget: DistributionChannel.isAppStore ? nil : settings.claudeWeeklyTokenBudget,
                 weekTokens: weekTokens.total
             ),
             resetsAt: freshWeeklyReset,

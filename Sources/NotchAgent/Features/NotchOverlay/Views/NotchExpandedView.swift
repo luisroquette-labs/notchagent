@@ -88,7 +88,12 @@ struct NotchExpandedView: View {
             Button {
                 router.openSpending()
             } label: {
-                GaugeLabel(text: "PAGO " + spending.format(spending.monthlySpend.paidBRL, compact: true), color: Theme.coral, size: 8)
+                GaugeLabel(
+                    text: spending.subscriptions.isEmpty && spending.expenses.isEmpty && spending.history.isEmpty
+                        ? "CUSTOS NÃO CONFIG."
+                        : "PAGO " + spending.format(spending.monthlySpend.paidBRL, compact: true),
+                    color: Theme.coral, size: 8
+                )
             }
             .buttonStyle(.plain)
             .help("Gasto confirmado neste mês")
@@ -1071,12 +1076,20 @@ struct NotchExpandedView: View {
         let weeklyBlocked = metric?.isWeekly == true && gaugeExhausted
         let weeklyReset = snapshot?.weekly?.resetsAt
         let used = gaugeExhausted ? metric?.used : session?.usedPercent
-        let verdict = Self.burnVerdict(
-            projection: projection,
-            hasSamples: !samples.isEmpty,
-            gaugeExhausted: gaugeExhausted,
-            isWeekly: metric?.isWeekly ?? false
-        )
+        let storeClaudeWithoutQuota = DistributionChannel.isAppStore
+            && provider == .claudeCode && metric == nil
+        let verdict = storeClaudeWithoutQuota
+            ? (text: SetupLanguage.current.text(
+                "Cota oficial indisponível; confira no Claude.",
+                "Official quota unavailable; check Claude.",
+                "Cuota oficial no disponible; consulta Claude."
+            ), color: Theme.textDim)
+            : Self.burnVerdict(
+                projection: projection,
+                hasSamples: !samples.isEmpty,
+                gaugeExhausted: gaugeExhausted,
+                isWeekly: metric?.isWeekly ?? false
+            )
         let dominantModel = session?.usedPercentIsFromQuota == true
             ? session?.modelTokens.flatMap { ModelProjection.dominantModel(modelTokens: $0) }
             : nil
@@ -1090,7 +1103,11 @@ struct NotchExpandedView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 5) {
                         burnGlyph(provider)
-                        GaugeLabel(text: "BURN · WILL THE 5H SESSION LAST?", color: Theme.textSecondary, size: 9)
+                        GaugeLabel(
+                            text: storeClaudeWithoutQuota ? "CLAUDE · QUOTA UNAVAILABLE" : "BURN · WILL THE 5H SESSION LAST?",
+                            color: Theme.textSecondary,
+                            size: 9
+                        )
                     }
                     if let used {
                         HStack(alignment: .firstTextBaseline, spacing: 5) {
@@ -1615,6 +1632,18 @@ struct NotchExpandedView: View {
             actionChip("gearshape", "Settings") {
                 router.openSettings()
             }
+            Button {
+                NSApp.terminate(nil)
+            } label: {
+                Label(preferences.settings.interfaceLanguage == .ptBR ? "Encerrar" : "Quit", systemImage: "power")
+                    .font(Theme.body(10, weight: .semibold))
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 5)
+                    .background(Capsule().fill(Theme.coral.opacity(0.18)))
+                    .foregroundStyle(Theme.coral)
+            }
+            .buttonStyle(.plain)
+            .help(preferences.settings.interfaceLanguage == .ptBR ? "Encerrar o NotchAgent" : "Quit NotchAgent")
         }
     }
 

@@ -2,6 +2,24 @@ import XCTest
 @testable import NotchAgent
 
 final class AppStoreDistributionTests: XCTestCase {
+    func testDistributionVersionsMatchTheirOwnTargets() throws {
+        let root = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let directVersion = try String(contentsOf: root.appendingPathComponent("VERSION"), encoding: .utf8)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let storeVersion = try String(contentsOf: root.appendingPathComponent("APP_STORE_VERSION"), encoding: .utf8)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let project = try String(contentsOf: root.appendingPathComponent("project.yml"), encoding: .utf8)
+        let direct = try XCTUnwrap(project.range(of: "\n  NotchAgent:\n"))
+        let store = try XCTUnwrap(project.range(of: "\n  NotchAgentAppStore:\n"))
+        let tests = try XCTUnwrap(project.range(of: "\n  NotchAgentTests:\n"))
+
+        XCTAssertTrue(project[direct.upperBound..<store.lowerBound]
+            .contains("CFBundleShortVersionString: \"\(directVersion)\""))
+        XCTAssertTrue(project[store.upperBound..<tests.lowerBound]
+            .contains("CFBundleShortVersionString: \"\(storeVersion)\""))
+    }
+
     func testNativeSettingsCommandRoutesToWindowRouter() throws {
         let root = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
@@ -39,6 +57,8 @@ final class AppStoreDistributionTests: XCTestCase {
         )
         XCTAssertNil(entitlements["com.apple.security.network.server"])
         XCTAssertEqual(entitlements["com.apple.security.network.client"] as? Bool, true)
+        XCTAssertEqual(entitlements["com.apple.security.files.user-selected.read-write"] as? Bool, true)
+        XCTAssertNil(entitlements["com.apple.security.files.user-selected.read-only"])
         let project = try String(contentsOf: root.appendingPathComponent("project.yml"), encoding: .utf8)
         XCTAssertFalse(project.contains("com.apple.security.network.server"))
     }
@@ -82,12 +102,64 @@ final class AppStoreDistributionTests: XCTestCase {
         XCTAssertFalse(StoreOnboardingState.shouldPresent(completed: false, hasAuthorizedFolder: true))
     }
 
+    func testSettingsRefreshesFolderStatusAfterGuidedAuthorization() throws {
+        let root = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let source = try String(
+            contentsOf: root.appendingPathComponent("Sources/NotchAgent/Features/Settings/StoreFolderAccessSection.swift"),
+            encoding: .utf8
+        )
+        XCTAssertTrue(source.contains(".onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in\n            language = .current\n            inspectAuthorizedFolders()"))
+    }
+
     #if APP_STORE
+    func testClaudeStoreCardDoesNotPresentLocalTokensAsQuota() throws {
+        let root = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let card = try String(contentsOf: root.appendingPathComponent(
+            "Sources/NotchAgent/Features/NotchOverlay/Components/ProviderCardView.swift"
+        ), encoding: .utf8)
+        let session = try XCTUnwrap(card.range(of: "private func sessionWindowBlock"))
+        let weekly = try XCTUnwrap(card.range(of: "private func weeklyWindowBlock"))
+        let nextSection = try XCTUnwrap(card.range(of: "private func namedQuotas"))
+        let quotaBlocks = String(card[session.lowerBound..<nextSection.lowerBound])
+        XCTAssertTrue(quotaBlocks.contains("COTA INDISPONÍVEL"))
+        XCTAssertTrue(quotaBlocks.contains("COTA SEMANAL INDISPONÍVEL"))
+        let storeSession = String(card[session.lowerBound..<weekly.lowerBound])
+        XCTAssertFalse(storeSession.contains("localSessionTokens"))
+        let storeWeekly = String(card[weekly.lowerBound..<nextSection.lowerBound])
+        XCTAssertFalse(storeWeekly.contains("TOKENS LOCAIS"))
+    }
+
     func testGuidedSetupUsesThreeLanguagesAndEnglishFallback() {
         XCTAssertEqual(SetupLanguage.preferred(for: "pt-BR"), .pt)
         XCTAssertEqual(SetupLanguage.preferred(for: "en-US"), .en)
         XCTAssertEqual(SetupLanguage.preferred(for: "es-ES"), .es)
         XCTAssertEqual(SetupLanguage.preferred(for: "fr-FR"), .en)
+    }
+
+    func testRestoredStoreSnapshotCannotShowOldEstimatedClaudeQuota() async throws {
+        let file = FileManager.default.temporaryDirectory
+            .appendingPathComponent("notchagent-store-snapshot-\(UUID().uuidString).json")
+        defer { try? FileManager.default.removeItem(at: file) }
+        let storage = SnapshotStore(fileURL: file)
+        let old = UsageSnapshot(
+            provider: .claudeCode,
+            health: .ok,
+            session: SessionUsage(tokens: TokenUsage(input: 500), usedPercent: 100),
+            weekly: WeeklyUsage(tokens: TokenUsage(input: 1_000), usedPercent: 100),
+            quotaStatus: .blocked
+        )
+        await storage.save([.claudeCode: old])
+
+        let loaded = await storage.load()
+        let restored = try XCTUnwrap(loaded[.claudeCode])
+        XCTAssertEqual(restored.session?.tokens.total, 500)
+        XCTAssertEqual(restored.weekly?.tokens.total, 1_000)
+        XCTAssertNil(restored.session?.usedPercent)
+        XCTAssertNil(restored.weekly?.usedPercent)
+        XCTAssertNil(restored.quotaStatus)
+        XCTAssertNil(GaugeMetric.from(restored))
     }
 
     @MainActor

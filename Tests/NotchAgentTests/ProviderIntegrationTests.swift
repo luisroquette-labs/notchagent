@@ -39,19 +39,29 @@ final class ProviderIntegrationTests: XCTestCase {
 
         var settings = AppSettings()
         settings.claudeSessionTokenBudget = 1600
+        settings.claudeWeeklyTokenBudget = 1600
 
-        // probe: nil keeps integration tests offline and exercises the budget fallback.
+        // probe: nil keeps integration tests offline; only Direct uses the budget fallback.
         let provider = ClaudeProvider(root: root.appendingPathComponent("projects"), probe: nil)
         let snapshot = try await provider.fetchSnapshot(settings: settings)
 
         XCTAssertEqual(snapshot.health, .ok)
         let session = try XCTUnwrap(snapshot.session)
         XCTAssertEqual(session.tokens.total, 800, "current 5h block should include only recent activity")
+        #if APP_STORE
+        XCTAssertNil(session.usedPercent, "local token budgets cannot represent the Claude subscription quota")
+        #else
         XCTAssertEqual(session.usedPercent.map { Int($0) }, 50)
+        #endif
         XCTAssertNotNil(session.resetsAt)
 
         let weekly = try XCTUnwrap(snapshot.weekly)
         XCTAssertEqual(weekly.tokens.total, 3800)
+        #if APP_STORE
+        XCTAssertNil(weekly.usedPercent)
+        #else
+        XCTAssertEqual(weekly.usedPercent, 100)
+        #endif
         XCTAssertEqual(snapshot.activeModel, "claude-fable-5")
         XCTAssertFalse(weekly.dailyTotals.isEmpty)
         XCTAssertFalse(weekly.hourlyTotals?.isEmpty ?? true, "hourly rhythm data must be populated")
