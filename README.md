@@ -12,7 +12,7 @@
   <a href="https://notchagent.app"><img src="https://img.shields.io/badge/website-live-FF654F?style=flat-square" alt="NotchAgent website" /></a>
   <a href="https://github.com/luisroquette-labs/RocketLabs"><img src="https://img.shields.io/badge/RocketLabs-flagship%20project-7C5CFC?style=flat-square" alt="RocketLabs flagship project" /></a>
   <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/version-v3.5.5-38D6C7?style=flat-square" alt="Version v3.5.5" /></a>
-  <a href="#install"><img src="https://img.shields.io/badge/install-notarized%20DMG-F3B85A?style=flat-square" alt="Install the notarized DMG" /></a>
+  <a href="https://notchagent.app"><img src="https://img.shields.io/badge/install-Mac%20App%20Store-F3B85A?style=flat-square" alt="Get it on the Mac App Store via notchagent.app" /></a>
 </p>
 
 **Current version: 3.5.5** · App Store update candidate: 3.6.0 · Desk protocol 1.3 · pairs with Desk firmware 0.8.0 · source updated 2026-10-14 · [version history](CHANGELOG.md)
@@ -26,8 +26,8 @@ local-first, no backend, no telemetry. Swift 6 + SwiftUI/AppKit, zero Electron.
 companion is under validation. It is not yet offered as a signed installer or
 as equivalent to the macOS release. See [`windows/README.md`](windows/README.md)
 for the implemented feature set, build instructions, and current limits. A
-pre-built, **unsigned** test binary is available for early testers:
-[`NotchAgent.Windows.exe`](https://github.com/luisroquette-labs/notchagent/releases/download/windows-test-build-20260824/NotchAgent.Windows.exe)
+pre-built, **unsigned** test binary for early testers is available from the
+Windows section on [notchagent.app](https://notchagent.app)
 (Windows SmartScreen will warn on first run — this is expected until an
 Authenticode certificate is added).
 
@@ -68,40 +68,16 @@ and [compatibility matrix](https://github.com/luisroquette-labs/notchagent-desk/
 
 ## Install
 
-**Download page: [notchagent.app](https://notchagent.app)** — free, open source, one click.
+**Get NotchAgent at [notchagent.app](https://notchagent.app)** — free, and now
+**official on the Mac App Store**, reviewed and approved by Apple. One click, no
+Terminal, automatic updates.
 
-**Notarized DMG** (recommended, no Terminal):
+> The public download runs through [notchagent.app](https://notchagent.app): a
+> quick contact form, then the Mac App Store opens. Every install path (Mac App
+> Store today, Windows preview) is reachable from there — we gate it behind that
+> short form so we can let you know when a new version ships.
 
-> Both the DMG and the ZIP below are signed with Developer ID and
-> notarized by Apple (stapled ticket, Gatekeeper: Notarized Developer ID).
-
-1. Download [`NotchAgent-3.5.5.dmg`](https://cfgauss.com.br/t/notchagent-download-dmg).
-2. Open the DMG and drag **NotchAgent** to **Applications**.
-3. Open NotchAgent and follow the guided setup.
-
-The DMG's published SHA-256 is
-`8d1249f0461f90b08431534fdc07d777be3ec8551be08b1529a0cd1a17e83d10`.
-
-**Homebrew** (developer channel):
-
-```bash
-brew install --cask luisroquette-labs/tap/notchagent
-open /Applications/NotchAgent.app
-```
-
-**Or download the signed ZIP** from [v3.5.5](../../releases/tag/v3.5.5), unzip it,
-and move `NotchAgent.app` to `/Applications`:
-
-```bash
-open /Applications/NotchAgent.app
-```
-
-The 3.5.5 ZIP is signed with **Developer ID and notarized by Apple**
-(stapled ticket, Gatekeeper verifies it as `Notarized Developer ID`). Its
-published SHA-256 is
-`2a3e5b4f5267d1651868a765f81fef8b6dd6ff568906d031b458f48802c58f3b`.
-
-**Or build from source** (Xcode 15+ / Swift 6 toolchain):
+**Build from source** (Xcode 15+ / Swift 6 toolchain):
 
 ```bash
 git clone https://github.com/luisroquette-labs/notchagent.git && cd notchagent
