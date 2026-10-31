@@ -64,6 +64,21 @@ struct ClaudeProvider: UsageProvider {
         return nil
     }
 
+    /// Whether the account has NO 5h session limit (Anthropic removed it for
+    /// verified Ultra accounts in Oct 2026): the probe is authoritative about a
+    /// weekly window but reports no 5h window at all. Keyed strictly off header
+    /// presence, never a plan name — an unverified Ultra still receives a
+    /// temporary 5h limit (headers present) and must keep its session. A nil
+    /// quota (probe off / no token) is never treated as removed: without the
+    /// authoritative source the local 5h-block estimate stays the best we have.
+    /// Pure and unit-tested directly (FiveHourLimitRemovedTests).
+    static func fiveHourLimitRemoved(quota: ClaudeQuota?) -> Bool {
+        guard let quota else { return false }
+        let hasWeekly = quota.weeklyPercent != nil || quota.weeklyResetsAt != nil
+        let hasSession = quota.sessionPercent != nil || quota.sessionResetsAt != nil
+        return hasWeekly && !hasSession
+    }
+
     func detectInstallation() -> ProviderInstallation {
         for root in roots where FileManager.default.fileExists(atPath: root.path) {
             return .installed(dataPath: root.path)
@@ -177,10 +192,18 @@ struct ClaudeProvider: UsageProvider {
 
         // Session window: the API reset time is authoritative (start = reset − 5h,
         // matching what the % refers to); the local block heuristic is fallback.
+        // But when the probe is authoritative about a weekly window and reports
+        // NO 5h window, the account has no 5h limit (Anthropic removed it for
+        // verified Ultra accounts, Oct 2026) — the local 5h-block estimate would
+        // invent a limit that no longer exists, so suppress the session entirely
+        // and let the weekly headline. See `fiveHourLimitRemoved`.
+        let fiveHourLimitRemoved = Self.fiveHourLimitRemoved(quota: quota)
         var session: SessionUsage?
         let sessionWindow: (start: Date, end: Date)? =
-            freshSessionReset.map { ($0.addingTimeInterval(-SessionBlocks.blockLength), $0) }
-            ?? SessionBlocks.currentBlock(activityHours: Array(merged.keys), now: now)
+            fiveHourLimitRemoved
+            ? nil
+            : freshSessionReset.map { ($0.addingTimeInterval(-SessionBlocks.blockLength), $0) }
+                ?? SessionBlocks.currentBlock(activityHours: Array(merged.keys), now: now)
         if let window = sessionWindow {
             let (tokens, cost) = Self.sumBuckets(merged, from: window.start, to: window.end)
             let (usedPercent, usedPercentIsFromQuota) = Self.sessionUsedPercent(
@@ -256,7 +279,8 @@ struct ClaudeProvider: UsageProvider {
             note: limitingNote(quota),
             quotaStatus: quota?.sessionPercent != nil || quota?.weeklyPercent != nil ? quota?.status : nil,
             modelBreakdown: breakdown.isEmpty ? nil : breakdown,
-            modelHealth: modelHealth
+            modelHealth: modelHealth,
+            sessionLimitRemoved: fiveHourLimitRemoved ? true : nil
         )
     }
 
