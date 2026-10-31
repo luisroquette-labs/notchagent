@@ -1,8 +1,10 @@
 # Changelog
 
-## 3.7.0 — 2026-10-31
+## 3.7.0 (App Store) — 2026-10-31
 
-Aligns NotchAgent with Anthropic's October 2026 plan change: the 5-hour
+Released on the App Store channel; the Direct/Sparkle channel stays on 3.5.5
+until a notarized Direct build ships. Aligns NotchAgent with Anthropic's
+October 2026 plan change: the 5-hour
 session limit was removed for verified Ultra accounts (formerly "Max 20x";
 "Max 5x" is now "Max"). Weekly limits are unchanged.
 
