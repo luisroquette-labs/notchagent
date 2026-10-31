@@ -1,5 +1,30 @@
 # Changelog
 
+## 3.7.0 (App Store) — 2026-10-31
+
+Released on the App Store channel; the Direct/Sparkle channel stays on 3.5.5
+until a notarized Direct build ships. Aligns NotchAgent with Anthropic's
+October 2026 plan change: the 5-hour
+session limit was removed for verified Ultra accounts (formerly "Max 20x";
+"Max 5x" is now "Max"). Weekly limits are unchanged.
+
+### Changed
+
+- When the Claude quota probe reports a weekly window but no 5-hour window —
+  the signal of an account whose 5h limit was removed — the Claude card now
+  shows an honest "no 5h session limit on this plan" state and the weekly
+  window becomes the headline, in Portuguese, English, and Spanish. Accounts
+  that still have a 5h limit (Pro, Max, unverified Ultra) are unaffected: the
+  probe still reports the 5h window and the session gauge stays.
+- The burn panel follows the same signal — it watches the weekly window and
+  no longer asks whether the now-absent 5h session will last.
+
+### Fixed
+
+- The Claude card no longer fabricates a 5-hour session gauge from the local
+  transcript estimate for accounts whose 5h limit was removed — a limit that
+  no longer exists is never shown.
+
 ## 3.6.0 (App Store candidate) — 2026-10-14
 
 The App Store edition now guides first-time users through local folder access.

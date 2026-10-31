@@ -1075,7 +1075,10 @@ struct NotchExpandedView: View {
         let gaugeExhausted = (metric?.used ?? 0) >= GaugeMetric.exhaustionThreshold
         let weeklyBlocked = metric?.isWeekly == true && gaugeExhausted
         let weeklyReset = snapshot?.weekly?.resetsAt
-        let used = gaugeExhausted ? metric?.used : session?.usedPercent
+        // No 5h limit (verified Ultra, Oct 2026): there is no 5h window to burn
+        // down, so the headline is the weekly gauge, not a session percent.
+        let noSessionLimit = snapshot?.sessionLimitRemoved == true
+        let used = gaugeExhausted || noSessionLimit ? metric?.used : session?.usedPercent
         let storeClaudeWithoutQuota = DistributionChannel.isAppStore
             && provider == .claudeCode && metric == nil
         let verdict = storeClaudeWithoutQuota
@@ -1088,7 +1091,8 @@ struct NotchExpandedView: View {
                 projection: projection,
                 hasSamples: !samples.isEmpty,
                 gaugeExhausted: gaugeExhausted,
-                isWeekly: metric?.isWeekly ?? false
+                isWeekly: metric?.isWeekly ?? false,
+                sessionLimitRemoved: noSessionLimit
             )
         let dominantModel = session?.usedPercentIsFromQuota == true
             ? session?.modelTokens.flatMap { ModelProjection.dominantModel(modelTokens: $0) }
@@ -1104,7 +1108,13 @@ struct NotchExpandedView: View {
                     HStack(spacing: 5) {
                         burnGlyph(provider)
                         GaugeLabel(
-                            text: storeClaudeWithoutQuota ? "CLAUDE · QUOTA UNAVAILABLE" : "BURN · WILL THE 5H SESSION LAST?",
+                            text: storeClaudeWithoutQuota ? "CLAUDE · QUOTA UNAVAILABLE"
+                                : noSessionLimit ? SetupLanguage.current.text(
+                                    "BURN · SEM LIMITE DE 5H — OLHE O SEMANAL",
+                                    "BURN · NO 5H LIMIT — WATCH THE WEEKLY",
+                                    "BURN · SIN LÍMITE DE 5H — MIRA EL SEMANAL"
+                                )
+                                : "BURN · WILL THE 5H SESSION LAST?",
                             color: Theme.textSecondary,
                             size: 9
                         )
@@ -1121,7 +1131,7 @@ struct NotchExpandedView: View {
                                     criticalAt: store.settings.criticalThresholdPercent
                                 ))
                             GaugeLabel(text: "LEFT", color: Theme.textDim, size: 8)
-                            if weeklyBlocked, let resets = weeklyReset {
+                            if weeklyBlocked || noSessionLimit, let resets = weeklyReset {
                                 GaugeLabel(
                                     text: "· WEEKLY CAP RESETS \(Format.time(resets)) · IN \(Format.countdown(to: resets))",
                                     color: Theme.textFaint,
@@ -1183,12 +1193,18 @@ struct NotchExpandedView: View {
         projection: BurnRate.Projection?,
         hasSamples: Bool,
         gaugeExhausted: Bool = false,
-        isWeekly: Bool = false
+        isWeekly: Bool = false,
+        sessionLimitRemoved: Bool = false
     ) -> (text: String, color: Color) {
         if gaugeExhausted {
-            return isWeekly
-                ? ("Weekly limit exhausted — the 5h window cannot burn.", Theme.danger)
-                : ("5h window exhausted — nothing can burn until it resets.", Theme.danger)
+            if isWeekly {
+                // No 5h window to reference when the account has none (verified
+                // Ultra, Oct 2026) — don't mention a limit that no longer exists.
+                return sessionLimitRemoved
+                    ? ("Weekly limit exhausted — nothing can burn until it resets.", Theme.danger)
+                    : ("Weekly limit exhausted — the 5h window cannot burn.", Theme.danger)
+            }
+            return ("5h window exhausted — nothing can burn until it resets.", Theme.danger)
         }
         if let text = BurnRate.verdict(projection) {
             return (text, projection?.exhaustsAt != nil ? Theme.warning : Theme.caution)

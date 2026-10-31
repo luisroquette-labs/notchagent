@@ -1,7 +1,7 @@
 # Mac App Store metadata
 
-Version: 3.6.0
-Build: 23
+Version: 3.7.0
+Build: 24
 Bundle ID: `br.com.lfrprojects.notchagent.appstore`
 Primary category: Developer Tools
 Secondary category: Productivity
@@ -130,6 +130,29 @@ NotchAgent Desk hardware is not required for review. If no device is present,
 the Desk section remains in a disconnected state.
 
 NotchAgent is independent and is not affiliated with the monitored providers.
+
+## What's new in 3.7.0
+
+Portuguese (Brazil):
+
+> Agora o NotchAgent reconhece contas sem o limite de 5 horas: em vez de
+> estimar uma sessão que não existe mais, ele mostra o uso semanal como medida
+> principal e avisa com clareza que o seu plano não tem limite de 5 horas.
+> Contas que ainda têm o limite de 5 horas continuam funcionando igual.
+
+English (U.S.):
+
+> NotchAgent now recognizes accounts without the 5-hour limit. Instead of
+> estimating a session that no longer exists, it shows weekly usage as the
+> main gauge and clearly notes that your plan has no 5-hour limit. Accounts
+> that still have the 5-hour limit are unchanged.
+
+Spanish:
+
+> NotchAgent ahora reconoce las cuentas sin el límite de 5 horas. En lugar de
+> estimar una sesión que ya no existe, muestra el uso semanal como medida
+> principal y avisa con claridad que tu plan no tiene límite de 5 horas. Las
+> cuentas que aún tienen el límite de 5 horas no cambian.
 
 ## What's new in 3.6.0
 

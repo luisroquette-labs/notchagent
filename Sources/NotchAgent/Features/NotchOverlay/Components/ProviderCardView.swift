@@ -171,7 +171,19 @@ struct ProviderCardView: View {
     @ViewBuilder
     private func sessionWindowBlock(_ snapshot: UsageSnapshot) -> some View {
         let settings = store.settings
-        if let percent = snapshot.session?.usedPercent {
+        if snapshot.sessionLimitRemoved == true {
+            // Anthropic removed the 5h limit for verified Ultra accounts
+            // (Oct 2026): no fabricated session percent — an honest "no 5h
+            // limit" state, with the weekly below as the live headline.
+            Text("∞")
+                .font(Theme.numeral(30))
+                .foregroundStyle(Theme.textSecondary)
+            GaugeLabel(text: SetupLanguage.current.text(
+                "SESSÃO DE 5H SEM LIMITE NESTE PLANO",
+                "NO 5H SESSION LIMIT ON THIS PLAN",
+                "SIN LÍMITE DE SESIÓN DE 5H EN ESTE PLAN"
+            ))
+        } else if let percent = snapshot.session?.usedPercent {
             let tint = Theme.riskTint(
                 used: percent,
                 projectedToRunOut: burn?.exhaustsAt != nil,
