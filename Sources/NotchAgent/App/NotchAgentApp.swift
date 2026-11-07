@@ -3,9 +3,10 @@ import SwiftUI
 @main
 struct NotchAgentApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
+    @StateObject private var lfrToolsIntegration = LFRToolsMenuIntegration()
 
     var body: some Scene {
-        MenuBarExtra {
+        MenuBarExtra(isInserted: $lfrToolsIntegration.isMenuBarExtraInserted) {
             MenuBarContentView()
                 .environment(AppEnvironment.shared.store)
                 .environment(AppEnvironment.shared.preferences)
