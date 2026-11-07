@@ -1,4 +1,13 @@
 @preconcurrency import AppKit
+import CoreFoundation
+
+private let lfrToolsDarwinNotificationCallback: CFNotificationCallback = {
+    _, observer, name, _, _ in
+    guard let observer, let name else { return }
+    let integration = Unmanaged<LFRToolsMenuIntegration>.fromOpaque(observer).takeUnretainedValue()
+    let notificationName = name.rawValue as String
+    Task { @MainActor in integration.receiveDarwinNotification(named: notificationName) }
+}
 
 @MainActor
 final class LFRToolsMenuIntegration: ObservableObject {
@@ -34,6 +43,24 @@ final class LFRToolsMenuIntegration: ObservableObject {
         ) { [weak self] _ in
             Task { @MainActor in self?.isMenuBarExtraInserted = true }
         }
+        let darwinCenter = CFNotificationCenterGetDarwinNotifyCenter()
+        let observer = Unmanaged.passUnretained(self).toOpaque()
+        CFNotificationCenterAddObserver(
+            darwinCenter,
+            observer,
+            lfrToolsDarwinNotificationCallback,
+            CFNotificationName(Self.hideMenuBarExtraNotification.rawValue as CFString).rawValue,
+            nil,
+            .deliverImmediately
+        )
+        CFNotificationCenterAddObserver(
+            darwinCenter,
+            observer,
+            lfrToolsDarwinNotificationCallback,
+            CFNotificationName(Self.showMenuBarExtraNotification.rawValue as CFString).rawValue,
+            nil,
+            .deliverImmediately
+        )
         terminationObserver = NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.didTerminateApplicationNotification,
             object: nil,
@@ -61,6 +88,18 @@ final class LFRToolsMenuIntegration: ObservableObject {
         }
         if let terminationObserver {
             NSWorkspace.shared.notificationCenter.removeObserver(terminationObserver)
+        }
+        CFNotificationCenterRemoveEveryObserver(
+            CFNotificationCenterGetDarwinNotifyCenter(),
+            Unmanaged.passUnretained(self).toOpaque()
+        )
+    }
+
+    func receiveDarwinNotification(named name: String) {
+        if name == Self.hideMenuBarExtraNotification.rawValue {
+            isMenuBarExtraInserted = false
+        } else if name == Self.showMenuBarExtraNotification.rawValue {
+            isMenuBarExtraInserted = true
         }
     }
 
