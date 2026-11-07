@@ -6,9 +6,13 @@ final class LFRToolsMenuIntegration: ObservableObject {
     nonisolated static let hideMenuBarExtraNotification = Notification.Name(
         "br.com.lfrprojects.NotchAgent.lfrToolsHideMenuBarExtra"
     )
+    nonisolated static let showMenuBarExtraNotification = Notification.Name(
+        "br.com.lfrprojects.NotchAgent.lfrToolsShowMenuBarExtra"
+    )
 
     @Published var isMenuBarExtraInserted: Bool
     private var hideObserver: NSObjectProtocol?
+    private var showObserver: NSObjectProtocol?
     private var terminationObserver: NSObjectProtocol?
 
     init(lfrToolsRunning: Bool? = nil) {
@@ -22,6 +26,13 @@ final class LFRToolsMenuIntegration: ObservableObject {
             queue: .main
         ) { [weak self] _ in
             Task { @MainActor in self?.isMenuBarExtraInserted = false }
+        }
+        showObserver = DistributedNotificationCenter.default().addObserver(
+            forName: Self.showMenuBarExtraNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in self?.isMenuBarExtraInserted = true }
         }
         terminationObserver = NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.didTerminateApplicationNotification,
@@ -44,6 +55,9 @@ final class LFRToolsMenuIntegration: ObservableObject {
     deinit {
         if let hideObserver {
             DistributedNotificationCenter.default().removeObserver(hideObserver)
+        }
+        if let showObserver {
+            DistributedNotificationCenter.default().removeObserver(showObserver)
         }
         if let terminationObserver {
             NSWorkspace.shared.notificationCenter.removeObserver(terminationObserver)

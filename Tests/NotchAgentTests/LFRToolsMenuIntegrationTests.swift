@@ -15,6 +15,10 @@ final class LFRToolsMenuIntegrationTests: XCTestCase {
             LFRToolsMenuIntegration.hideMenuBarExtraNotification.rawValue,
             "br.com.lfrprojects.NotchAgent.lfrToolsHideMenuBarExtra"
         )
+        XCTAssertEqual(
+            LFRToolsMenuIntegration.showMenuBarExtraNotification.rawValue,
+            "br.com.lfrprojects.NotchAgent.lfrToolsShowMenuBarExtra"
+        )
     }
 
     func testMenuBarExtraReturnsAfterLFRToolsTerminates() async {
