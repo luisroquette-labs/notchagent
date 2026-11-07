@@ -16,4 +16,18 @@ final class LFRToolsMenuIntegrationTests: XCTestCase {
             "br.com.lfrprojects.NotchAgent.lfrToolsHideMenuBarExtra"
         )
     }
+
+    func testMenuBarExtraReturnsAfterLFRToolsTerminates() async {
+        await MainActor.run {
+            let integration = LFRToolsMenuIntegration(lfrToolsRunning: true)
+            XCTAssertFalse(integration.isMenuBarExtraInserted)
+
+            integration.applicationTerminated(
+                bundleIdentifier: LFRToolsMenuIntegration.lfrToolsBundleIdentifier,
+                lfrToolsStillRunning: false
+            )
+
+            XCTAssertTrue(integration.isMenuBarExtraInserted)
+        }
+    }
 }
