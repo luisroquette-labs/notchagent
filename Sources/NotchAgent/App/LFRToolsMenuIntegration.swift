@@ -24,11 +24,15 @@ final class LFRToolsMenuIntegration: ObservableObject {
     private var showObserver: NSObjectProtocol?
     private var terminationObserver: NSObjectProtocol?
 
-    init(lfrToolsRunning: Bool? = nil) {
+    init(lfrToolsRunning: Bool? = nil, forceStandalone: Bool? = nil) {
         let isRunning = lfrToolsRunning ?? !NSRunningApplication.runningApplications(
             withBundleIdentifier: Self.lfrToolsBundleIdentifier
         ).isEmpty
-        isMenuBarExtraInserted = Self.shouldInsertMenuBarExtra(lfrToolsRunning: isRunning)
+        let isForcedStandalone = forceStandalone ?? CommandLine.arguments.contains("--lfr-standalone")
+        isMenuBarExtraInserted = Self.shouldInsertMenuBarExtra(
+            lfrToolsRunning: isRunning,
+            forceStandalone: isForcedStandalone
+        )
         hideObserver = DistributedNotificationCenter.default().addObserver(
             forName: Self.hideMenuBarExtraNotification,
             object: nil,
@@ -110,7 +114,10 @@ final class LFRToolsMenuIntegration: ObservableObject {
         )
     }
 
-    nonisolated static func shouldInsertMenuBarExtra(lfrToolsRunning: Bool) -> Bool {
-        !lfrToolsRunning
+    nonisolated static func shouldInsertMenuBarExtra(
+        lfrToolsRunning: Bool,
+        forceStandalone: Bool = false
+    ) -> Bool {
+        forceStandalone || !lfrToolsRunning
     }
 }

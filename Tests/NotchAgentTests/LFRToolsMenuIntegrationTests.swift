@@ -10,6 +10,15 @@ final class LFRToolsMenuIntegrationTests: XCTestCase {
         XCTAssertTrue(LFRToolsMenuIntegration.shouldInsertMenuBarExtra(lfrToolsRunning: false))
     }
 
+    func testStandaloneRelaunchRestoresMenuWhileLFRToolsTerminates() {
+        XCTAssertTrue(
+            LFRToolsMenuIntegration.shouldInsertMenuBarExtra(
+                lfrToolsRunning: true,
+                forceStandalone: true
+            )
+        )
+    }
+
     func testNotificationContractMatchesLFRTools() {
         XCTAssertEqual(
             LFRToolsMenuIntegration.hideMenuBarExtraNotification.rawValue,
