@@ -21,9 +21,9 @@ struct ProviderCardView: View {
         VStack(alignment: .leading, spacing: 8) {
             header
             #if APP_STORE
-            if let snapshot, snapshot.health.isUsable,
-               !needsStoreFolderAccess,
-               !(provider == .codex && snapshot.health == .noData) {
+            if let snapshot, Self.storeShouldShowMetrics(
+                snapshot, provider: provider, hasFolderAccess: !needsStoreFolderAccess
+            ) {
                 metrics(snapshot)
             } else {
                 unavailable
@@ -64,6 +64,17 @@ struct ProviderCardView: View {
         snapshot.session?.usedPercentIsFromQuota == false
             ? "OF 5H SESSION LEFT · ESTIMATED"
             : "OF 5H SESSION LEFT"
+    }
+
+    static func storeShouldShowMetrics(
+        _ snapshot: UsageSnapshot, provider: ProviderID, hasFolderAccess: Bool
+    ) -> Bool {
+        guard hasFolderAccess, snapshot.health.isUsable else { return false }
+        guard snapshot.health == .noData, provider == .codex || provider == .claudeCode else {
+            return true
+        }
+        return snapshot.session?.usedPercent != nil || snapshot.weekly?.usedPercent != nil ||
+            snapshot.sessionLimitRemoved == true
     }
 
     private var header: some View {
@@ -474,7 +485,7 @@ struct ProviderCardView: View {
         case .parseError:
             return language.text("Não foi possível ler as sessões", "Could not read sessions", "No se pudieron leer las sesiones")
         case .noData:
-            return language.text("Sem sessões locais nos últimos 8 dias", "No local sessions in the last 8 days", "Sin sesiones locales en los últimos 8 días")
+            return language.text("Sem dados de uso local nos últimos 8 dias", "No local usage data in the last 8 days", "Sin datos de uso local en los últimos 8 días")
         }
     }
 

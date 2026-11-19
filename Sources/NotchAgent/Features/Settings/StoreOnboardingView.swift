@@ -90,8 +90,11 @@ extension ProviderHealth {
         guard hasFolderAccess else {
             return language.text("ACESSO NECESSÁRIO", "ACCESS NEEDED", "ACCESO NECESARIO")
         }
-        if provider == .codex && (self == .notInstalled || self == .noData) {
+        if (provider == .codex || provider == .claudeCode) && self == .notInstalled {
             return language.text("SEM SESSÕES LOCAIS", "NO LOCAL SESSIONS", "SIN SESIONES LOCALES")
+        }
+        if (provider == .codex || provider == .claudeCode) && self == .noData {
+            return language.text("SEM DADOS DE USO", "NO USAGE DATA", "SIN DATOS DE USO")
         }
         return badgeText
     }
@@ -142,9 +145,9 @@ struct StoreOnboardingView: View {
                 .font(.callout)
                 .foregroundStyle(.secondary)
             Text(language.text(
-                "Sem senha ou chave de API. O acesso às pastas é somente leitura; ao conectar Claude Code, o app pode ativar a cota nas configurações dele.",
-                "No password or API key. Folder access is read-only; connecting Claude Code may enable quota in its settings.",
-                "Sin contraseña ni clave de API. El acceso a las carpetas es de solo lectura; al conectar Claude Code, la app puede activar la cuota en su configuración."
+                "Sem senha ou chave de API. O acesso salvo é somente leitura. Ao conectar Claude Code, o app altera uma vez a barra de status em .claude/settings.json para mostrar a cota.",
+                "No password or API key. Saved access is read-only. When you connect Claude Code, the app makes a one-time change to the status line in .claude/settings.json to show quota.",
+                "Sin contraseña ni clave de API. El acceso guardado es de solo lectura. Al conectar Claude Code, la app cambia una vez la barra de estado en .claude/settings.json para mostrar la cuota."
             ))
                 .font(.caption)
                 .foregroundStyle(.secondary)

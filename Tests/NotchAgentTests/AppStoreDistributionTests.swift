@@ -115,7 +115,29 @@ final class AppStoreDistributionTests: XCTestCase {
                 ProviderHealth.noData.storeBadge(for: .codex, hasFolderAccess: false, language: language),
                 language.text("ACESSO NECESSÁRIO", "ACCESS NEEDED", "ACCESO NECESARIO")
             )
+            XCTAssertEqual(
+                ProviderHealth.noData.storeBadge(for: .codex, hasFolderAccess: true, language: language),
+                language.text("SEM DADOS DE USO", "NO USAGE DATA", "SIN DATOS DE USO")
+            )
+            XCTAssertEqual(
+                ProviderHealth.notInstalled.storeBadge(for: .claudeCode, hasFolderAccess: true, language: language),
+                language.text("SEM SESSÕES LOCAIS", "NO LOCAL SESSIONS", "SIN SESIONES LOCALES")
+            )
         }
+    }
+
+    @MainActor
+    func testStoreCardKeepsRealQuotaAndExplainsEmptyLocalUsage() {
+        let codexEmpty = UsageSnapshot(provider: .codex, health: .noData)
+        let claudeEmpty = UsageSnapshot(provider: .claudeCode, health: .noData)
+        let claudeQuota = UsageSnapshot(
+            provider: .claudeCode, health: .noData,
+            weekly: WeeklyUsage(tokens: .zero, usedPercent: 23)
+        )
+        XCTAssertFalse(ProviderCardView.storeShouldShowMetrics(codexEmpty, provider: .codex, hasFolderAccess: true))
+        XCTAssertFalse(ProviderCardView.storeShouldShowMetrics(claudeEmpty, provider: .claudeCode, hasFolderAccess: true))
+        XCTAssertFalse(ProviderCardView.storeShouldShowMetrics(claudeQuota, provider: .claudeCode, hasFolderAccess: false))
+        XCTAssertTrue(ProviderCardView.storeShouldShowMetrics(claudeQuota, provider: .claudeCode, hasFolderAccess: true))
     }
 
     func testSettingsRefreshesFolderStatusAfterGuidedAuthorization() throws {
