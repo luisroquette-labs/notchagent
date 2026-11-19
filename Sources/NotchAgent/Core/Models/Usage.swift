@@ -305,6 +305,14 @@ public struct UsageSnapshot: Codable, Sendable, Equatable {
     public var accountUsage: [APIAccountUsage]?
     /// OpenAI's free rate-limit resets, when the official probe reports them.
     public var rateLimitResetCredits: RateLimitResetCredits?
+    /// The account has no 5h session limit (Anthropic removed it for verified
+    /// Ultra accounts, Oct 2026): the probe reported a weekly window but no 5h
+    /// window. `session` is intentionally nil here — the UI shows an honest
+    /// "no 5h limit" state in the top block instead of a fabricated estimate,
+    /// and the weekly becomes the headline. Optional so snapshots written
+    /// before this field existed still decode; nil means "unknown / has a 5h
+    /// limit", never fabricated as removed.
+    public var sessionLimitRemoved: Bool?
 
     public init(
         provider: ProviderID,
@@ -319,7 +327,8 @@ public struct UsageSnapshot: Codable, Sendable, Equatable {
         modelBreakdown: [ModelUsage]? = nil,
         modelHealth: [ModelHealth]? = nil,
         accountUsage: [APIAccountUsage]? = nil,
-        rateLimitResetCredits: RateLimitResetCredits? = nil
+        rateLimitResetCredits: RateLimitResetCredits? = nil,
+        sessionLimitRemoved: Bool? = nil
     ) {
         self.provider = provider
         self.capturedAt = capturedAt
@@ -334,5 +343,6 @@ public struct UsageSnapshot: Codable, Sendable, Equatable {
         self.modelHealth = modelHealth
         self.accountUsage = accountUsage
         self.rateLimitResetCredits = rateLimitResetCredits
+        self.sessionLimitRemoved = sessionLimitRemoved
     }
 }

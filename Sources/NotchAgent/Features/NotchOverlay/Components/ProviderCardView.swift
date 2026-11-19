@@ -15,15 +15,26 @@ struct ProviderCardView: View {
     /// NotchAgent never spends a reset itself — it opens OpenAI's own flow so
     /// the account owner picks which of the (scarce, non-refundable) credits to use.
     static let codexUsageSettingsURL = URL(string: "https://chatgpt.com/codex/settings/usage")!
+    static let claudeUsageSettingsURL = URL(string: "https://claude.ai/settings/usage")!
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             header
+            #if APP_STORE
+            if let snapshot, Self.storeShouldShowMetrics(
+                snapshot, provider: provider, hasFolderAccess: !needsStoreFolderAccess
+            ) {
+                metrics(snapshot)
+            } else {
+                unavailable
+            }
+            #else
             if let snapshot, snapshot.health.isUsable {
                 metrics(snapshot)
             } else {
                 unavailable
             }
+            #endif
             Spacer(minLength: 0)
             footer
         }
@@ -53,6 +64,17 @@ struct ProviderCardView: View {
         snapshot.session?.usedPercentIsFromQuota == false
             ? "OF 5H SESSION LEFT · ESTIMATED"
             : "OF 5H SESSION LEFT"
+    }
+
+    static func storeShouldShowMetrics(
+        _ snapshot: UsageSnapshot, provider: ProviderID, hasFolderAccess: Bool
+    ) -> Bool {
+        guard hasFolderAccess, snapshot.health.isUsable else { return false }
+        guard snapshot.health == .noData, provider == .codex || provider == .claudeCode else {
+            return true
+        }
+        return snapshot.session?.usedPercent != nil || snapshot.weekly?.usedPercent != nil ||
+            snapshot.sessionLimitRemoved == true
     }
 
     private var header: some View {
@@ -131,7 +153,7 @@ struct ProviderCardView: View {
             sessionWindowBlock(snapshot)
             weeklyWindowBlock(snapshot)
 
-            if let usage = usageLine(snapshot) {
+            if !(DistributionChannel.isAppStore && provider == .claudeCode), let usage = usageLine(snapshot) {
                 Text(usage)
                     .font(Theme.body(9.5))
                     .monospacedDigit()
@@ -166,12 +188,23 @@ struct ProviderCardView: View {
     }
 
     /// TOP block, always present: the 5h session window — official percent
-    /// (or budget estimate marked "~"), else session tokens when the plan
-    /// reports no daily cap, else an honest empty state.
+    /// (or budget estimate marked "~"), else an honest empty state.
     @ViewBuilder
     private func sessionWindowBlock(_ snapshot: UsageSnapshot) -> some View {
         let settings = store.settings
-        if let percent = snapshot.session?.usedPercent {
+        if snapshot.sessionLimitRemoved == true {
+            // Anthropic removed the 5h limit for verified Ultra accounts
+            // (Oct 2026): no fabricated session percent — an honest "no 5h
+            // limit" state, with the weekly below as the live headline.
+            Text("∞")
+                .font(Theme.numeral(30))
+                .foregroundStyle(Theme.textSecondary)
+            GaugeLabel(text: SetupLanguage.current.text(
+                "SESSÃO DE 5H SEM LIMITE NESTE PLANO",
+                "NO 5H SESSION LIMIT ON THIS PLAN",
+                "SIN LÍMITE DE SESIÓN DE 5H EN ESTE PLAN"
+            ))
+        } else if let percent = snapshot.session?.usedPercent {
             let tint = Theme.riskTint(
                 used: percent,
                 projectedToRunOut: burn?.exhaustsAt != nil,
@@ -195,6 +228,11 @@ struct ProviderCardView: View {
                         .foregroundStyle(Theme.textPrimary)
                 }
             }
+        } else if DistributionChannel.isAppStore && provider == .claudeCode {
+            Text(SetupLanguage.current.text("COTA INDISPONÍVEL", "QUOTA UNAVAILABLE", "CUOTA NO DISPONIBLE"))
+                .font(Theme.numeral(18))
+                .foregroundStyle(Theme.textDim)
+            GaugeLabel(text: SetupLanguage.current.text("CLAUDE NÃO INFORMA A COTA NESTES ARQUIVOS", "CLAUDE DOES NOT REPORT QUOTA IN THESE FILES", "CLAUDE NO INFORMA LA CUOTA EN ESTOS ARCHIVOS"), color: Theme.textFaint, size: 8)
         } else if Self.quotaUnavailable(
             for: provider,
             probeEnabled: settings.claudeQuotaProbeEnabled,
@@ -238,6 +276,18 @@ struct ProviderCardView: View {
                 warningAt: settings.warningThresholdPercent,
                 criticalAt: settings.criticalThresholdPercent
             )
+        } else if DistributionChannel.isAppStore && provider == .claudeCode {
+            GaugeLabel(text: SetupLanguage.current.text("COTA SEMANAL INDISPONÍVEL", "WEEKLY QUOTA UNAVAILABLE", "CUOTA SEMANAL NO DISPONIBLE"), color: Theme.textFaint, size: 8)
+            Button {} label: {
+                Text(SetupLanguage.current.text("Ver cota oficial no Claude ↗", "View official quota in Claude ↗", "Ver cuota oficial en Claude ↗"))
+                    .font(Theme.body(10, weight: .semibold))
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(Theme.coral)
+            .highPriorityGesture(TapGesture().onEnded {
+                _ = NSWorkspace.shared.open(Self.claudeUsageSettingsURL)
+            })
+            .accessibilityHint(SetupLanguage.current.text("Abre Configurações > Uso no Claude", "Opens Settings > Usage in Claude", "Abre Configuración > Uso en Claude"))
         } else {
             VStack(alignment: .leading, spacing: 3) {
                 HStack(alignment: .firstTextBaseline, spacing: 5) {
@@ -370,6 +420,46 @@ struct ProviderCardView: View {
 
     private var unavailable: some View {
         VStack(alignment: .leading, spacing: 5) {
+            #if APP_STORE
+            if needsStoreFolderAccess {
+                let language = SetupLanguage.current
+                Text(provider == .codex
+                    ? language.text("Autorize as sessões do Codex salvas neste Mac", "Authorize Codex sessions saved on this Mac", "Autoriza las sesiones de Codex guardadas en este Mac")
+                    : language.text("Autorize as sessões do Claude Code salvas neste Mac", "Authorize Claude Code sessions saved on this Mac", "Autoriza las sesiones de Claude Code guardadas en este Mac"))
+                    .font(Theme.body(10))
+                    .foregroundStyle(Theme.textSecondary)
+                Button(language.text("Conectar", "Connect", "Conectar")) {
+                    AppEnvironment.shared.router.openStoreOnboarding(
+                        focus: provider == .codex ? .codex : .claudeCode
+                    )
+                }
+                .font(Theme.body(10, weight: .semibold))
+                .accessibilityHint(language.text("Abre o guia de acesso às pastas", "Opens the folder access guide", "Abre la guía de acceso a carpetas"))
+            } else if provider == .codex || provider == .claudeCode {
+                Text(storeSetupMessage)
+                    .font(Theme.body(10))
+                    .foregroundStyle(Theme.textSecondary)
+                Button(SetupLanguage.current.text("Entender e configurar", "Understand and set up", "Entender y configurar")) {
+                    AppEnvironment.shared.router.openStoreOnboarding(
+                        focus: provider == .codex ? .codex : .claudeCode
+                    )
+                }
+                .font(Theme.body(10, weight: .semibold))
+            } else {
+                unavailableDetails
+            }
+            if provider == .codex {
+                Link(SetupLanguage.current.text("Ver cota oficial", "View official quota", "Ver cuota oficial"), destination: Self.codexUsageSettingsURL)
+                    .font(Theme.body(10, weight: .semibold))
+            }
+            #else
+            unavailableDetails
+            #endif
+        }
+    }
+
+    private var unavailableDetails: some View {
+        Group {
             Text(snapshot?.health.badgeText ?? "Waiting for data…")
                 .font(Theme.body(11))
                 .foregroundStyle(Theme.textDim)
@@ -382,10 +472,47 @@ struct ProviderCardView: View {
         }
     }
 
+    #if APP_STORE
+    private var storeSetupMessage: String {
+        let language = SetupLanguage.current
+        switch snapshot?.health {
+        case nil:
+            return language.text("Lendo sessões…", "Reading sessions…", "Leyendo sesiones…")
+        case .ok, .degraded:
+            return language.text("Uso local encontrado; limite pode estar indisponível", "Local usage found; quota may be unavailable", "Uso local encontrado; la cuota puede no estar disponible")
+        case .notInstalled:
+            return language.text("Sem sessões locais. Tarefas na nuvem não aparecem aqui.", "No local sessions. Cloud tasks do not appear here.", "Sin sesiones locales. Las tareas en la nube no aparecen aquí.")
+        case .parseError:
+            return language.text("Não foi possível ler as sessões", "Could not read sessions", "No se pudieron leer las sesiones")
+        case .noData:
+            return language.text("Sem dados de uso local nos últimos 8 dias", "No local usage data in the last 8 days", "Sin datos de uso local en los últimos 8 días")
+        }
+    }
+
+    private var needsStoreFolderAccess: Bool {
+        switch provider {
+        case .codex:
+            SandboxBookmarkStore.shared.selectedRoot(for: .codex) == nil
+        case .claudeCode:
+            SandboxBookmarkStore.shared.selectedRoot(for: .claudeCode) == nil &&
+                SandboxBookmarkStore.shared.selectedRoot(for: .claudeDesktop) == nil
+        default: false
+        }
+    }
+    #endif
+
     private var footer: some View {
         HStack(spacing: 6) {
             if let health = snapshot?.health {
+                #if APP_STORE
+                StatusPill(text: health.storeBadge(
+                    for: provider,
+                    hasFolderAccess: !needsStoreFolderAccess,
+                    language: SetupLanguage.current
+                ), color: healthColor(health))
+                #else
                 StatusPill(text: health.badgeText, color: healthColor(health))
+                #endif
             }
             Spacer()
             GaugeLabel(text: refreshText, color: Theme.textFaint, size: 8)

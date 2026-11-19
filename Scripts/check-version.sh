@@ -8,14 +8,23 @@ if [[ ! "$version" =~ '^[0-9]+\.[0-9]+\.[0-9]+$' ]]; then
     exit 1
 fi
 
-plist_version=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Resources/Info.plist)
+plist_version=$(python3 -c 'import plistlib; print(plistlib.load(open("Resources/Info.plist", "rb"))["CFBundleShortVersionString"])')
 if [[ "$plist_version" != "$version" ]]; then
     echo "ERRO: Resources/Info.plist=$plist_version, VERSION=$version."
     exit 1
 fi
 
-if [[ $(grep -c "CFBundleShortVersionString: \"$version\"" project.yml) -lt 2 ]]; then
-    echo "ERRO: targets Direct e App Store em project.yml devem usar VERSION=$version."
+if ! sed -n '/^  NotchAgent:/,/^  NotchAgentAppStore:/p' project.yml |
+    grep -Fq "CFBundleShortVersionString: \"$version\""; then
+    echo "ERRO: target Direct em project.yml deve usar VERSION=$version."
+    exit 1
+fi
+
+store_version=$(tr -d '[:space:]' < APP_STORE_VERSION)
+if [[ ! "$store_version" =~ '^[0-9]+\.[0-9]+\.[0-9]+$' ]] ||
+   ! sed -n '/^  NotchAgentAppStore:/,/^  NotchAgentTests:/p' project.yml |
+       grep -Fq "CFBundleShortVersionString: \"$store_version\""; then
+    echo "ERRO: target App Store em project.yml deve usar APP_STORE_VERSION=$store_version."
     exit 1
 fi
 

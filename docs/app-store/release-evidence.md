@@ -1,5 +1,164 @@
 # Mac App Store release evidence
 
+## Current candidate — 3.6.0 (23), source `71d20d5`
+
+- Guided Claude Code connection adds a static status-line command to the
+  user-selected `.claude/settings.json`. An existing custom status line requires
+  explicit replacement consent; other settings are preserved. The app stores a
+  read-only folder bookmark after the one-time user-selected read/write edit.
+- `mac-gate Scripts/check-notchagent-desk.sh` passed: 625 Direct tests,
+  distribution contract and public audit. `mac-gate Scripts/check-mac-app-store.sh`
+  passed: 625 Direct and 629 Store tests, Release build and sandbox inspection.
+  PR #26 checks passed on `71d20d5`.
+- The development-signed preview is running at
+  `~/Applications/NotchAgent 3.6 Preview.app`; Settings and the guided setup
+  show the official Claude quota connection as active on this Mac.
+- Universal signed archive: `dist/NotchAgentAppStore-3.6.0-23-71d20d5.xcarchive`.
+  Apple Distribution installer: `dist/app-store-export-71d20d5/NotchAgent.pkg`,
+  SHA-256 `f74d69276d29b8d1e8305bde11ed9b5503f07628c065a0e607f0a626e8bd49ee`.
+  The exported app passed strict signature verification and includes the
+  user-selected read/write entitlement. Apple package validation passed with
+  no errors on 2026-10-14. Upload succeeded with delivery UUID
+  `284ffbda-5613-40f9-80e0-3dacd7632323`. App Store Connect reports build
+  23 `VALID` and associates it with macOS 3.6.0.
+- The PT-BR product description, What's New, and reviewer notes were updated
+  and read back in App Store Connect. Two inherited screenshots showing the
+  former unverified Claude quota were removed from the 3.6.0 version; two
+  screenshots of local rhythm and model usage remain. Removed images remain
+  recoverable in the Asset Library.
+- Submitted for App Review on 2026-10-14 at 15:33 BRT. Submission ID:
+  `db9969bd-25bf-47e1-922f-31285fd53cd2`. The submission detail page
+  reports one item, `macOS App 3.6.0 (23)`, **Waiting for Review**. Release
+  remains manual, so approval alone will not publish the update.
+- The matching privacy and support copy is public on `notchagent.app` after
+  `notchagent-site` PR #4; Vercel and main CI passed. Apple's public listing
+  still reports `3.5.5`. App Review acceptance under guideline 2.5.2 remains
+  unproven until Apple evaluates the submitted build.
+
+## Earlier preparation — 3.6.0 (23)
+
+- On 2026-10-14, the local preview was rebuilt and visually checked after
+  replacing the empty spending header `PAGO R$ 0` with `CUSTOS NÃO CONFIG.`
+  (and `CUSTOS —` in the compact view). The value is a ledger of confirmed
+  charges, not Claude quota or token usage. Existing charge history still shows
+  its actual paid amount. The Store gate passed again: 620 Direct and 623 Store
+  tests, zero failures, plus sandbox Release build. The development-signed
+  preview passed strict code-signature verification and launched on the Mac.
+  No updated build was uploaded or submitted to Apple.
+- Claude Code's supported status-line JSON can expose official 5h/7d quota,
+  but local transcript files do not contain it. At this earlier stage, automatic
+  setup was excluded because of App Review guideline 2.5.2 risk; the current
+  candidate above uses a user-selected configuration edit instead.
+
+- Current source fix `2ebd6ad`: the Store Claude card leads with local session
+  tokens and seven-day local tokens, then links to Claude's official Usage
+  settings. It no longer displays the API-equivalent dollar estimate beside
+  subscription activity. The link opened `https://claude.ai/settings/usage`
+  on the live Mac; Claude's own page showed 5% used for the session and week
+  at the time of inspection. The Store app does not claim those percentages
+  are derivable from local transcripts.
+- Canonical gate: PASS on 2026-10-14, 620 Direct tests (9 opt-in skips), 623
+  Store tests (11 opt-in skips), zero failures; Release sandbox build passed.
+  Signed universal archive passed strict deep verification. The exported
+  package has a valid Apple installer signature and no network-server
+  entitlement. It has not been uploaded or submitted to Apple.
+- Current archive: `dist/NotchAgentAppStore-3.6.0-23-2ebd6ad.xcarchive`.
+  Current package: `dist/app-store-export-2ebd6ad/NotchAgent.pkg`; SHA-256
+  `cc51006b80a570645ab2e5e5a6db1f54c3dd053be744ffd1bda336f8033a2854`.
+  Current local preview: `~/Applications/NotchAgent 3.6 Preview.app`.
+  Visual inspection confirmed the Claude card shows live local session usage,
+  seven-day usage, and the official-usage button without a dollar estimate;
+  Codex remains visible beside it and Quit is present at the panel bottom.
+
+- Current source fix `5f184e2`: the Store build no longer labels local Claude
+  token budgets as subscription quota. A live Mac showed a false 0% weekly
+  remainder from 2.34 billion local tokens versus an 8 million token default
+  budget. The Store build now shows local usage and explicitly says the
+  official Claude quota is unavailable; persisted estimates are sanitized on
+  launch. Direct distribution behavior is unchanged. Localized product copy
+  and review notes were corrected to match.
+- Canonical gate after the quota fix: PASS on 2026-10-14, 619 Direct tests
+  (9 opt-in skips), 622 Store tests (11 opt-in skips), zero failures; Release
+  build and sandbox bundle inspection passed. The signed archive passed strict
+  deep verification and the exported package has a valid Apple installer
+  signature. No network-server entitlement is present.
+- Previous archive: `dist/NotchAgentAppStore-3.6.0-23-5f184e2.xcarchive`.
+  Previous App Store package: `dist/app-store-export-5f184e2/NotchAgent.pkg`;
+  SHA-256 `f5250d726079a8eb8cb89b53f5e76220d71cd245df50b095594ec8e478158b30`.
+  It supersedes the `9bd28f7` package below and has not been uploaded.
+- Earlier local preview: `~/Applications/NotchAgent 3.6 Preview.app` from the
+  development-signed `5f184e2` archive. After the user authorized `.claude`
+  and `.codex`, Settings confirmed 130 Claude Code session files and 300 Codex
+  session files. The compact notch announced “Claude Code: cota oficial
+  indisponível” while continuing to show Codex's weekly quota. Settings no
+  longer exposes arbitrary Claude token budgets and explains the limitation.
+
+- Source fix `9bd28f7`: Settings now refreshes its folder inspection when
+  guided setup changes the saved authorization. The earlier candidate showed
+  stale “Acesso necessário” in Settings after the Codex folder had been
+  authorized; the wizard had already confirmed session data. A regression
+  contract test covers the notification subscription.
+- Canonical gate after the fix: PASS on 2026-10-14, 618 Direct tests and 620
+  App Store tests, zero failures; unsigned Release build and sandbox checks
+  passed. Signed archive passed strict deep verification; the exported package
+  has a valid Apple installer signature and the app is universal `x86_64 arm64`.
+- Previous archive: `dist/NotchAgentAppStore-3.6.0-23-9bd28f7.xcarchive`.
+  Previous App Store package: `dist/app-store-export-9bd28f7/NotchAgent.pkg`;
+  SHA-256 `1328e0619d9dd5751767254c2c97b7a77a6258aee2deaea2d6abff7bcb96c3f6`.
+  It supersedes the `ddd071d` package below and has not been uploaded.
+- Updated local preview at `~/Applications/NotchAgent 3.6 Preview.app` from
+  the development-signed archive. After the user authorized `~/.codex`, the
+  guided setup confirmed 298 Codex session files. The updated preview then
+  displayed 299 session files with verified usage in Settings and showed
+  Codex quota data in the notch panel. Claude Code access remains ungranted.
+
+- Source commit: `ddd071d93335dff4050d6aadcc9c40e0b9ce3a57` (visible Quit action and review metadata); prior
+  distribution-version fix: `bfd21773385d4549030bcece0609f264604b3e6a`.
+- Canonical gate: PASS again on 2026-10-14; 618 Direct tests (9 opt-in skips),
+  620 App Store tests (11 opt-in skips), zero failures; Release build and
+  sandbox bundle inspection passed.
+- Distribution contract: PASS again; the Direct `3.5.5` appcast remains aligned with
+  `VERSION`, while `APP_STORE_VERSION` independently selects `3.6.0`.
+- Full NotchAgent Desk gate on `bfd2177`: PASS with an isolated ESP32 `3.3.8` toolchain and
+  pinned libraries; firmware packaging, 618 Swift tests, Sparkle contract, and
+  public-source audit passed without changing the user's Arduino installation.
+- Archive: `dist/NotchAgentAppStore-3.6.0-23-ddd071d.xcarchive`; signed,
+  strict deep verification passed, universal `x86_64 arm64`.
+- Exported App Store package: `dist/app-store-export-ddd071d/NotchAgent.pkg`;
+  SHA-256 `64d9e595ba2619b586f56d64e2a86a83ce4b9b8789029746a75e6029275c189e`.
+- Exported app: Apple Distribution signature verified; version `3.6.0 (23)`,
+  sandbox and read-only user-selected folder access embedded; no inbound
+  network-server entitlement. Binary SHA-256:
+  `8066e922f7bf55a92aca19a6d0a86632b25d8a58f70b91ac8d8191e376457400`.
+- Local smoke test: copied the development-signed archive app to
+  `~/Applications/NotchAgent 3.6 Preview.app`. Closed running Store `3.5.5`,
+  launched preview `3.6.0 (23)`, observed guided setup in Portuguese, English,
+  and Spanish; Codex Connect opened the home folder with `.codex` visible and
+  an explicit authorization prompt. No folder access was granted during this
+  test. Quit button appeared in the expanded notch panel and terminated the
+  preview process; relaunched it and reopened guided setup from Settings.
+- App info privacy-policy URL read back from App Store Connect API on
+  2026-10-14: `https://notchagent.app/privacy`; marketing, support and privacy
+  URLs returned HTTP 200.
+- App Store Connect read-back on 2026-10-14: macOS `3.5.5 (22)` is
+  `READY_FOR_SALE` and build 22 is `VALID`. Draft version `3.6.0` is
+  `PREPARE_FOR_SUBMISSION` with manual release and no selected build.
+  Version ID: `ebf1e59b-6377-4130-902e-a64abc8d86c0`.
+- The draft's PT-BR description and What's New text describe the guided setup;
+  both were read back through the API. On 2026-10-14, What's New and reviewer
+  notes were updated to describe the Quit control and 3.6.0 setup, replacing
+  stale reviewer notes that referred to build 22; both were read back exactly.
+  EN-US and Spanish copy remains drafted in `metadata.md` for later localization.
+- The draft inherited the four current `APP_DESKTOP` screenshots; all four
+  assets are `COMPLETE`. App availability read-back shows Brazil and the USA
+  enabled, China mainland disabled, and 175 territories configured.
+- The developer-signed app passed the first-launch/Settings smoke test. An
+  App Store installed-build smoke test and App Store Connect data-collection
+  label read-back remain before submission.
+
+The App Store submission is a separate publication step requiring the owner's
+final authorization.
+
 ## Local artifact
 
 - Branch: `feat/mac-app-store-sdd`

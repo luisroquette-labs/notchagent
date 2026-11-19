@@ -13,6 +13,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             startScheduler: !claudeBillingDiagnostic && !deskSoak && !deskDiscoveryOnly,
             deskMirroringOverride: deskSoak ? true : (deskDiscoveryOnly ? false : nil)
         )
+        #if APP_STORE
+        let hasAuthorizedFolder = StoreDataFolder.allCases.contains {
+            SandboxBookmarkStore.shared.selectedRoot(for: $0) != nil
+        }
+        if StoreOnboardingState.shouldPresent(
+            completed: UserDefaults.standard.bool(forKey: StoreOnboardingState.completedKey),
+            hasAuthorizedFolder: hasAuthorizedFolder
+        ) {
+            DispatchQueue.main.async {
+                AppEnvironment.shared.router.openStoreOnboarding()
+            }
+        }
+        #endif
         if claudeBillingDiagnostic,
            let account = AppEnvironment.shared.preferences.settings.apiAccounts.first(where: {
                $0.service == .anthropicConsole

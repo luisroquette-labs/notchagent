@@ -1,19 +1,24 @@
 name: Public release security
 
-# 28/09/2026: sem trigger de push — sync-to-public já audita e roda
-# swift test em todo push na master (era 3x macOS por push).
+# Pull requests run portable public-source checks. The native Swift and
+# App Store gates run once on the Mac before integration.
 on:
   pull_request:
+
+concurrency:
+  group: public-release-security-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
 
 jobs:
   audit:
-    runs-on: macos-15
-    # Um run travou 6h (355 min) no swift test em 16/09/2026.
-    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
+      - name: Ensure audit tools are available
+        run: sudo apt-get update -qq && sudo apt-get install -y zsh ripgrep
       # actions/checkout v4
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -30,7 +35,3 @@ jobs:
         run: zsh Scripts/check-version.sh
       - name: Validate product site
         run: python3 Scripts/validate-site.py
-      - name: Test without paid probes
-        env:
-          NOTCHAGENT_DISABLE_PAID_PROBES: "1"
-        run: swift test

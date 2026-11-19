@@ -1,15 +1,14 @@
 import XCTest
 @testable import NotchAgent
 
-/// REGRESSÃO (commit 2325122): o headline de tokens do card foi
-/// generalizado do Codex para QUALQUER provider — o Claude sem percentual
-/// de sessão passou a exibir o TOTAL SEMANAL de tokens ("663.8M") como se
-/// fosse a sessão corrente, no lugar do headline de percentual. Com o
-/// LAYOUT INVARIÁVEL (20/08/2026) a regra ficou estrutural: o bloco de
-/// cima é SEMPRE a sessão (percentual ou tokens da SESSÃO, nunca tokens
-/// de outra janela) e o bloco de baixo é SEMPRE o semanal.
+/// The card keeps the session above the weekly window. Store Claude without
+/// official percentages shows an unavailable state rather than local tokens.
 @MainActor
 final class ProviderCardHeadlineTests: XCTestCase {
+    func testClaudeUsageLinkOpensOfficialPage() {
+        XCTAssertEqual(ProviderCardView.claudeUsageSettingsURL.absoluteString, "https://claude.ai/settings/usage")
+    }
+
     // REGRESSÃO: probe ligado sem credencial OAuth → sem quota → o card
     // exibia tokens como se fossem a cota. Deve declarar indisponibilidade.
     func testQuotaUnavailableOnlyWhenProbeOnAndNoQuota() {

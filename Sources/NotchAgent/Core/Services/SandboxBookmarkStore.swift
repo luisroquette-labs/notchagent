@@ -20,16 +20,70 @@ enum StoreDataFolder: String, CaseIterable, Sendable {
         case .codex: "sessions"
         }
     }
+
+    func suggestedRoot(in userHome: URL) -> URL {
+        let parent = self == .claudeDesktop
+            ? userHome.appendingPathComponent("Library/Application Support", isDirectory: true)
+            : userHome
+        return parent.appendingPathComponent(expectedFolderName, isDirectory: true)
+    }
 }
 
 enum SandboxBookmarkError: LocalizedError, Equatable {
     case unexpectedFolder(expected: String)
+    case accessDenied
 
     var errorDescription: String? {
         switch self {
         case let .unexpectedFolder(expected):
             "Select the \(expected) folder."
+        case .accessDenied:
+            "Folder access was not granted. Select the folder again."
         }
+    }
+}
+
+enum StoreFolderReadiness: Equatable, Sendable {
+    case checking
+    case missingSessionsFolder
+    case noRecentSessions
+    case noUsageRecords
+    case readFailed
+    case found(sessionFiles: Int, verifiedActivity: Date?)
+}
+
+enum StoreFolderInspector {
+    static func inspect(_ folder: StoreDataFolder, root: URL, now: Date = Date()) -> StoreFolderReadiness {
+        let sessions = root.appendingPathComponent(folder.dataSubpath, isDirectory: true)
+        var isDirectory: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: sessions.path, isDirectory: &isDirectory), isDirectory.boolValue else {
+            return .missingSessionsFolder
+        }
+        guard FileManager.default.isReadableFile(atPath: sessions.path) else { return .readFailed }
+        let files = recentFiles(under: sessions, ext: "jsonl", modifiedAfter: now.addingTimeInterval(-8 * 24 * 3600))
+        guard !files.isEmpty else { return .noRecentSessions }
+
+        var readErrors = 0
+        for file in files {
+            do {
+                switch folder {
+                case .codex:
+                    if let info = try CodexRolloutParser.latestTokenInfo(at: file) {
+                        return .found(
+                            sessionFiles: files.count,
+                            verifiedActivity: info.timestamp ?? CodexProvider.rolloutStart(from: file)
+                        )
+                    }
+                case .claudeCode, .claudeDesktop:
+                    if let activity = try ClaudeTranscriptParser.parseFile(at: file).stat.lastActivity {
+                        return .found(sessionFiles: files.count, verifiedActivity: activity)
+                    }
+                }
+            } catch {
+                readErrors += 1
+            }
+        }
+        return readErrors > 0 ? .readFailed : .noUsageRecords
     }
 }
 
@@ -61,10 +115,24 @@ final class SandboxBookmarkStore: @unchecked Sendable {
             includingResourceValuesForKeys: nil,
             relativeTo: nil
         )
+        var stale = false
+        let resolved = try URL(
+            resolvingBookmarkData: data,
+            options: [.withSecurityScope, .withoutUI],
+            relativeTo: nil,
+            bookmarkDataIsStale: &stale
+        )
+        guard resolved.lastPathComponent == folder.expectedFolderName else {
+            throw SandboxBookmarkError.unexpectedFolder(expected: folder.expectedFolderName)
+        }
+        guard resolved.startAccessingSecurityScopedResource() else {
+            throw SandboxBookmarkError.accessDenied
+        }
         lock.lock()
         defer { lock.unlock() }
         stopAccessLocked(folder)
         defaults.set(data, forKey: key(for: folder))
+        activeRoots[folder] = resolved
     }
 
     func revoke(_ folder: StoreDataFolder) {
@@ -100,7 +168,10 @@ final class SandboxBookmarkStore: @unchecked Sendable {
                 )
                 defaults.set(refreshed, forKey: key(for: folder))
             }
-            _ = url.startAccessingSecurityScopedResource()
+            guard url.startAccessingSecurityScopedResource() else {
+                defaults.removeObject(forKey: key(for: folder))
+                return nil
+            }
             activeRoots[folder] = url
             return url
         } catch {

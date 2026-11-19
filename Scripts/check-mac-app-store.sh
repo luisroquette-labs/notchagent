@@ -2,14 +2,16 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-version=$(tr -d '[:space:]' < VERSION)
+version=$(tr -d '[:space:]' < APP_STORE_VERSION)
 build_number=$(tr -d '[:space:]' < BUILD_NUMBER)
 entitlements=Resources/NotchAgentAppStore.entitlements
+metadata=docs/app-store/metadata.md
 
 [[ "$version" =~ '^[0-9]+\.[0-9]+\.[0-9]+$' ]] || exit 1
 [[ "$build_number" =~ '^[1-9][0-9]*$' ]] || exit 1
-[[ $(grep -c "CFBundleShortVersionString: \"$version\"" project.yml) -ge 2 ]] || {
-    echo "FAIL: project.yml Store and Direct versions must match VERSION." >&2
+sed -n '/^  NotchAgentAppStore:/,/^  NotchAgentTests:/p' project.yml |
+    grep -Fq "CFBundleShortVersionString: \"$version\"" || {
+    echo "FAIL: project.yml Store version must match APP_STORE_VERSION." >&2
     exit 1
 }
 [[ $(grep -c "CFBundleVersion: \"$build_number\"" project.yml) -ge 2 ]] || {
@@ -20,8 +22,7 @@ entitlements=Resources/NotchAgentAppStore.entitlements
 for key in \
     com.apple.security.app-sandbox \
     com.apple.security.network.client \
-    com.apple.security.network.server \
-    com.apple.security.files.user-selected.read-only \
+    com.apple.security.files.user-selected.read-write \
     com.apple.security.files.bookmarks.app-scope \
     com.apple.security.device.usb \
     com.apple.security.device.serial; do
@@ -30,8 +31,29 @@ for key in \
         exit 1
     }
 done
+! grep -q 'com.apple.security.network.server' "$entitlements" || {
+    echo "FAIL: Store app must not request unused inbound network access." >&2
+    exit 1
+}
 ! grep -q 'temporary-exception' "$entitlements" || {
     echo "FAIL: temporary sandbox exceptions are forbidden." >&2
+    exit 1
+}
+
+grep -q 'CommandGroup(replacing: .appSettings)' Sources/NotchAgent/App/NotchAgentApp.swift || {
+    echo "FAIL: native Settings command is not routed." >&2
+    exit 1
+}
+grep -q 'AppEnvironment.shared.router.openSettings()' Sources/NotchAgent/App/NotchAgentApp.swift || {
+    echo "FAIL: native Settings command does not open the real Settings window." >&2
+    exit 1
+}
+! sed -n '/## Portuguese (Brazil)/,/## Review notes/p' "$metadata" | grep -Eiq '(^|[^[:alnum:]_])Mac([^[:alnum:]_]|$)|OpenAI' || {
+    echo "FAIL: Portuguese customer-facing metadata contains a restricted product/provider term." >&2
+    exit 1
+}
+! sed -n '/## English (U.S.)/,/## Review notes/p' "$metadata" | grep -Eiq '(^|[^[:alnum:]_])Mac([^[:alnum:]_]|$)|OpenAI' || {
+    echo "FAIL: English customer-facing metadata contains a restricted product/provider term." >&2
     exit 1
 }
 

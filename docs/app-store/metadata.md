@@ -1,11 +1,13 @@
 # Mac App Store metadata
 
-Version: 3.5.5
-Build: 17
+Version: 3.7.1
+Build: 25
 Bundle ID: `br.com.lfrprojects.notchagent.appstore`
 Primary category: Developer Tools
 Secondary category: Productivity
 Price: Free
+App Store Connect 3.7.1 locale: `pt-BR`; English and Spanish copy below
+is prepared locally and is not published as a separate locale.
 
 ## URLs
 
@@ -16,89 +18,198 @@ Price: Free
 ## Portuguese (Brazil)
 
 Name: `NotchAgent`
-Subtitle: `Uso de IA no seu Mac`
+Subtitle: `Uso, ritmo e custos de IA`
 Keywords: `tokens,cota,custo,limite,produtividade,notch,menu bar,monitor,IA,agentes`
 
 Promotional text:
 
-> Veja cotas, tokens, ritmo e custos no notch. Antecipe limites e mantenha o
+> Veja tokens, ritmo e custos no notch. Consulte cotas quando disponíveis e mantenha o
 > controle sem anúncios, rastreamento ou conta NotchAgent.
 
 Description:
 
-> Saiba quanto de IA você está usando antes de atingir o limite. O NotchAgent
+> Acompanhe quanto de IA você está usando. O NotchAgent
 > reúne o uso do Claude e do Codex em um painel nativo no notch e na barra de
-> menus do Mac.
+> menus.
 >
-> • Acompanhe tokens, sessões, cotas, ritmo e estimativas de custo
+> • Acompanhe tokens, sessões, ritmo e estimativas de custo
 > • Compare o uso por modelo e identifique picos ao longo do dia
-> • Antecipe limites com histórico e projeções de consumo
+> • Veja cotas do Codex quando a ferramenta fornece esses dados
+> • Ative no guia o percentual da cota oficial do Claude Code
 > • Consulte o essencial no notch ou abra o dashboard detalhado
 > • Monitore contas e conecte o NotchAgent Desk, se quiser
 >
-> Os dados de uso são processados localmente no Mac. O acesso às pastas do
+> Esta edição acompanha sessões salvas neste computador. Tarefas na nuvem,
+> inclusive as iniciadas no navegador e depois abertas no aplicativo, não
+> aparecem no NotchAgent. O guia oferece um link para consultar a cota oficial.
+>
+> Os dados de uso são processados localmente no dispositivo. O acesso salvo às pastas do
 > Claude Code, Claude Desktop e Codex é somente leitura e depende da sua
-> autorização. Recursos online opcionais e seus destinos estão descritos na
+> autorização. Ao conectar Claude Code, o guia ativa a exportação da cota oficial
+> em `.claude/settings.json`, preservando as demais opções. Na primeira abertura,
+> o guia explica a autorização de cada
+> ferramenta e distingue acesso concedido de sessões encontradas. É preciso já ter usado uma
+> dessas ferramentas neste computador para ver dados locais; contas de API são
+> opcionais e configuradas à parte. Recursos online opcionais e seus destinos estão descritos na
 > política de privacidade. Sem anúncios, rastreamento ou conta NotchAgent.
+> A cota oficial do Claude Code aparece depois da próxima resposta do Claude Code,
+> quando a conta fornece essa informação. O app não estima percentuais a partir de tokens.
 >
 > A edição da App Store não executa CLIs externos. As atualizações chegam pela
 > própria App Store.
 >
-> NotchAgent é independente e não é afiliado à Anthropic nem à OpenAI.
+> NotchAgent é independente e não é afiliado aos provedores monitorados.
 
 ## English (U.S.)
 
 Name: `NotchAgent`
-Subtitle: `AI usage on your Mac`
+Subtitle: `AI usage, pace, and costs`
 Keywords: `tokens,quota,cost,limits,productivity,notch,menu bar,monitor,AI,agents`
 
 Promotional text:
 
-> See quotas, tokens, pace, and costs in the notch. Anticipate limits and stay
+> See tokens, pace, and costs in the notch. Check quotas when available and stay
 > in control with no ads, tracking, or NotchAgent account.
 
 Description:
 
-> Know how much AI you are using before you hit a limit. NotchAgent brings
-> Claude and Codex usage together in a native dashboard for your Mac's notch
-> and menu bar.
+> See how much AI you are using. NotchAgent brings
+> Claude and Codex usage together in a native dashboard for the notch and menu
+> bar.
 >
-> • Track tokens, sessions, quotas, pace, and cost estimates
+> • Track tokens, sessions, pace, and cost estimates
 > • Compare usage by model and spot peaks throughout your day
-> • Anticipate limits with history and consumption projections
+> • See Codex quotas when the tool provides that data
+> • Enable Claude Code's official quota percentage in guided setup
 > • Check the essentials in the notch or open the detailed dashboard
 > • Optionally monitor accounts and connect NotchAgent Desk
 >
-> Usage data is processed locally on your Mac. Read-only access to Claude Code,
-> Claude Desktop, and Codex folders requires your authorization. Optional
-> online features and their destinations are described in the privacy policy.
+> This edition tracks sessions saved on this computer. Cloud tasks, including
+> chats started in a browser and later opened in the app, do not appear in
+> NotchAgent. Setup links to the official quota page.
+>
+> Usage data is processed locally on the device. Saved read-only access to Claude Code,
+> Claude Desktop, and Codex folders requires your authorization. Connecting Claude Code
+> enables official quota export in `.claude/settings.json` while preserving your other options. Guided
+> first-launch setup explains each folder authorization and confirms when it finds
+> sessions. You need to have used one of these tools on this computer to see
+> local data; API accounts are optional and configured separately. Optional online
+> features and their destinations are described in the privacy policy.
 > No ads, tracking, or NotchAgent account.
+> Claude Code's official quota appears after its next response when the account
+> provides this data. The app does not infer quota percentages from tokens.
 >
 > The App Store edition does not run external CLIs. Updates arrive through the
 > App Store.
 >
-> NotchAgent is independent and is not affiliated with Anthropic or OpenAI.
+> NotchAgent is independent and is not affiliated with the monitored providers.
 
 ## Review notes
 
 NotchAgent is a menu-bar app (`LSUIElement`) and does not show a Dock icon.
 After launch, click its menu-bar item or the top-center notch area.
 
-No account is required. To test local usage, open Settings > Data folders and
-choose a `.claude`, `Claude`, or `.codex` folder if present. The picker validates
-the folder name and grants read-only access. Empty or missing folders produce a
-no-data state and do not block the rest of the interface.
+No account is required. First-launch setup opens automatically when no folder
+is authorized; click Connect for Codex or Claude Code and choose the suggested
+`.codex` or `.claude` folder. Claude Desktop is optional. Each row separately
+checks for readable session records. An empty or missing sessions folder is
+shown as authorized but without local sessions, with a link to official Codex
+quota; it does not block the app. The
+same guide can be reopened from Settings or a provider card.
+Connecting Claude Code adds a static `statusLine` command to the user-selected
+`.claude/settings.json`. If a custom status line exists, the app asks before
+replacing that one setting and preserves all other settings. Claude Code then
+writes its official `rate_limits` subset to `.claude/.notchagent-quota.json` after
+a response. The app itself does not run a CLI, read credentials, or make quota API
+calls. If the person keeps their custom status line, the app leaves it intact.
+To quit this menu-bar app, use the highlighted Encerrar/Quit button in the
+notch panel or the Encerrar NotchAgent/Quit NotchAgent button in the menu-bar item.
 
 The build is sandboxed. It does not execute `codex`, `gcloud`, Terminal,
 firmware helpers, or launch agents. Paid Anthropic probe requests, Resend email
 delivery, and Sparkle updates are absent from this edition. Weather starts
 disabled and makes network requests only after the user enables it. Privacy and
 support links are available in Settings.
+Claude Code's official subscription quota is unavailable from local transcripts;
+the app reads the official status-line export when configured. It never fabricates
+a quota percentage from tokens. Codex quota data is shown only when present in
+its session records.
 
 NotchAgent Desk hardware is not required for review. If no device is present,
 the Desk section remains in a disconnected state.
 
-NotchAgent is independent and is not affiliated with Anthropic or OpenAI.
+NotchAgent is independent and is not affiliated with the monitored providers.
+
+## What's new in 3.7.1
+
+Portuguese (Brazil):
+
+> A configuração inicial ficou mais clara: agora diferencia pasta autorizada
+> de sessões encontradas e explica por que tarefas na nuvem não aparecem no
+> painel. O cartão Codex mostra quando faltam dados locais e oferece acesso à
+> página oficial de cota.
+
+English (U.S.):
+
+> First-run setup now separates folder access from local session data and
+> explains why cloud tasks do not appear in the dashboard. The Codex card
+> identifies missing local data and links to the official quota page.
+
+Spanish:
+
+> La configuración inicial ahora distingue entre el acceso a la carpeta y
+> las sesiones locales, y explica por qué las tareas en la nube no aparecen
+> en el panel. La tarjeta Codex indica si faltan datos locales y enlaza a la
+> página oficial de la cuota.
+
+## What's new in 3.7.0
+
+Portuguese (Brazil):
+
+> Agora o NotchAgent reconhece contas sem o limite de 5 horas: em vez de
+> estimar uma sessão que não existe mais, ele mostra o uso semanal como medida
+> principal e avisa com clareza que o seu plano não tem limite de 5 horas.
+> Contas que ainda têm o limite de 5 horas continuam funcionando igual.
+
+English (U.S.):
+
+> NotchAgent now recognizes accounts without the 5-hour limit. Instead of
+> estimating a session that no longer exists, it shows weekly usage as the
+> main gauge and clearly notes that your plan has no 5-hour limit. Accounts
+> that still have the 5-hour limit are unchanged.
+
+Spanish:
+
+> NotchAgent ahora reconoce las cuentas sin el límite de 5 horas. En lugar de
+> estimar una sesión que ya no existe, muestra el uso semanal como medida
+> principal y avisa con claridad que tu plan no tiene límite de 5 horas. Las
+> cuentas que aún tienen el límite de 5 horas no cambian.
+
+## What's new in 3.6.0
+
+Portuguese (Brazil):
+
+> A configuração inicial agora mostra quais pastas do Claude e do Codex
+> autorizar. Cada conexão confirma se encontrou sessões e explica como corrigir
+> pastas vazias ou incorretas. O guia também pode ser reaberto em Ajustes.
+> O botão Encerrar agora aparece claramente no painel e na barra de menus.
+> Ative a cota oficial do Claude Code pelo próprio guia, sem Terminal ou chave de API.
+
+English (U.S.):
+
+> Guided setup now shows which Claude and Codex folders to authorize. Each
+> connection confirms whether sessions were found and explains how to fix an
+> empty or incorrect folder. You can reopen the guide from Settings.
+> Quit is now clearly available in the panel and menu bar.
+> Enable Claude Code's official quota in the guide, without Terminal or an API key.
+
+Spanish:
+
+> La configuración guiada muestra qué carpetas de Claude y Codex autorizar.
+> Cada conexión confirma si encontró sesiones y explica cómo corregir una
+> carpeta vacía o incorrecta. Puedes volver a abrir la guía desde Ajustes.
+> El botón para cerrar la app ahora está visible en el panel y la barra de menús.
+> Activa la cuota oficial de Claude Code desde la guía, sin Terminal ni clave de API.
 
 ## App privacy answers
 

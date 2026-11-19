@@ -1,5 +1,65 @@
 # Changelog
 
+## 3.7.1 (App Store) — 2026-11-18
+
+- First-run setup now distinguishes folder permission from usable local sessions,
+  explains why cloud tasks do not appear, and links to the official Codex quota.
+- The Codex card no longer describes an authorized empty folder as an absent
+  installation. Setup can be closed without pretending that monitoring is ready.
+- No account login, paid model request, or new folder permission was added.
+
+## 3.7.0 (App Store) — 2026-10-31
+
+Released on the App Store channel; the Direct/Sparkle channel stays on 3.5.5
+until a notarized Direct build ships. Aligns NotchAgent with Anthropic's
+October 2026 plan change: the 5-hour
+session limit was removed for verified Ultra accounts (formerly "Max 20x";
+"Max 5x" is now "Max"). Weekly limits are unchanged.
+
+### Changed
+
+- When the Claude quota probe reports a weekly window but no 5-hour window —
+  the signal of an account whose 5h limit was removed — the Claude card now
+  shows an honest "no 5h session limit on this plan" state and the weekly
+  window becomes the headline, in Portuguese, English, and Spanish. Accounts
+  that still have a 5h limit (Pro, Max, unverified Ultra) are unaffected: the
+  probe still reports the 5h window and the session gauge stays.
+- The burn panel follows the same signal — it watches the weekly window and
+  no longer asks whether the now-absent 5h session will last.
+
+### Fixed
+
+- The Claude card no longer fabricates a 5-hour session gauge from the local
+  transcript estimate for accounts whose 5h limit was removed — a limit that
+  no longer exists is never shown.
+
+## 3.6.0 (App Store candidate) — 2026-10-14
+
+The App Store edition now guides first-time users through local folder access.
+
+### Added
+
+- A first-launch guide in Portuguese, English, and Spanish shows the exact
+  Claude Code, Claude Desktop, and Codex folders to choose. Each connection
+  checks for readable session records and explains empty or missing folders.
+- Provider cards and Settings reopen the guide when access needs attention.
+
+### Fixed
+
+- Folder authorization survives relaunch and keeps the previous valid folder
+  when a replacement is unreadable or cancelled.
+
+### Security
+
+- Store folder access remains read-only and sandboxed. The edition does not
+  execute external CLIs or make paid model probes.
+
+### Validation
+
+- App Store and Direct suites, sandbox bundle inspection, signed archive, and
+  final App Store Connect read-back are release gates; record their results in
+  `docs/app-store/release-evidence.md` before submission.
+
 ## 3.5.5 — 2026-08-31
 
 Codex quota-source correction. NotchAgent now reports only quota windows

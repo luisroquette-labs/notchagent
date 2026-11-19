@@ -64,8 +64,8 @@ final class QuotaHierarchyContractTests: XCTestCase {
         XCTAssertTrue(panel.contains("let metric = GaugeMetric.from(snapshot)"), "burnPanel deve usar o gauge")
         XCTAssertTrue(panel.contains("let gaugeExhausted"), "burnPanel deve derivar o esgotamento do gauge")
         XCTAssertTrue(
-            panel.contains("let used = gaugeExhausted ? metric?.used : session?.usedPercent"),
-            "o número grande vem do gauge quando esgotado — nunca do percentual cru da sessão"
+            panel.contains("let used = gaugeExhausted || noSessionLimit ? metric?.used : session?.usedPercent"),
+            "o número grande vem do gauge quando esgotado OU sem limite de 5h (Ultra verificado) — nunca do percentual cru da sessão"
         )
         XCTAssertTrue(
             panel.contains("gaugeExhausted: gaugeExhausted"),
