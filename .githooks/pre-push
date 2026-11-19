@@ -5,10 +5,19 @@ root=$(git rev-parse --show-toplevel)
 echo "[pre-push] audit-public-release..."
 "$root/Scripts/audit-public-release.sh"
 
-echo "[pre-push] swift test via mac-gate..."
-(cd "$root" && mac-gate env NOTCHAGENT_DISABLE_PAID_PROBES=1 swift test) > /tmp/notchagent-pre-push.log 2>&1 || {
-    tail -20 /tmp/notchagent-pre-push.log
-    echo "[pre-push] BLOQUEADO: testes falharam. Push cancelado."
+if git -C "$root" diff --quiet origin/master...HEAD -- APP_STORE_VERSION; then
+    gate=(env NOTCHAGENT_DISABLE_PAID_PROBES=1 swift test)
+    echo "[pre-push] Swift gate via mac-gate..."
+else
+    gate=(Scripts/check-mac-app-store.sh)
+    echo "[pre-push] App Store gate via mac-gate..."
+fi
+log=$(mktemp "${TMPDIR:-/tmp}/notchagent-pre-push.XXXXXX")
+trap 'rm -f -- "$log"' EXIT
+(cd "$root" && mac-gate "${gate[@]}") > "$log" 2>&1 || {
+    tail -30 "$log"
+    echo "[pre-push] BLOQUEADO: gate falhou. Push cancelado."
     exit 1
 }
-echo "[pre-push] OK"
+tail -1 "$log"
+echo "[pre-push] OK: $(git -C "$root" rev-parse --short HEAD)"

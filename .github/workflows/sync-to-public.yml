@@ -5,7 +5,7 @@ name: Sync to public repo
 # already requires (Scripts/audit-public-release.sh: secret patterns + the
 # hardcoded personal-identifier blocklist, scanned in current files and every
 # commit added after the existing public baseline) before anything reaches the public repo. If the audit, version
-# check or tests fail, this job fails and NOTHING is pushed — no partial or
+# check or site validation fails, this job fails and NOTHING is pushed — no partial or
 # redacted sync, the whole push is blocked until fixed here.
 #
 # Push is fast-forward only (plain `git push`, never --force): if the public
@@ -23,11 +23,11 @@ permissions:
 jobs:
   sync:
     if: github.repository == 'luisroquette-labs/notchagent-personal'
-    runs-on: macos-15
-    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - name: Configure isolated Arduino directory
-        run: echo "ARDUINO_DIRECTORIES_USER=$RUNNER_TEMP/notchagent-arduino" >> "$GITHUB_ENV"
+      - name: Ensure audit tools are available
+        run: sudo apt-get update -qq && sudo apt-get install -y zsh ripgrep
       # actions/checkout v4
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -35,20 +35,6 @@ jobs:
 
       - name: Fetch immutable public-history baseline
         run: git fetch --no-tags https://github.com/luisroquette-labs/notchagent.git master:refs/remotes/public-audit/master
-
-      # arduino/setup-arduino-cli v2.0.0
-      - uses: arduino/setup-arduino-cli@81d310742121c928ea9c8bbd407b4217b432ae02
-        with:
-          version: 1.5.1
-
-      - name: Install pinned ESP32 toolchain
-        run: |
-          arduino-cli core update-index --additional-urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
-          arduino-cli core install esp32:esp32@3.3.8 --additional-urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
-          arduino-cli lib install "ArduinoJson@7.2.0" "GFX Library for Arduino@1.6.5" "lvgl@9.2.2"
-
-      - name: Install deterministic QR validator
-        run: brew install qrencode ripgrep
 
       - name: Audit for secrets and personal identifiers
         env:
@@ -61,10 +47,8 @@ jobs:
       - name: Validate release version
         run: zsh Scripts/check-version.sh
 
-      - name: Validate app, Desk contracts, firmware, and privacy without paid probes
-        env:
-          NOTCHAGENT_DISABLE_PAID_PROBES: "1"
-        run: Scripts/check-notchagent-desk.sh
+      - name: Validate product site
+        run: python3 Scripts/validate-site.py
 
       - name: Push to public repo
         env:

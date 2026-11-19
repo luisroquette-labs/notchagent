@@ -102,6 +102,22 @@ final class AppStoreDistributionTests: XCTestCase {
         XCTAssertFalse(StoreOnboardingState.shouldPresent(completed: false, hasAuthorizedFolder: true))
     }
 
+    func testAuthorizedCodexFolderWithoutSessionsIsNotPresentedAsInstalledOrReady() {
+        for language in SetupLanguage.allCases {
+            let message = StoreFolderReadiness.missingSessionsFolder.message(language)
+            XCTAssertTrue(message.contains(language.text("Pasta conectada", "Folder connected", "Carpeta conectada")))
+            XCTAssertTrue(message.contains(language.text("sessão local", "local sessions", "sesiones locales")))
+            XCTAssertEqual(
+                ProviderHealth.notInstalled.storeBadge(for: .codex, hasFolderAccess: true, language: language),
+                language.text("SEM SESSÕES LOCAIS", "NO LOCAL SESSIONS", "SIN SESIONES LOCALES")
+            )
+            XCTAssertEqual(
+                ProviderHealth.noData.storeBadge(for: .codex, hasFolderAccess: false, language: language),
+                language.text("ACESSO NECESSÁRIO", "ACCESS NEEDED", "ACCESO NECESARIO")
+            )
+        }
+    }
+
     func testSettingsRefreshesFolderStatusAfterGuidedAuthorization() throws {
         let root = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()

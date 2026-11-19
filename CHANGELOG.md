@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.7.1 (App Store) — 2026-11-18
+
+- First-run setup now distinguishes folder permission from usable local sessions,
+  explains why cloud tasks do not appear, and links to the official Codex quota.
+- The Codex card no longer describes an authorized empty folder as an absent
+  installation. Setup can be closed without pretending that monitoring is ready.
+- No account login, paid model request, or new folder permission was added.
+
 ## 3.7.0 (App Store) — 2026-10-31
 
 Released on the App Store channel; the Direct/Sparkle channel stays on 3.5.5

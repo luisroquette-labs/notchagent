@@ -44,20 +44,21 @@ enum SetupLanguage: String, CaseIterable, Identifiable {
     }
 }
 
-#if APP_STORE
-import SwiftUI
-
 extension StoreFolderReadiness {
     func message(_ language: SetupLanguage) -> String {
         switch self {
         case .checking:
             return language.text("Verificando sessões…", "Checking sessions…", "Comprobando sesiones…")
         case .missingSessionsFolder:
-            return language.text("A pasta não contém os dados esperados.", "This folder has no expected session data.", "Esta carpeta no contiene los datos esperados.")
+            return language.text(
+                "Pasta conectada · nenhuma sessão local encontrada.",
+                "Folder connected · no local sessions found.",
+                "Carpeta conectada · no se encontraron sesiones locales."
+            )
         case .noRecentSessions:
-            return language.text("Nenhuma sessão nos últimos 8 dias. Use a ferramenta e atualize.", "No sessions in the last 8 days. Use the tool, then refresh.", "No hay sesiones en los últimos 8 días. Usa la herramienta y actualiza.")
+            return language.text("Pasta conectada · nenhuma sessão nos últimos 8 dias.", "Folder connected · no sessions in the last 8 days.", "Carpeta conectada · sin sesiones en los últimos 8 días.")
         case .noUsageRecords:
-            return language.text("Arquivos encontrados, mas sem dados de uso legíveis.", "Files found, but no readable usage records.", "Hay archivos, pero no datos de uso legibles.")
+            return language.text("Pasta conectada · arquivos sem dados de uso legíveis.", "Folder connected · files have no readable usage data.", "Carpeta conectada · archivos sin datos de uso legibles.")
         case .readFailed:
             return language.text("Não foi possível ler as sessões.", "Could not read sessions.", "No se pudieron leer las sesiones.")
         case let .found(files, verifiedActivity):
@@ -84,6 +85,21 @@ extension StoreDataFolder {
     }
 }
 
+extension ProviderHealth {
+    func storeBadge(for provider: ProviderID, hasFolderAccess: Bool, language: SetupLanguage) -> String {
+        guard hasFolderAccess else {
+            return language.text("ACESSO NECESSÁRIO", "ACCESS NEEDED", "ACCESO NECESARIO")
+        }
+        if provider == .codex && (self == .notInstalled || self == .noData) {
+            return language.text("SEM SESSÕES LOCAIS", "NO LOCAL SESSIONS", "SIN SESIONES LOCALES")
+        }
+        return badgeText
+    }
+}
+
+#if APP_STORE
+import SwiftUI
+
 struct StoreOnboardingView: View {
     let finish: () -> Void
 
@@ -91,7 +107,6 @@ struct StoreOnboardingView: View {
     @State private var inspections: [StoreDataFolder: StoreFolderReadiness] = [:]
     @State private var inspectionIDs: [StoreDataFolder: UUID] = [:]
     @State private var error: String?
-    @State private var showExample = false
     private let focus: StoreDataFolder?
 
     init(focus: StoreDataFolder? = nil, finish: @escaping () -> Void) {
@@ -115,14 +130,21 @@ struct StoreOnboardingView: View {
                 .frame(width: 135)
             }
             Text(language.text(
-                "Escolha a ferramenta que você usa. Cada botão abre o seletor na pasta esperada.",
-                "Choose a tool you use. Each button opens the picker at the expected folder.",
-                "Elige la herramienta que usas. Cada botón abre el selector en la carpeta esperada."
+                "Conecte as ferramentas que você usa neste Mac. A autorização da pasta é pedida pelo macOS.",
+                "Connect the tools you use on this Mac. macOS will ask you to authorize the folder.",
+                "Conecta las herramientas que usas en este Mac. macOS te pedirá autorizar la carpeta."
             ))
             Text(language.text(
-                "Sem senha nem chave de API. O acesso salvo é somente leitura; para mostrar a cota oficial do Claude, o app ativa a barra de status em .claude/settings.json.",
-                "No password or API key. Saved access is read-only; to show Claude's official quota, the app enables the status line in .claude/settings.json.",
-                "Sin contraseña ni clave de API. El acceso guardado es de solo lectura; para mostrar la cuota oficial de Claude, la app activa la barra de estado en .claude/settings.json."
+                "Tarefas na nuvem não ficam neste Mac, mesmo quando você as abre no aplicativo. Elas ainda não aparecem no NotchAgent.",
+                "Cloud tasks are not stored on this Mac, even when you open them in the app. NotchAgent cannot show them yet.",
+                "Las tareas en la nube no se guardan en este Mac, aunque las abras en la aplicación. NotchAgent todavía no las muestra."
+            ))
+                .font(.callout)
+                .foregroundStyle(.secondary)
+            Text(language.text(
+                "Sem senha ou chave de API. O acesso às pastas é somente leitura; ao conectar Claude Code, o app pode ativar a cota nas configurações dele.",
+                "No password or API key. Folder access is read-only; connecting Claude Code may enable quota in its settings.",
+                "Sin contraseña ni clave de API. El acceso a las carpetas es de solo lectura; al conectar Claude Code, la app puede activar la cuota en su configuración."
             ))
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -132,12 +154,8 @@ struct StoreOnboardingView: View {
 
             HStack {
                 Spacer()
-                Button(language.text("Fazer depois", "Do later", "Hacerlo después")) { finishSetup() }
-                Button(language.text("Concluir", "Finish", "Terminar")) { finishSetup() }
+                Button(language.text("Abrir NotchAgent", "Open NotchAgent", "Abrir NotchAgent")) { finishSetup() }
                     .buttonStyle(.borderedProminent)
-                    .disabled(!StoreDataFolder.allCases.contains {
-                        SandboxBookmarkStore.shared.selectedRoot(for: $0) != nil
-                    })
             }
         }
         .padding(24)
@@ -160,6 +178,17 @@ struct StoreOnboardingView: View {
                         Text(status(for: folder))
                             .font(.caption)
                             .foregroundStyle(.secondary)
+                        if folder == .codex && shouldExplainCodexCloud {
+                            Text(language.text(
+                                "Conversas iniciadas no navegador podem rodar na nuvem e não gerar sessões aqui.",
+                                "Chats started in a browser may run in the cloud and leave no sessions here.",
+                                "Las conversaciones iniciadas en el navegador pueden ejecutarse en la nube y no dejar sesiones aquí."
+                            ))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Link(language.text("Ver cota oficial", "View official quota", "Ver cuota oficial"), destination: ProviderCardView.codexUsageSettingsURL)
+                                .font(.caption)
+                        }
                         if folder == .claudeCode, selected != nil {
                             Text(quotaEnabled
                                 ? language.text("Cota oficial ativada · aparece após a próxima resposta do Claude Code", "Official quota enabled · appears after Claude Code's next response", "Cuota oficial activada · aparece tras la próxima respuesta de Claude Code")
@@ -170,7 +199,7 @@ struct StoreOnboardingView: View {
                     }
                     Spacer()
                     if selected != nil {
-                        Button(language.text("Atualizar", "Refresh", "Actualizar")) { inspect(folder) }
+                        Button(language.text("Verificar", "Check", "Comprobar")) { inspect(folder) }
                     }
                     Button(selected == nil
                         ? (folder == .claudeCode
@@ -178,32 +207,17 @@ struct StoreOnboardingView: View {
                             : language.text("Conectar", "Connect", "Conectar"))
                         : (folder == .claudeCode && !quotaEnabled
                             ? language.text("Reativar cota", "Enable quota again", "Reactivar cuota")
-                            : language.text("Escolher outra pasta", "Choose another folder", "Elegir otra carpeta"))) {
+                            : language.text("Trocar pasta", "Change folder", "Cambiar carpeta"))) {
                         authorize(folder)
                     }
                 }
                 .padding(10)
                 .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
             }
-            Button(language.text("Ver exemplo", "See example", "Ver ejemplo")) { showExample.toggle() }
-            if showExample {
-                Text(language.text(
-                    "EXEMPLO · Codex · sessão de 5h: 43% usado · semana: 28% usado",
-                    "EXAMPLE · Codex · 5h session: 43% used · week: 28% used",
-                    "EJEMPLO · Codex · sesión de 5 h: 43% usado · semana: 28% usado"
-                ))
-                    .font(.caption.monospaced())
-            }
             if language == .es {
                 Text("La configuración está en español; otras secciones pueden aparecer en portugués o inglés.")
                     .font(.caption).foregroundStyle(.secondary)
             }
-            Text(language.text(
-                "O percentual vem da barra de status do Claude Code após uma resposta. Se você já usa outra barra, o app pede sua escolha antes de substituí-la.",
-                "The percentage comes from Claude Code's status line after a response. If you already use another status line, the app asks before replacing it.",
-                "El porcentaje llega desde la barra de Claude Code tras una respuesta. Si ya usas otra barra, la app pide permiso antes de reemplazarla."
-            ))
-                .font(.caption).foregroundStyle(.secondary)
             if let error {
                 Text(error).foregroundStyle(.red).font(.caption)
             }
@@ -215,12 +229,19 @@ struct StoreOnboardingView: View {
         return [focus] + StoreDataFolder.allCases.filter { $0 != focus }
     }
 
+    private var shouldExplainCodexCloud: Bool {
+        switch inspections[.codex] {
+        case nil, .some(.missingSessionsFolder), .some(.noRecentSessions): true
+        default: false
+        }
+    }
+
     private func status(for folder: StoreDataFolder) -> String {
         guard SandboxBookmarkStore.shared.selectedRoot(for: folder) != nil else {
             return language.text(
-                "Selecione \(folder.expectedFolderName) para ler o uso local",
-                "Select \(folder.expectedFolderName) to read local usage",
-                "Elige \(folder.expectedFolderName) para leer el uso local"
+                "Conecte para ler as sessões salvas neste Mac",
+                "Connect to read sessions saved on this Mac",
+                "Conecta para leer las sesiones guardadas en este Mac"
             )
         }
         return (inspections[folder] ?? .checking).message(language)

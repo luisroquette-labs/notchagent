@@ -20,11 +20,21 @@ struct ProviderCardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             header
+            #if APP_STORE
+            if let snapshot, snapshot.health.isUsable,
+               !needsStoreFolderAccess,
+               !(provider == .codex && snapshot.health == .noData) {
+                metrics(snapshot)
+            } else {
+                unavailable
+            }
+            #else
             if let snapshot, snapshot.health.isUsable {
                 metrics(snapshot)
             } else {
                 unavailable
             }
+            #endif
             Spacer(minLength: 0)
             footer
         }
@@ -403,8 +413,8 @@ struct ProviderCardView: View {
             if needsStoreFolderAccess {
                 let language = SetupLanguage.current
                 Text(provider == .codex
-                    ? language.text("Conecte o Codex para ver seu uso", "Connect Codex to see usage", "Conecta Codex para ver tu uso")
-                    : language.text("Conecte o Claude Code para ver seu uso", "Connect Claude Code to see usage", "Conecta Claude Code para ver tu uso"))
+                    ? language.text("Autorize as sessões do Codex salvas neste Mac", "Authorize Codex sessions saved on this Mac", "Autoriza las sesiones de Codex guardadas en este Mac")
+                    : language.text("Autorize as sessões do Claude Code salvas neste Mac", "Authorize Claude Code sessions saved on this Mac", "Autoriza las sesiones de Claude Code guardadas en este Mac"))
                     .font(Theme.body(10))
                     .foregroundStyle(Theme.textSecondary)
                 Button(language.text("Conectar", "Connect", "Conectar")) {
@@ -418,7 +428,7 @@ struct ProviderCardView: View {
                 Text(storeSetupMessage)
                     .font(Theme.body(10))
                     .foregroundStyle(Theme.textSecondary)
-                Button(SetupLanguage.current.text("Verificar pasta", "Check folder", "Comprobar carpeta")) {
+                Button(SetupLanguage.current.text("Entender e configurar", "Understand and set up", "Entender y configurar")) {
                     AppEnvironment.shared.router.openStoreOnboarding(
                         focus: provider == .codex ? .codex : .claudeCode
                     )
@@ -426,6 +436,10 @@ struct ProviderCardView: View {
                 .font(Theme.body(10, weight: .semibold))
             } else {
                 unavailableDetails
+            }
+            if provider == .codex {
+                Link(SetupLanguage.current.text("Ver cota oficial", "View official quota", "Ver cuota oficial"), destination: Self.codexUsageSettingsURL)
+                    .font(Theme.body(10, weight: .semibold))
             }
             #else
             unavailableDetails
@@ -456,11 +470,11 @@ struct ProviderCardView: View {
         case .ok, .degraded:
             return language.text("Uso local encontrado; limite pode estar indisponível", "Local usage found; quota may be unavailable", "Uso local encontrado; la cuota puede no estar disponible")
         case .notInstalled:
-            return language.text("Pasta de sessões não encontrada", "Session folder not found", "No se encontró la carpeta de sesiones")
+            return language.text("Sem sessões locais. Tarefas na nuvem não aparecem aqui.", "No local sessions. Cloud tasks do not appear here.", "Sin sesiones locales. Las tareas en la nube no aparecen aquí.")
         case .parseError:
             return language.text("Não foi possível ler as sessões", "Could not read sessions", "No se pudieron leer las sesiones")
         case .noData:
-            return language.text("Nenhuma sessão recente encontrada", "No recent sessions found", "No se encontraron sesiones recientes")
+            return language.text("Sem sessões locais nos últimos 8 dias", "No local sessions in the last 8 days", "Sin sesiones locales en los últimos 8 días")
         }
     }
 
@@ -479,7 +493,15 @@ struct ProviderCardView: View {
     private var footer: some View {
         HStack(spacing: 6) {
             if let health = snapshot?.health {
+                #if APP_STORE
+                StatusPill(text: health.storeBadge(
+                    for: provider,
+                    hasFolderAccess: !needsStoreFolderAccess,
+                    language: SetupLanguage.current
+                ), color: healthColor(health))
+                #else
                 StatusPill(text: health.badgeText, color: healthColor(health))
+                #endif
             }
             Spacer()
             GaugeLabel(text: refreshText, color: Theme.textFaint, size: 8)

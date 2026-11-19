@@ -1,12 +1,12 @@
 # Mac App Store metadata
 
-Version: 3.7.0
-Build: 24
+Version: 3.7.1
+Build: 25
 Bundle ID: `br.com.lfrprojects.notchagent.appstore`
 Primary category: Developer Tools
 Secondary category: Productivity
 Price: Free
-App Store Connect 3.6.0 draft locale: `pt-BR`; English and Spanish copy below
+App Store Connect 3.7.1 locale: `pt-BR`; English and Spanish copy below
 is prepared locally and is not published as a separate locale.
 
 ## URLs
@@ -39,12 +39,16 @@ Description:
 > • Consulte o essencial no notch ou abra o dashboard detalhado
 > • Monitore contas e conecte o NotchAgent Desk, se quiser
 >
+> Esta edição acompanha sessões salvas neste computador. Tarefas na nuvem,
+> inclusive as iniciadas no navegador e depois abertas no aplicativo, não
+> aparecem no NotchAgent. O guia oferece um link para consultar a cota oficial.
+>
 > Os dados de uso são processados localmente no dispositivo. O acesso salvo às pastas do
 > Claude Code, Claude Desktop e Codex é somente leitura e depende da sua
 > autorização. Ao conectar Claude Code, o guia ativa a exportação da cota oficial
 > em `.claude/settings.json`, preservando as demais opções. Na primeira abertura,
-> o guia mostra a pasta certa para cada
-> ferramenta e confirma quando encontra sessões. É preciso já ter usado uma
+> o guia explica a autorização de cada
+> ferramenta e distingue acesso concedido de sessões encontradas. É preciso já ter usado uma
 > dessas ferramentas neste computador para ver dados locais; contas de API são
 > opcionais e configuradas à parte. Recursos online opcionais e seus destinos estão descritos na
 > política de privacidade. Sem anúncios, rastreamento ou conta NotchAgent.
@@ -80,10 +84,14 @@ Description:
 > • Check the essentials in the notch or open the detailed dashboard
 > • Optionally monitor accounts and connect NotchAgent Desk
 >
+> This edition tracks sessions saved on this computer. Cloud tasks, including
+> chats started in a browser and later opened in the app, do not appear in
+> NotchAgent. Setup links to the official quota page.
+>
 > Usage data is processed locally on the device. Saved read-only access to Claude Code,
 > Claude Desktop, and Codex folders requires your authorization. Connecting Claude Code
 > enables official quota export in `.claude/settings.json` while preserving your other options. Guided
-> first-launch setup takes you to each folder and confirms when it finds
+> first-launch setup explains each folder authorization and confirms when it finds
 > sessions. You need to have used one of these tools on this computer to see
 > local data; API accounts are optional and configured separately. Optional online
 > features and their destinations are described in the privacy policy.
@@ -104,8 +112,9 @@ After launch, click its menu-bar item or the top-center notch area.
 No account is required. First-launch setup opens automatically when no folder
 is authorized; click Connect for Codex or Claude Code and choose the suggested
 `.codex` or `.claude` folder. Claude Desktop is optional. Each row separately
-checks for readable session records. An empty or missing sessions folder shows
-a specific message and Choose another folder; it does not block the app. The
+checks for readable session records. An empty or missing sessions folder is
+shown as authorized but without local sessions, with a link to official Codex
+quota; it does not block the app. The
 same guide can be reopened from Settings or a provider card.
 Connecting Claude Code adds a static `statusLine` command to the user-selected
 `.claude/settings.json`. If a custom status line exists, the app asks before
@@ -130,6 +139,28 @@ NotchAgent Desk hardware is not required for review. If no device is present,
 the Desk section remains in a disconnected state.
 
 NotchAgent is independent and is not affiliated with the monitored providers.
+
+## What's new in 3.7.1
+
+Portuguese (Brazil):
+
+> A configuração inicial ficou mais clara: agora diferencia pasta autorizada
+> de sessões encontradas e explica por que tarefas na nuvem não aparecem no
+> painel. O cartão Codex mostra quando faltam dados locais e oferece acesso à
+> página oficial de cota.
+
+English (U.S.):
+
+> First-run setup now separates folder access from local session data and
+> explains why cloud tasks do not appear in the dashboard. The Codex card
+> identifies missing local data and links to the official quota page.
+
+Spanish:
+
+> La configuración inicial ahora distingue entre el acceso a la carpeta y
+> las sesiones locales, y explica por qué las tareas en la nube no aparecen
+> en el panel. La tarjeta Codex indica si faltan datos locales y enlaza a la
+> página oficial de la cuota.
 
 ## What's new in 3.7.0
 

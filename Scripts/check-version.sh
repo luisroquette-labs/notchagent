@@ -8,7 +8,7 @@ if [[ ! "$version" =~ '^[0-9]+\.[0-9]+\.[0-9]+$' ]]; then
     exit 1
 fi
 
-plist_version=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Resources/Info.plist)
+plist_version=$(python3 -c 'import plistlib; print(plistlib.load(open("Resources/Info.plist", "rb"))["CFBundleShortVersionString"])')
 if [[ "$plist_version" != "$version" ]]; then
     echo "ERRO: Resources/Info.plist=$plist_version, VERSION=$version."
     exit 1
