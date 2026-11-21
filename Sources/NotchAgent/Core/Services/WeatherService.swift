@@ -10,7 +10,7 @@ enum WeatherError: Error {
 /// store never talks to URLSession directly.
 protocol WeatherFetching: Sendable {
     func fetch(lat: Double, lon: Double, city: String) async throws -> WeatherSnapshot
-    func geocode(city: String) async throws -> (lat: Double, lon: Double, name: String)
+    func geocode(city: String, languageCode: String) async throws -> (lat: Double, lon: Double, name: String)
     func resolveByIP() async throws -> (lat: Double, lon: Double, name: String)
 }
 
@@ -48,12 +48,12 @@ actor WeatherService: WeatherFetching {
         return snapshot
     }
 
-    func geocode(city: String) async throws -> (lat: Double, lon: Double, name: String) {
+    func geocode(city: String, languageCode: String = "en") async throws -> (lat: Double, lon: Double, name: String) {
         var components = URLComponents(string: "https://geocoding-api.open-meteo.com/v1/search")
         components?.queryItems = [
             URLQueryItem(name: "name", value: city),
             URLQueryItem(name: "count", value: "1"),
-            URLQueryItem(name: "language", value: "pt"),
+            URLQueryItem(name: "language", value: languageCode == "pt" ? "pt" : "en"),
             URLQueryItem(name: "format", value: "json"),
         ]
         guard let url = components?.url else { throw WeatherError.invalidURL }

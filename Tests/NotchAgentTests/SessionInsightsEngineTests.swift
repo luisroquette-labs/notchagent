@@ -36,6 +36,6 @@ final class SessionInsightsEngineTests: XCTestCase {
         XCTAssertEqual(payloads.count, 1)
         // 500/1600 = 31% cache, ferramenta Read 100% mas cache não fria →
         // branch de ferramenta dominante
-        XCTAssertEqual(payloads[.claudeCode]?.preview.line, "Topo: Read 100%")
+        XCTAssertEqual(payloads[.claudeCode]?.preview.line, "Top: Read 100%")
     }
 }

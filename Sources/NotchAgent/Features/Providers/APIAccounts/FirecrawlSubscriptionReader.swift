@@ -120,7 +120,7 @@ final class FirecrawlSubscriptionReader: NSObject, WKNavigationDelegate {
             service: .firecrawlSubscription,
             usedPercent: nil,
             resetsAt: renewal,
-            note: "Firecrawl: plano \(plan) · \(amount.isAnnual ? "equivalente mensal" : "mensal")",
+            note: "Firecrawl: \(plan) plan · \(amount.isAnnual ? "monthly equivalent" : "monthly")",
             monthlyPlanUSD: amount.currency == .usd ? amount.monthlyValue : nil,
             monthlyPlanBRL: amount.currency == .brl ? Decimal(amount.monthlyValue) : nil,
             planName: plan

@@ -241,10 +241,10 @@ struct ProviderCardView: View {
             // The probe is on but no quota arrived (no Claude Code OAuth on
             // this machine) — honest "unavailable" beats a token count that
             // reads as the quota itself.
-            Text("QUOTA INDISPONÍVEL")
+            Text(store.preferences.settings.interfaceLanguage.text("QUOTA INDISPONÍVEL", "QUOTA UNAVAILABLE"))
                 .font(Theme.numeral(18))
                 .foregroundStyle(Theme.warning)
-            GaugeLabel(text: "FAÇA LOGIN NO CLAUDE CODE PARA VER O %", color: Theme.textFaint, size: 8)
+            GaugeLabel(text: store.preferences.settings.interfaceLanguage.text("FAÇA LOGIN NO CLAUDE CODE PARA VER O %", "SIGN IN TO CLAUDE CODE TO SEE THE %"), color: Theme.textFaint, size: 8)
         } else if snapshot.session?.tokens.total ?? 0 > 0 {
             // Session with no daily cap reported (Codex plans that only
             // expose a weekly window): real session tokens, never a

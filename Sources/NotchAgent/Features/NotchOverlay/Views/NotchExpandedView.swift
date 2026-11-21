@@ -90,19 +90,19 @@ struct NotchExpandedView: View {
             } label: {
                 GaugeLabel(
                     text: spending.subscriptions.isEmpty && spending.expenses.isEmpty && spending.history.isEmpty
-                        ? "CUSTOS NÃO CONFIG."
-                        : "PAGO " + spending.format(spending.monthlySpend.paidBRL, compact: true),
+                        ? "COSTS NOT SET"
+                        : "PAID " + spending.format(spending.monthlySpend.paidBRL, compact: true),
                     color: Theme.coral, size: 8
                 )
             }
             .buttonStyle(.plain)
-            .help("Gasto confirmado neste mês")
+            .help("Confirmed spend this month")
             if !apiRows.isEmpty {
                 Button { viewModel.goToPage(5) } label: {
                     GaugeLabel(text: "APIs \(apiRows.count)", color: Theme.ok, size: 8)
                 }
                 .buttonStyle(.plain)
-                .help("Abrir custo e quota das APIs")
+                .help("Open API spend and quota")
             }
             GaugeLabel(text: updatedText, color: Theme.textFaint, size: 8)
             Button {
@@ -364,7 +364,7 @@ struct NotchExpandedView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .center, spacing: 10) {
                 VStack(alignment: .leading, spacing: 2) {
-                    GaugeLabel(text: "APIs · consumo e saldo", color: Theme.textSecondary, size: 9.5)
+                    GaugeLabel(text: "APIs · spend and balance", color: Theme.textSecondary, size: 9.5)
                     Text(apiDashboardHeadline)
                         .font(Theme.body(14, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
@@ -372,7 +372,7 @@ struct NotchExpandedView: View {
                 Spacer()
                 VStack(alignment: .trailing, spacing: 3) {
                     if let totalMonthlyPlanBRL {
-                        GaugeLabel(text: "ASSINATURAS / MÊS", color: Theme.textDim, size: 8)
+                        GaugeLabel(text: "PLANS / MONTH", color: Theme.textDim, size: 8)
                         Text(totalMonthlyPlanBRL)
                             .font(Theme.numeral(13))
                             .foregroundStyle(Theme.textSecondary)
@@ -380,8 +380,8 @@ struct NotchExpandedView: View {
                     if let totalKnownAPISpendBRL {
                         GaugeLabel(
                             text: apiUsage.contains { $0.spendPeriod == .rolling28Days }
-                                ? "TOTAL 30D · GOOGLE 28D À PARTE"
-                                : "CONSUMIDO 30 DIAS",
+                                ? "30D TOTAL · GOOGLE 28D SEPARATE"
+                                : "SPENT IN 30 DAYS",
                             color: Theme.textDim,
                             size: 8
                         )
@@ -391,10 +391,10 @@ struct NotchExpandedView: View {
                     }
                 }
                 .help(
-                    "ASSINATURAS/MÊS soma planos fixos. TOTAL 30D soma só contas com "
-                    + "janela de 30 dias corridos oficial — contas com mês-calendário "
-                    + "(ex: Anthropic API), 28 dias (Google) ou billing compartilhado "
-                    + "com outra conta ficam de fora, mesmo com valor próprio no card."
+                    "PLANS/MONTH adds fixed plans. The 30-day total adds only accounts with "
+                    + "an official rolling 30-day window — calendar-month accounts "
+                    + "(for example Anthropic API), 28-day windows (Google), or spend shared "
+                    + "with another account stay out of the total, even when the card has its own amount."
                 )
                 Button {
                     AppEnvironment.shared.scheduler.refreshNow()
@@ -407,13 +407,13 @@ struct NotchExpandedView: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(apiIsRefreshing)
-                .help("Atualizar leituras de API agora")
-                .accessibilityLabel("Atualizar leituras de API agora")
+                .help("Refresh API reads now")
+                .accessibilityLabel("Refresh API reads now")
             }
             GaugeLabel(
                 text: apiIsRefreshing
-                    ? "ATUALIZANDO LEITURAS"
-                    : "\(apiRefreshCaption) · PERÍODO \(apiSpendWindowCaption)",
+                    ? "REFRESHING READS"
+                    : "\(apiRefreshCaption) · WINDOW \(apiSpendWindowCaption)",
                 color: Theme.textFaint,
                 size: 8
             )
@@ -422,15 +422,15 @@ struct NotchExpandedView: View {
                 LazyVStack(spacing: 7) {
                     if !connectedSubscriptionRows.isEmpty {
                         dashboardSectionLabel(
-                            title: "ASSINATURAS CONECTADAS",
-                            subtitle: "não contam como consumo de API"
+                            title: "CONNECTED PLANS",
+                            subtitle: "not counted as API spend"
                         )
                         ForEach(connectedSubscriptionRows) { row in
                             apiAccountRow(row)
                         }
                         dashboardSectionLabel(
-                            title: "CONTAS DE API",
-                            subtitle: "uso, saldo e quotas"
+                            title: "API ACCOUNTS",
+                            subtitle: "usage, balance, and quotas"
                         )
                     }
                     if !apiRows.contains(where: { $0.account.service == .anthropicAPI }) {
@@ -479,12 +479,12 @@ struct NotchExpandedView: View {
                     Text("Anthropic API")
                         .font(Theme.body(10.5, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
-                    Text("Nenhuma organização API conectada")
+                    Text("No API organization connected")
                         .font(Theme.body(8.5))
                         .foregroundStyle(Theme.textFaint)
                 }
                 Spacer()
-                StatusPill(text: "NÃO CONFIGURADA", color: Theme.textDim)
+                StatusPill(text: "NOT SET UP", color: Theme.textDim)
             }
             .padding(10)
             .frame(maxWidth: .infinity, minHeight: 64, alignment: .leading)
@@ -498,8 +498,8 @@ struct NotchExpandedView: View {
             )
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Anthropic API, não configurada")
-        .accessibilityHint("Abre os ajustes")
+        .accessibilityLabel("Anthropic API, not set up")
+        .accessibilityHint("Opens Settings")
     }
 
     private func apiAccountRow(_ row: APIAccountDashboardRow) -> some View {
@@ -554,8 +554,8 @@ struct NotchExpandedView: View {
                     .onTapGesture {
                         AppEnvironment.shared.scheduler.refreshAPIAccount(account.id)
                     }
-                    .help("Atualizar apenas \(account.label)")
-                    .accessibilityLabel("Atualizar apenas \(account.label)")
+                    .help("Refresh only \(account.label)")
+                    .accessibilityLabel("Refresh only \(account.label)")
                     .accessibilityAddTraits(.isButton)
                     Image(systemName: selected ? "chevron.up" : "chevron.down")
                         .font(.system(size: 8, weight: .bold))
@@ -588,14 +588,14 @@ struct NotchExpandedView: View {
                                     .shadow(color: .black.opacity(0.14), radius: 12, y: 6)
                             )
                         }
-                        .help("Arraste para reorganizar")
-                        .accessibilityLabel("Reorganizar \(account.label)")
+                        .help("Drag to reorder")
+                        .accessibilityLabel("Reorder \(account.label)")
                 }
                 if selected {
                     financialSourceDetails(account: account, usage: usage)
                     if !(usage?.verificationFindings?.isEmpty ?? true) {
                         GaugeLabel(
-                            text: "DIVERGÊNCIA ENTRE FONTES OFICIAIS",
+                            text: "OFFICIAL SOURCES DISAGREE",
                             color: Theme.warning,
                             size: 8.5
                         )
@@ -643,8 +643,8 @@ struct NotchExpandedView: View {
         .accessibilityLabel("\(account.label), \(usage?.summary ?? pendingSummary(for: account))")
         .accessibilityHint(
             isXService(account.service) && monthlySpendUSD(for: usage) == nil && balanceUSD(for: usage) == nil
-                ? "Abre Settings para conectar o Console X"
-                : "Expande os detalhes da conta"
+                ? "Opens Settings to connect the X console"
+                : "Expands the account details"
         )
     }
 
@@ -658,7 +658,7 @@ struct NotchExpandedView: View {
     }
 
     private var apiDashboardHeadline: String {
-        guard !apiRows.isEmpty else { return "Configure uma conta de API" }
+        guard !apiRows.isEmpty else { return "Add an API account" }
         var seenFinancialScopes = Set<String>()
         let financial = apiRows.filter { row in
             guard monthlySpendUSD(for: row.usage) != nil
@@ -672,8 +672,8 @@ struct NotchExpandedView: View {
         }.count
         let anthropic = apiRows.contains { $0.account.service == .anthropicAPI }
             ? ""
-            : " · Anthropic não configurada"
-        return "\(apiRows.count) contas API · \(financial) em R$\(anthropic)"
+            : " · Anthropic not set up"
+        return "\(apiRows.count) API accounts · \(financial) in BRL\(anthropic)"
     }
 
     private func monthlySpendUSD(for usage: APIAccountUsage?) -> Double? {
@@ -698,8 +698,9 @@ struct NotchExpandedView: View {
         let formatter = DateFormatter()
         formatter.calendar = Calendar(identifier: .gregorian)
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
-        formatter.locale = Locale(identifier: "pt_BR")
-        formatter.dateFormat = "dd/MM/yyyy"
+        let portuguese = preferences.settings.interfaceLanguage == .ptBR
+        formatter.locale = Locale(identifier: portuguese ? "pt_BR" : "en_US_POSIX")
+        formatter.dateFormat = portuguese ? "dd/MM/yyyy" : "MMM d, yyyy"
         return formatter.string(from: date)
     }
 
@@ -713,7 +714,7 @@ struct NotchExpandedView: View {
 
     private func accountSubtitle(_ usage: APIAccountUsage?, account: APIAccount) -> String {
         if !(usage?.verificationFindings?.isEmpty ?? true) {
-            return "Divergência entre API e portal acima da tolerância"
+            return "API and portal disagree above the tolerance"
         }
         if let usage,
            let status = usage.readStatus,
@@ -724,46 +725,46 @@ struct NotchExpandedView: View {
         let financial = financialSummary(for: usage)
         if account.service == .gemini, let usage, financial.consumedUSD == nil {
             return usage.usedPercent == nil
-                ? "Google Cloud conectado · sem atividade de quota recente"
-                : "Quota oficial do Google Cloud"
+                ? "Google Cloud connected · no recent quota activity"
+                : "Official Google Cloud quota"
         }
         if let plan = monthlyPlanBRL(for: account, usage: usage) {
-            let name = usage?.planName.map { "Plano \($0)" } ?? "Plano mensal"
-            let seats = usage?.seatCount.map { " · \($0) licenças" } ?? ""
+            let name = usage?.planName.map { "Plan \($0)" } ?? "Monthly plan"
+            let seats = usage?.seatCount.map { " · \($0) seats" } ?? ""
             return account.service.isSubscriptionService
-                ? "\(name)\(seats) · assinatura \(brlValueText(plan))/mês"
-                : "\(name)\(seats) · custo recorrente \(brlValueText(plan))/mês"
+                ? "\(name)\(seats) · subscription \(brlValueText(plan))/mo"
+                : "\(name)\(seats) · recurring cost \(brlValueText(plan))/mo"
         }
         if account.service == .xTwitter || account.service == .xTwitterAccount1 || account.service == .xTwitterAccount2,
            monthlySpendUSD(for: usage) != nil {
-            return "Consumo da API · recargas não são gasto"
+            return "API spend · top-ups are not spend"
         }
         if isXService(account.service), monthlySpendUSD(for: usage) == nil, balanceUSD(for: usage) == nil {
-            return "Conecte o Console X em Settings para ver valores em R$"
+            return "Connect the X console in Settings to see amounts"
         }
         if isSharedXProject(usage) {
             return financial.consumedUSD != nil || financial.remainingUSD != nil
-                ? "Projeto X compartilhado · financeiro contado uma vez"
-                : "Quota compartilhada do mesmo projeto X"
+                ? "Shared X project · money counted once"
+                : "Shared quota for the same X project"
         }
         if financial.isComplete {
             return financial.spendPeriod == .currentCalendarMonth
-                ? "Consumido no mês atual · restante agora"
-                : "Consumido nos últimos \(financial.consumedDays ?? 30) dias · restante agora"
+                ? "Spent this calendar month · remaining now"
+                : "Spent in the last \(financial.consumedDays ?? 30) days · remaining now"
         }
         if financial.consumedUSD != nil {
             if account.service == .gemini {
-                return "Janela oficial de 28 dias do Google AI Studio"
+                return "Google AI Studio's official 28-day window"
             }
             if financial.spendPeriod == .currentCalendarMonth {
-                return "Custo do mês-calendário atual · saldo não informado"
+                return "Calendar-month cost · balance not reported"
             }
-            return "Consumo real de \(financial.consumedDays ?? 30) dias · saldo não informado pela API"
+            return "Actual spend over \(financial.consumedDays ?? 30) days · balance not reported by the API"
         }
         if financial.remainingUSD != nil {
-            return "Saldo medido · consumo não informado pela API"
+            return "Measured balance · spend not reported by the API"
         }
-        if usage?.cycleUsed != nil { return "Quota de créditos do ciclo atual" }
+        if usage?.cycleUsed != nil { return "Credit quota for the current cycle" }
         return pendingSummary(for: account)
     }
 
@@ -782,13 +783,13 @@ struct NotchExpandedView: View {
             )
             metricDivider
             financialMetric(
-                label: "SALDO ATUAL",
+                label: "BALANCE",
                 metric: finance.balance,
                 color: Theme.ok
             )
             metricDivider
             financialMetric(
-                label: account.service.isSubscriptionService ? "ASSINATURA MENSAL" : "PLANO MENSAL",
+                label: account.service.isSubscriptionService ? "MONTHLY PLAN" : "MONTHLY COST",
                 metric: finance.plan,
                 color: Theme.textSecondary
             )
@@ -833,46 +834,46 @@ struct NotchExpandedView: View {
             brlPerUSD: spending.brlPerUSD
         )
         return HStack(spacing: 8) {
-            GaugeLabel(text: "GASTO: \(finance.spend.confidence.label)", color: Theme.textDim, size: 8)
-            GaugeLabel(text: "SALDO: \(finance.balance.confidence.label)", color: Theme.textDim, size: 8)
-            GaugeLabel(text: "PLANO: \(finance.plan.confidence.label)", color: Theme.textDim, size: 8)
+            GaugeLabel(text: "SPEND: \(finance.spend.confidence.label)", color: Theme.textDim, size: 8)
+            GaugeLabel(text: "BALANCE: \(finance.balance.confidence.label)", color: Theme.textDim, size: 8)
+            GaugeLabel(text: "PLAN: \(finance.plan.confidence.label)", color: Theme.textDim, size: 8)
         }
     }
 
     @ViewBuilder
     private func rechargeDetail(_ usage: APIAccountUsage?) -> some View {
         if let recharge = usage?.rechargeBRL {
-            GaugeLabel(text: "RECARGAS NO PERÍODO \(brlValueText(recharge))", color: Theme.textSecondary, size: 8.5)
+            GaugeLabel(text: "TOP-UPS IN WINDOW \(brlValueText(recharge))", color: Theme.textSecondary, size: 8.5)
         } else if let recharge = usage?.rechargeUSD,
                   let converted = brlText(fromUSD: recharge) {
-            GaugeLabel(text: "RECARGAS NO PERÍODO \(converted)", color: Theme.textSecondary, size: 8.5)
+            GaugeLabel(text: "TOP-UPS IN WINDOW \(converted)", color: Theme.textSecondary, size: 8.5)
         }
     }
 
     private func readStatusLabel(_ status: APIAccountReadStatus?) -> String {
         switch status {
-        case .updated: "ATUALIZADO"
-        case .partial: "PARCIAL"
-        case .needsCredential: "SEM CREDENCIAL"
-        case .needsLogin: "RECONECTAR"
-        case .unavailable: "ERRO DE LEITURA"
-        case .stale: "DESATUALIZADO"
-        case nil: "SEM LEITURA"
+        case .updated: "UPDATED"
+        case .partial: "PARTIAL"
+        case .needsCredential: "NO CREDENTIAL"
+        case .needsLogin: "RECONNECT"
+        case .unavailable: "READ ERROR"
+        case .stale: "STALE"
+        case nil: "NO READ"
         }
     }
 
     private func accountRefreshCaption(_ state: RefreshState) -> String {
         switch state {
         case .idle:
-            "AGUARDANDO"
+            "WAITING"
         case .refreshing:
-            "ATUALIZANDO"
+            "REFRESHING"
         case .success(let date):
-            "ATUALIZADO \(Format.relative(date))"
+            "UPDATED \(Format.relative(date))"
         case .stale(let date):
-            "DESATUALIZADO \(Format.relative(date))"
+            "STALE \(Format.relative(date))"
         case .failure(_, let error):
-            "ERRO · \(error)"
+            "ERROR · \(error)"
         }
     }
 
@@ -945,10 +946,10 @@ struct NotchExpandedView: View {
 
     private func moneyLabel(for account: APIAccountUsage?) -> String {
         switch account?.monetaryKind {
-        case .spend: "GASTO"
-        case .balance: "SALDO"
-        case .remaining: "RESTANTE"
-        case nil: "VALOR"
+        case .spend: "SPEND"
+        case .balance: "BALANCE"
+        case .remaining: "REMAINING"
+        case nil: "AMOUNT"
         }
     }
 
@@ -956,7 +957,7 @@ struct NotchExpandedView: View {
     private func cycleDetail(_ usage: APIAccountUsage?) -> some View {
         if let balance = usage?.balanceBRL {
             GaugeLabel(
-                text: "CRÉDITOS DE USO \(brlValueText(balance))",
+                text: "USAGE CREDITS \(brlValueText(balance))",
                 color: balance >= 0 ? Theme.ok : Theme.coral,
                 size: 8.5
             )
@@ -964,21 +965,21 @@ struct NotchExpandedView: View {
             let remaining = usage?.cycleRemaining ?? max(limit - used, 0)
             let overage = usage?.cycleOverage ?? 0
             HStack(spacing: 8) {
-                GaugeLabel(text: "CONSUMIDO \(cycleAmountText(used, unit: unit))", color: Theme.coral, size: 8.5)
+                GaugeLabel(text: "USED \(cycleAmountText(used, unit: unit))", color: Theme.coral, size: 8.5)
                 GaugeLabel(
                     text: overage > 0
-                        ? "EXCEDENTE \(cycleAmountText(overage, unit: unit))"
-                        : "SALDO \(cycleAmountText(remaining, unit: unit))",
+                        ? "OVERAGE \(cycleAmountText(overage, unit: unit))"
+                        : "LEFT \(cycleAmountText(remaining, unit: unit))",
                     color: overage > 0 ? Theme.coral : Theme.ok,
                     size: 8.5
                 )
             }
         } else if usage?.monetaryKind == .balance {
-            GaugeLabel(text: "CONSUMO DESDE A RECARGA: API NÃO INFORMOU", color: Theme.textDim, size: 8.5)
+            GaugeLabel(text: "SPEND SINCE TOP-UP: API DID NOT REPORT IT", color: Theme.textDim, size: 8.5)
         } else if usage?.monetaryKind == .spend {
-            GaugeLabel(text: "GASTO NO PERÍODO INFORMADO PELA API", color: Theme.coral, size: 8.5)
+            GaugeLabel(text: "SPEND IN THE WINDOW THE API REPORTED", color: Theme.coral, size: 8.5)
         } else if usage == nil {
-            GaugeLabel(text: "AGUARDANDO ENDPOINT OU ESCOPO DE LEITURA", color: Theme.textDim, size: 8.5)
+            GaugeLabel(text: "WAITING FOR AN ENDPOINT OR READ SCOPE", color: Theme.textDim, size: 8.5)
         }
     }
 
@@ -1000,25 +1001,25 @@ struct NotchExpandedView: View {
     private func pendingSummary(for account: APIAccount) -> String {
         switch account.service {
         case .xTwitter, .xTwitterAccount1, .xTwitterAccount2:
-            "X: salve o Bearer Token e conecte o Developer Console para ler quota, gasto e saldo"
+            "X: save the Bearer Token and connect the Developer Console to read quota, spend, and balance"
         case .twitterAPI:
-            "twitterapi.io: salve a chave e conecte a conta para ler saldo e gasto"
+            "twitterapi.io: save the key and connect the account to read balance and spend"
         case .gemini:
-            "Google: login gcloud ausente ou sem autorização para Cloud Monitoring"
+            "Google: gcloud login is missing or not allowed to read Cloud Monitoring"
         case .anthropicConsole:
-            "Claude: conecte sua conta atual para ler plano, limites e créditos"
+            "Claude: connect the current account to read plan, limits, and credits"
         case .chatGPTSubscription:
-            "ChatGPT: conecte sua conta e abra Settings → Billing"
+            "ChatGPT: connect the account and open Settings → Billing"
         case .googleSubscription:
-            "Google AI: conecte a conta pagadora em Assinaturas e serviços"
+            "Google AI: connect the paying account under Subscriptions and services"
         case .firecrawlSubscription:
-            "Firecrawl: conecte a conta pagadora e abra Billing"
+            "Firecrawl: connect the paying account and open Billing"
         case .anthropicAPI:
-            "Anthropic API: conecte o Claude Console para ler o custo do mês atual"
+            "Anthropic API: connect the Claude Console to read this month's cost"
         default:
             APIAccountCredentialStore.key(for: account) == nil
-                ? "Chave de leitura ausente ou associada a outro serviço"
-                : "Aguardando resposta da API"
+                ? "Read key is missing or belongs to another service"
+                : "Waiting for the API"
         }
     }
 
@@ -1029,18 +1030,18 @@ struct NotchExpandedView: View {
     }
 
     private var apiRefreshCaption: String {
-        guard let state = store.refreshStates[.apiAccounts] else { return "AGUARDANDO PRIMEIRA LEITURA" }
+        guard let state = store.refreshStates[.apiAccounts] else { return "WAITING FOR THE FIRST READ" }
         switch state {
         case .success(let date):
-            return "ATUALIZADO \(Format.relative(date))"
+            return "UPDATED \(Format.relative(date))"
         case .stale(let date):
-            return "DESATUALIZADO \(Format.relative(date))"
+            return "STALE \(Format.relative(date))"
         case .failure:
-            return "ÚLTIMA LEITURA FALHOU"
+            return "LAST READ FAILED"
         case .idle:
-            return "AGUARDANDO PRIMEIRA LEITURA"
+            return "WAITING FOR THE FIRST READ"
         case .refreshing:
-            return "ATUALIZANDO LEITURAS"
+            return "REFRESHING READS"
         }
     }
 

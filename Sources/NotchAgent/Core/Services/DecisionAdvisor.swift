@@ -17,34 +17,66 @@ enum DecisionAdvisor {
     static let limitedFreshness: TimeInterval = 30 * 60
     static let minTokensForAdvice = 50_000
 
-    static func advise(snapshots: [ProviderID: UsageSnapshot], budget: MonthlyBudgetStatus?, now: Date = Date()) -> [DecisionAdvice] {
+    static func advise(
+        snapshots: [ProviderID: UsageSnapshot],
+        budget: MonthlyBudgetStatus?,
+        now: Date = Date(),
+        language: InterfaceLanguage = .ptBR
+    ) -> [DecisionAdvice] {
         var advice: [DecisionAdvice] = []
         if let budget {
+            let percent = Int(budget.projectedPercent.rounded())
             switch budget.level {
             case .exceeded:
-                advice.append(.init(title: "Evite gasto adicional", detail: "A previsão já excede o orçamento mensal.", severity: .critical))
+                advice.append(.init(
+                    title: language.text("Evite gasto adicional", "Avoid extra spend"),
+                    detail: language.text("A previsão já excede o orçamento mensal.", "The forecast is already over the monthly budget."),
+                    severity: .critical
+                ))
             case .critical:
-                advice.append(.init(title: "Reduza modelos caros", detail: "A previsão atingiu \(Int(budget.projectedPercent.rounded()))% do orçamento.", severity: .critical))
+                advice.append(.init(
+                    title: language.text("Reduza modelos caros", "Use cheaper models"),
+                    detail: language.text("A previsão atingiu \(percent)% do orçamento.", "The forecast has reached \(percent)% of the budget."),
+                    severity: .critical
+                ))
             case .warning:
-                advice.append(.init(title: "Use modelos caros com critério", detail: "A previsão atingiu \(Int(budget.projectedPercent.rounded()))% do orçamento.", severity: .warning))
+                advice.append(.init(
+                    title: language.text("Use modelos caros com critério", "Be selective with expensive models"),
+                    detail: language.text("A previsão atingiu \(percent)% do orçamento.", "The forecast has reached \(percent)% of the budget."),
+                    severity: .warning
+                ))
             case .normal: break
             }
         }
         for provider in ProviderID.allCases {
-            if let coldCache = coldCacheAdvice(snapshots[provider]) { advice.append(coldCache) }
-            if let expensiveModel = dominantExpensiveModelAdvice(snapshots[provider]) { advice.append(expensiveModel) }
-            if let fablePool = fablePoolAdvice(snapshots[provider]) { advice.append(fablePool) }
-            if let limited = limitedModelAdvice(snapshots[provider], now: now) { advice.append(limited) }
-            if let tight = tightSessionAdvice(snapshots[provider], now: now) { advice.append(tight) }
+            if let coldCache = coldCacheAdvice(snapshots[provider], language: language) { advice.append(coldCache) }
+            if let expensiveModel = dominantExpensiveModelAdvice(snapshots[provider], language: language) { advice.append(expensiveModel) }
+            if let fablePool = fablePoolAdvice(snapshots[provider], language: language) { advice.append(fablePool) }
+            if let limited = limitedModelAdvice(snapshots[provider], now: now, language: language) { advice.append(limited) }
+            if let tight = tightSessionAdvice(snapshots[provider], now: now, language: language) { advice.append(tight) }
             guard let gauge = GaugeMetric.from(snapshots[provider]), gauge.remaining <= 20 else { continue }
-            advice.append(.init(title: "Poupe \(provider.shortName)", detail: "Restam \(Int(gauge.remaining.rounded()))% da quota atual.", severity: .warning))
+            let left = Int(gauge.remaining.rounded())
+            advice.append(.init(
+                title: language.text("Poupe \(provider.shortName)", "Spare \(provider.shortName)"),
+                detail: language.text("Restam \(left)% da quota atual.", "\(left)% of the current quota is left."),
+                severity: .warning
+            ))
         }
         let estimates = EstimatedCostLayers.fromSnapshots(snapshots)
         if let driver = estimates.byProvider.max(by: { $0.value < $1.value }), driver.value > 0 {
-            advice.append(.init(title: "Maior custo local: \(driver.key.shortName)", detail: "~$\(String(format: "%.2f", driver.value)) nos últimos 7 dias; é estimativa de tokens.", severity: .normal))
+            let amount = String(format: "%.2f", driver.value)
+            advice.append(.init(
+                title: language.text("Maior custo local: \(driver.key.shortName)", "Largest local cost: \(driver.key.shortName)"),
+                detail: language.text("~$\(amount) nos últimos 7 dias; é estimativa de tokens.", "~$\(amount) over the last 7 days; this is a token estimate."),
+                severity: .normal
+            ))
         }
         if advice.isEmpty {
-            advice.append(.init(title: "Pode continuar", detail: "Sem pressão de orçamento ou quota detectada agora.", severity: .normal))
+            advice.append(.init(
+                title: language.text("Pode continuar", "You can keep going"),
+                detail: language.text("Sem pressão de orçamento ou quota detectada agora.", "No budget or quota pressure detected right now."),
+                severity: .normal
+            ))
         }
         return Array(advice.prefix(5))
     }
@@ -60,44 +92,55 @@ enum DecisionAdvisor {
     }
 
     /// Um modelo respondeu 429 agora há pouco (o probe lê headers até em 429).
-    private static func limitedModelAdvice(_ snapshot: UsageSnapshot?, now: Date = Date()) -> DecisionAdvice? {
+    private static func limitedModelAdvice(_ snapshot: UsageSnapshot?, now: Date = Date(), language: InterfaceLanguage = .ptBR) -> DecisionAdvice? {
         guard let limited = snapshot?.modelHealth?.first(where: {
             $0.status == .limited && now.timeIntervalSince($0.checkedAt) < limitedFreshness
         }) else { return nil }
         return DecisionAdvice(
-            title: "Modelo em limite (429)",
-            detail: "\(limited.model) respondeu 429 agora há pouco; troque de modelo ou espere o reset da janela.",
+            title: language.text("Modelo em limite (429)", "Model is rate-limited (429)"),
+            detail: language.text(
+                "\(limited.model) respondeu 429 agora há pouco; troque de modelo ou espere o reset da janela.",
+                "\(limited.model) returned 429 just now; switch models or wait for the window to reset."
+            ),
             severity: .critical
         )
     }
 
     /// Sessão ≥ 80% consumida com reset distante — modere o ritmo.
-    private static func tightSessionAdvice(_ snapshot: UsageSnapshot?, now: Date = Date()) -> DecisionAdvice? {
+    private static func tightSessionAdvice(_ snapshot: UsageSnapshot?, now: Date = Date(), language: InterfaceLanguage = .ptBR) -> DecisionAdvice? {
         guard let session = snapshot?.session,
               let used = session.usedPercent, used >= sessionTightPercent,
               let resetsAt = session.resetsAt,
               resetsAt.timeIntervalSince(now) > 3600 else { return nil }
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "pt_BR")
+        formatter.locale = Locale(identifier: language == .ptBR ? "pt_BR" : "en_US_POSIX")
         formatter.dateFormat = "HH:mm"
+        let time = formatter.string(from: resetsAt)
+        let usedText = Int(used.rounded())
         return DecisionAdvice(
-            title: "Sessão apertada",
-            detail: "\(Int(used.rounded()))% consumidos e o reset só às \(formatter.string(from: resetsAt)); modere nas próximas horas.",
+            title: language.text("Sessão apertada", "Tight session"),
+            detail: language.text(
+                "\(usedText)% consumidos e o reset só às \(time); modere nas próximas horas.",
+                "\(usedText)% used and the reset is only at \(time); ease off for the next few hours."
+            ),
             severity: .warning
         )
     }
 
     /// Sessão com pouco cache lido (releitura de contexto cara). Só dispara
     /// acima do piso de tokens — sessão minúscula não merece conselho.
-    private static func coldCacheAdvice(_ snapshot: UsageSnapshot?) -> DecisionAdvice? {
+    private static func coldCacheAdvice(_ snapshot: UsageSnapshot?, language: InterfaceLanguage = .ptBR) -> DecisionAdvice? {
         guard let session = snapshot?.session,
               session.tokens.total >= minTokensForAdvice else { return nil }
         let share = Double(session.tokens.cacheRead) / Double(max(session.tokens.total, 1))
         guard share < cacheShareMin else { return nil }
         let pct = Int((share * 100).rounded())
         return DecisionAdvice(
-            title: "Sessão fria de cache",
-            detail: "Apenas \(pct)% dos tokens desta sessão são leitura de cache; manter a sessão ativa reutiliza contexto (cache expira em 1h).",
+            title: language.text("Sessão fria de cache", "Cold cache session"),
+            detail: language.text(
+                "Apenas \(pct)% dos tokens desta sessão são leitura de cache; manter a sessão ativa reutiliza contexto (cache expira em 1h).",
+                "Only \(pct)% of this session's tokens are cache reads; keeping the session open reuses context (cache expires in 1h)."
+            ),
             severity: .warning
         )
     }
@@ -105,7 +148,7 @@ enum DecisionAdvisor {
     /// O modelo mais caro da sessão domina (≥ 40% dos tokens) enquanto um
     /// mais barato também foi usado — comparação de preço via PricingTable,
     /// sempre rotulada como estimativa local.
-    private static func dominantExpensiveModelAdvice(_ snapshot: UsageSnapshot?) -> DecisionAdvice? {
+    private static func dominantExpensiveModelAdvice(_ snapshot: UsageSnapshot?, language: InterfaceLanguage = .ptBR) -> DecisionAdvice? {
         guard let modelTokens = snapshot?.session?.modelTokens else { return nil }
         let total = modelTokens.values.reduce(0) { $0 + $1.total }
         guard total >= minTokensForAdvice else { return nil }
@@ -121,20 +164,26 @@ enum DecisionAdvisor {
         let pct = Int((share * 100).rounded())
         let ratio = Int((expensive.1 / max(cheaper.1, 0.0001) * 100).rounded())
         return DecisionAdvice(
-            title: "Modelo mais caro dominando",
-            detail: "\(expensive.0) é \(pct)% da sessão; \(cheaper.0) tem preço ~\(ratio)% menor (estimativa local).",
+            title: language.text("Modelo mais caro dominando", "Most expensive model is dominating"),
+            detail: language.text(
+                "\(expensive.0) é \(pct)% da sessão; \(cheaper.0) tem preço ~\(ratio)% menor (estimativa local).",
+                "\(expensive.0) is \(pct)% of the session; \(cheaper.0) is about \(ratio)% cheaper (local estimate)."
+            ),
             severity: .normal
         )
     }
 
     /// A cota separada do Fable 5 (pool próprio, fora do agregado) está alta.
-    private static func fablePoolAdvice(_ snapshot: UsageSnapshot?) -> DecisionAdvice? {
+    private static func fablePoolAdvice(_ snapshot: UsageSnapshot?, language: InterfaceLanguage = .ptBR) -> DecisionAdvice? {
         guard let fable = snapshot?.session?.namedQuotas?
             .first(where: { $0.name.lowercased().contains("fable") }),
             fable.usedPercent >= fablePoolWarnPercent else { return nil }
         return DecisionAdvice(
-            title: "Fable 5: cota própria",
-            detail: "A cota separada do Fable 5 está em \(Int(fable.usedPercent.rounded()))%; o pool compartilhado pode estar intacto — verifique qual janela está limitando.",
+            title: language.text("Fable 5: cota própria", "Fable 5: its own quota"),
+            detail: language.text(
+                "A cota separada do Fable 5 está em \(Int(fable.usedPercent.rounded()))%; o pool compartilhado pode estar intacto — verifique qual janela está limitando.",
+                "Fable 5's separate quota is at \(Int(fable.usedPercent.rounded()))% used; the shared pool may still be fine — check which window is limiting you."
+            ),
             severity: .warning
         )
     }

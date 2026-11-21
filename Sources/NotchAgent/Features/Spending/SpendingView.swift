@@ -5,20 +5,23 @@ import UniformTypeIdentifiers
 
 struct SpendingView: View {
     @Environment(UsageStore.self) private var usageStore
+    @Environment(PreferencesStore.self) private var preferences
     @EnvironmentObject private var store: SubscriptionStore
     @State private var showingPlanEditor = false
     @State private var showingExpenseEditor = false
     @State private var showingInvoiceImporter = false
     @State private var invoicePreview: InvoiceImportPreview?
 
+    private var language: InterfaceLanguage { preferences.settings.interfaceLanguage }
+
     var body: some View {
         List {
-            Section("Gasto no mês") {
-                TextField("Orçamento mensal em R$", text: Binding(
+            Section(language.text("Gasto no mês", "Spend this month")) {
+                TextField(language.text("Orçamento mensal em R$", "Monthly budget in BRL"), text: Binding(
                     get: { store.monthlyBudgetBRL.map { NSDecimalNumber(decimal: $0).stringValue } ?? "" },
                     set: { store.setMonthlyBudgetBRL(BRLFormat.decimal($0)) }
                 ))
-                Picker("Moeda", selection: Binding(
+                Picker(language.text("Moeda", "Currency"), selection: Binding(
                     get: { store.displayCurrency },
                     set: { store.setDisplayCurrency($0) }
                 )) {
@@ -26,17 +29,17 @@ struct SpendingView: View {
                     Text("USD").tag(SpendDisplayCurrency.usd)
                 }
                 if store.displayCurrency == .usd {
-                    TextField("Cotação: R$ por US$", text: Binding(
+                    TextField(language.text("Cotação: R$ por US$", "Rate: BRL per US$"), text: Binding(
                         get: { store.brlPerUSD.map { NSDecimalNumber(decimal: $0).stringValue } ?? "" },
                         set: { store.setBRLPerUSD(BRLFormat.decimal($0)) }
                     ))
-                    Text("Conversão manual; não consultamos cotação externa.")
+                    Text(language.text("Conversão manual; não consultamos cotação externa.", "Manual conversion; we do not look up a live rate."))
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 HStack {
-                    metric("Pago", store.monthlySpend.paidBRL)
+                    metric(language.text("Pago", "Paid"), store.monthlySpend.paidBRL)
                     Spacer()
-                    metric("Previsto", store.monthlySpend.forecastPlanBRL)
+                    metric(language.text("Previsto", "Forecast"), store.monthlySpend.forecastPlanBRL)
                     Spacer()
                     estimateMetric
                 }
@@ -45,50 +48,59 @@ struct SpendingView: View {
                     VStack(alignment: .leading, spacing: 5) {
                         ProgressView(value: min(budget.projectedPercent, 100), total: 100)
                             .tint(budgetColor(budget.level))
-                        Text("Previsão de fechamento: \(store.format(budget.projectedBRL)) / \(store.format(budget.budgetBRL)) · \(Int(budget.projectedPercent.rounded()))%")
+                        Text(language.text(
+                            "Previsão de fechamento: \(store.format(budget.projectedBRL)) / \(store.format(budget.budgetBRL)) · \(Int(budget.projectedPercent.rounded()))%",
+                            "Closing forecast: \(store.format(budget.projectedBRL)) / \(store.format(budget.budgetBRL)) · \(Int(budget.projectedPercent.rounded()))%"
+                        ))
                             .font(.caption)
                             .foregroundStyle(budgetColor(budget.level))
                     }
                 }
-                Text("Pago = cobrança confirmada. Previsto = próxima renovação. Estimado = tokens locais; não é cobrança.")
+                Text(language.text(
+                    "Pago = cobrança confirmada. Previsto = próxima renovação. Estimado = tokens locais; não é cobrança.",
+                    "Paid = confirmed charge. Forecast = next renewal. Estimated = local tokens; it is not a charge."
+                ))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
 
-            Section("Planos") {
+            Section(language.text("Planos", "Plans")) {
                 if store.subscriptions.isEmpty {
-                    Text("Nenhum plano cadastrado.").foregroundStyle(.secondary)
+                    Text(language.text("Nenhum plano cadastrado.", "No plans yet.")).foregroundStyle(.secondary)
                 }
                 ForEach(store.subscriptions) { plan in
                     HStack {
                         VStack(alignment: .leading) {
                             Text("\(plan.provider.displayName) · \(plan.planName)")
-                            Text("Próxima renovação: \(plan.nextRenewalDate.formatted(date: .abbreviated, time: .omitted))")
+                            Text(language.text(
+                                "Próxima renovação: \(plan.nextRenewalDate.formatted(date: .abbreviated, time: .omitted))",
+                                "Next renewal: \(plan.nextRenewalDate.formatted(date: .abbreviated, time: .omitted))"
+                            ))
                                 .font(.caption).foregroundStyle(.secondary)
                         }
                         Spacer()
                         Text(store.format(plan.cycleTotalBRL)).monospacedDigit()
-                        Button("Confirmar") { _ = store.confirmRenewal(id: plan.id) }
+                        Button(language.text("Confirmar", "Confirm")) { _ = store.confirmRenewal(id: plan.id) }
                             .controlSize(.small)
                     }
                 }
-                Button("Adicionar plano", systemImage: "plus") { showingPlanEditor = true }
+                Button(language.text("Adicionar plano", "Add plan"), systemImage: "plus") { showingPlanEditor = true }
             }
 
             connectedSubscriptionsSection
 
-            Section("Chamadas extras e créditos") {
+            Section(language.text("Chamadas extras e créditos", "Extra calls and credits")) {
                 let currentExpenses = store.expenses.filter {
                     Calendar.current.isDate($0.incurredAt, equalTo: .now, toGranularity: .month)
                 }
                 if currentExpenses.isEmpty {
-                    Text("Nenhum gasto extra neste mês.").foregroundStyle(.secondary)
+                    Text(language.text("Nenhum gasto extra neste mês.", "No extra spend this month.")).foregroundStyle(.secondary)
                 }
                 ForEach(currentExpenses) { expense in
                     HStack {
                         VStack(alignment: .leading) {
                             Text(expense.title.isEmpty ? expense.kind.label : expense.title)
-                            Text("\(expense.provider.displayName) · \(expense.source.label)")
+                            Text("\(expense.provider.displayName) · \(expense.source.title(language))")
                                 .font(.caption).foregroundStyle(.secondary)
                         }
                         Spacer()
@@ -99,35 +111,38 @@ struct SpendingView: View {
                         .buttonStyle(.borderless)
                     }
                 }
-                Button("Adicionar gasto extra", systemImage: "plus") { showingExpenseEditor = true }
+                Button(language.text("Adicionar gasto extra", "Add extra spend"), systemImage: "plus") { showingExpenseEditor = true }
             }
 
-            Section("Conciliação") {
+            Section(language.text("Conciliação", "Reconciliation")) {
                 let estimates = EstimatedCostLayers.fromSnapshots(usageStore.snapshots)
                 let reconciliation = CostReconciliation.currentMonth(expenses: store.expenses, estimates: estimates)
                 if reconciliation.isEmpty {
-                    Text("Importe uma fatura CSV ou gere uso local para comparar.").foregroundStyle(.secondary)
+                    Text(language.text("Importe uma fatura CSV ou gere uso local para comparar.", "Import a CSV invoice or generate local usage to compare.")).foregroundStyle(.secondary)
                 }
                 ForEach(reconciliation) { row in
                     HStack {
                         Text(row.provider.displayName)
                         Spacer()
                         VStack(alignment: .trailing) {
-                            Text("Oficial: \(store.format(row.officialBRL))")
-                            Text("Local: \(store.formatEstimatedUSD(row.estimatedUSD))")
+                            Text(language.text("Oficial: \(store.format(row.officialBRL))", "Official: \(store.format(row.officialBRL))"))
+                            Text(language.text("Local: \(store.formatEstimatedUSD(row.estimatedUSD))", "Local: \(store.formatEstimatedUSD(row.estimatedUSD))"))
                                 .font(.caption).foregroundStyle(.secondary)
                         }
                     }
                 }
-                Button("Importar fatura CSV", systemImage: "square.and.arrow.down") { showingInvoiceImporter = true }
-                Text("CSV: date, provider, amount_brl, description. A comparação só é aproximada: sessões web e desktop podem não existir nos arquivos locais.")
+                Button(language.text("Importar fatura CSV", "Import CSV invoice"), systemImage: "square.and.arrow.down") { showingInvoiceImporter = true }
+                Text(language.text(
+                    "CSV: date, provider, amount_brl, description. A comparação só é aproximada: sessões web e desktop podem não existir nos arquivos locais.",
+                    "CSV: date, provider, amount_brl, description. The comparison is approximate: web and desktop sessions may be missing from local files."
+                ))
                     .font(.caption).foregroundStyle(.secondary)
             }
 
-            Section("Histórico mensal") {
+            Section(language.text("Histórico mensal", "Monthly history")) {
                 let rows = FinancialHistory.monthlyPayments(history: store.history, expenses: store.expenses)
                 if rows.isEmpty {
-                    Text("O histórico começa após confirmar cobranças ou importar faturas.").foregroundStyle(.secondary)
+                    Text(language.text("O histórico começa após confirmar cobranças ou importar faturas.", "History starts after you confirm charges or import invoices.")).foregroundStyle(.secondary)
                 }
                 ForEach(rows) { row in
                     HStack {
@@ -137,10 +152,10 @@ struct SpendingView: View {
                         Text(store.format(row.amountBRL)).monospacedDigit()
                     }
                 }
-                Button("Exportar CSV", systemImage: "square.and.arrow.up") { exportHistory(rows) }
+                Button(language.text("Exportar CSV", "Export CSV"), systemImage: "square.and.arrow.up") { exportHistory(rows) }
             }
         }
-        .navigationTitle("Gastos")
+        .navigationTitle(language.text("Gastos", "Spend"))
         .frame(minWidth: 560, minHeight: 500)
         .sheet(isPresented: $showingPlanEditor) { PlanEditor(store: store) }
         .sheet(isPresented: $showingExpenseEditor) { ExpenseEditor(store: store) }
@@ -151,14 +166,17 @@ struct SpendingView: View {
             guard let data = try? Data(contentsOf: url) else { return }
             invoicePreview = InvoiceImportParser.preview(data: data)
         }
-        .alert("Importar fatura", isPresented: Binding(get: { invoicePreview != nil }, set: { if !$0 { invoicePreview = nil } })) {
-            Button("Cancelar", role: .cancel) { invoicePreview = nil }
-            Button("Importar") {
+        .alert(language.text("Importar fatura", "Import invoice"), isPresented: Binding(get: { invoicePreview != nil }, set: { if !$0 { invoicePreview = nil } })) {
+            Button(language.text("Cancelar", "Cancel"), role: .cancel) { invoicePreview = nil }
+            Button(language.text("Importar", "Import")) {
                 if let invoicePreview { store.addExpenses(invoicePreview.expenses) }
                 invoicePreview = nil
             }
         } message: {
-            Text("\(invoicePreview?.expenses.count ?? 0) lançamento(s) oficial(is). \(invoicePreview?.issues.count ?? 0) linha(s) ignorada(s).")
+            Text(language.text(
+                "\(invoicePreview?.expenses.count ?? 0) lançamento(s) oficial(is). \(invoicePreview?.issues.count ?? 0) linha(s) ignorada(s).",
+                "\(invoicePreview?.expenses.count ?? 0) official row(s). \(invoicePreview?.issues.count ?? 0) skipped row(s)."
+            ))
         }
     }
 
@@ -169,15 +187,15 @@ struct SpendingView: View {
 
     @ViewBuilder
     private var connectedSubscriptionsSection: some View {
-        Section("Assinaturas conectadas") {
+        Section(language.text("Assinaturas conectadas", "Connected subscriptions")) {
             if connectedSubscriptions.isEmpty {
-                Text("Nenhuma assinatura conectada.")
+                Text(language.text("Nenhuma assinatura conectada.", "No connected subscription."))
                     .foregroundStyle(.secondary)
             }
             ForEach(connectedSubscriptions) { plan in
                 connectedSubscriptionRow(plan)
             }
-            Text("Assinaturas conectadas não são consumo de API.")
+            Text(language.text("Assinaturas conectadas não são consumo de API.", "Connected subscriptions are not API spend."))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -187,8 +205,8 @@ struct SpendingView: View {
     private func connectedSubscriptionRow(_ plan: APIAccountUsage) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 3) {
-                Text("Claude · \(plan.planName ?? "Assinatura")")
-                Text("Oficial · lido diretamente do portal Claude")
+                Text("Claude · \(plan.planName ?? language.text("Assinatura", "Subscription"))")
+                Text(language.text("Oficial · lido diretamente do portal Claude", "Official · read directly from the Claude portal"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -199,7 +217,7 @@ struct SpendingView: View {
             }
         }
         if let credits = plan.balanceBRL {
-            LabeledContent("Créditos de uso") {
+            LabeledContent(language.text("Créditos de uso", "Usage credits")) {
                 Text(store.format(credits))
                     .foregroundStyle(credits >= 0 ? Color.secondary : Color.red)
                     .monospacedDigit()
@@ -218,7 +236,7 @@ struct SpendingView: View {
     private var estimateMetric: some View {
         let estimate = EstimatedCostLayers.fromSnapshots(usageStore.snapshots)
         return VStack(alignment: .leading, spacing: 3) {
-            Text("ESTIMADO · 7D").font(.caption2.bold()).foregroundStyle(.secondary)
+            Text(language.text("ESTIMADO · 7D", "ESTIMATED · 7D")).font(.caption2.bold()).foregroundStyle(.secondary)
             Text(store.formatEstimatedUSD(estimate.totalUSD)).font(.title3.bold()).monospacedDigit()
         }
     }
@@ -229,7 +247,7 @@ struct SpendingView: View {
 
     private func exportHistory(_ rows: [MonthlyProviderSpend]) {
         let panel = NSSavePanel()
-        panel.nameFieldStringValue = "notchagent-historico-mensal.csv"
+        panel.nameFieldStringValue = language == .ptBR ? "notchagent-historico-mensal.csv" : "notchagent-monthly-history.csv"
         panel.allowedContentTypes = [.commaSeparatedText]
         guard panel.runModal() == .OK, let url = panel.url else { return }
         try? FinancialHistory.csv(rows).data(using: .utf8)?.write(to: url, options: .atomic)
@@ -238,6 +256,7 @@ struct SpendingView: View {
 
 private struct PlanEditor: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(PreferencesStore.self) private var preferences
     let store: SubscriptionStore
     @State private var provider: AgentMeterProvider = .claude
     @State private var name = ""
@@ -246,11 +265,11 @@ private struct PlanEditor: View {
 
     var body: some View {
         Form {
-            Picker("Fornecedor", selection: $provider) { ForEach(AgentMeterProvider.allCases) { Text($0.displayName).tag($0) } }
-            TextField("Plano", text: $name)
-            TextField("Valor em R$", text: $amount)
-            DatePicker("Próxima renovação", selection: $renewal, displayedComponents: .date)
-            HStack { Spacer(); Button("Cancelar") { dismiss() }; Button("Salvar") {
+            Picker(preferences.settings.interfaceLanguage.text("Fornecedor", "Provider"), selection: $provider) { ForEach(AgentMeterProvider.allCases) { Text($0.displayName).tag($0) } }
+            TextField(preferences.settings.interfaceLanguage.text("Plano", "Plan"), text: $name)
+            TextField(preferences.settings.interfaceLanguage.text("Valor em R$", "Amount in BRL"), text: $amount)
+            DatePicker(preferences.settings.interfaceLanguage.text("Próxima renovação", "Next renewal"), selection: $renewal, displayedComponents: .date)
+            HStack { Spacer(); Button(preferences.settings.interfaceLanguage.text("Cancelar", "Cancel")) { dismiss() }; Button(preferences.settings.interfaceLanguage.text("Salvar", "Save")) {
                 guard let value = BRLFormat.decimal(amount), value > 0 else { return }
                 store.add(AISubscription(provider: provider, planName: name, basePriceBRL: value, nextRenewalDate: renewal))
                 dismiss()
@@ -262,6 +281,7 @@ private struct PlanEditor: View {
 
 private struct ExpenseEditor: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(PreferencesStore.self) private var preferences
     let store: SubscriptionStore
     @State private var provider: AgentMeterProvider = .claude
     @State private var title = ""
@@ -271,12 +291,12 @@ private struct ExpenseEditor: View {
 
     var body: some View {
         Form {
-            Picker("Fornecedor", selection: $provider) { ForEach(AgentMeterProvider.allCases) { Text($0.displayName).tag($0) } }
-            TextField("Descrição", text: $title)
-            TextField("Valor em R$", text: $amount)
-            Picker("Tipo", selection: $kind) { ForEach(AIExpense.Kind.allCases, id: \.self) { Text($0.label).tag($0) } }
-            Picker("Origem", selection: $source) { ForEach(AIExpense.Source.allCases, id: \.self) { Text($0.label).tag($0) } }
-            HStack { Spacer(); Button("Cancelar") { dismiss() }; Button("Salvar") {
+            Picker(preferences.settings.interfaceLanguage.text("Fornecedor", "Provider"), selection: $provider) { ForEach(AgentMeterProvider.allCases) { Text($0.displayName).tag($0) } }
+            TextField(preferences.settings.interfaceLanguage.text("Descrição", "Description"), text: $title)
+            TextField(preferences.settings.interfaceLanguage.text("Valor em R$", "Amount in BRL"), text: $amount)
+            Picker(preferences.settings.interfaceLanguage.text("Tipo", "Kind"), selection: $kind) { ForEach(AIExpense.Kind.allCases, id: \.self) { Text($0.title(preferences.settings.interfaceLanguage)).tag($0) } }
+            Picker(preferences.settings.interfaceLanguage.text("Origem", "Source"), selection: $source) { ForEach(AIExpense.Source.allCases, id: \.self) { Text($0.title(preferences.settings.interfaceLanguage)).tag($0) } }
+            HStack { Spacer(); Button(preferences.settings.interfaceLanguage.text("Cancelar", "Cancel")) { dismiss() }; Button(preferences.settings.interfaceLanguage.text("Salvar", "Save")) {
                 guard let value = BRLFormat.decimal(amount), value > 0 else { return }
                 store.addExpense(AIExpense(provider: provider, title: title, amountBRL: value, kind: kind, source: source))
                 dismiss()
@@ -287,11 +307,24 @@ private struct ExpenseEditor: View {
 }
 
 private extension AIExpense.Kind {
-    var label: String { switch self { case .apiUsage: "Uso de API"; case .usageCredits: "Créditos de uso"; case .tokenPurchase: "Compra de tokens"; case .other: "Outro" } }
+    func title(_ language: InterfaceLanguage) -> String {
+        switch self {
+        case .apiUsage: language.text("Uso de API", "API usage")
+        case .usageCredits: language.text("Créditos de uso", "Usage credits")
+        case .tokenPurchase: language.text("Compra de tokens", "Token purchase")
+        case .other: language.text("Outro", "Other")
+        }
+    }
 }
 
 private extension AIExpense.Source {
-    var label: String { switch self { case .manual: "Informado manualmente"; case .officialInvoice: "Fatura oficial"; case .localEstimate: "Estimativa local" } }
+    func title(_ language: InterfaceLanguage) -> String {
+        switch self {
+        case .manual: language.text("Informado manualmente", "Entered manually")
+        case .officialInvoice: language.text("Fatura oficial", "Official invoice")
+        case .localEstimate: language.text("Estimativa local", "Local estimate")
+        }
+    }
 }
 
 enum BRLFormat {

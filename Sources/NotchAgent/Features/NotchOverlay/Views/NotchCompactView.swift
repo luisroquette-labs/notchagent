@@ -81,10 +81,10 @@ struct NotchCompactView: View {
                 if provider == .claudeCode {
                     let budget = spending.monthlyBudgetStatus
                     GaugeLabel(
-                        text: budget.map { "ORÇ \(Int($0.projectedPercent.rounded()))%" }
+                        text: budget.map { "BDG \(Int($0.projectedPercent.rounded()))%" }
                             ?? (spending.subscriptions.isEmpty && spending.expenses.isEmpty && spending.history.isEmpty
-                                ? "CUSTOS —"
-                                : "PAGO " + spending.format(spending.monthlySpend.paidBRL, compact: true)),
+                                ? "COSTS —"
+                                : "PAID " + spending.format(spending.monthlySpend.paidBRL, compact: true)),
                         color: Theme.coral,
                         size: 6.5
                     )

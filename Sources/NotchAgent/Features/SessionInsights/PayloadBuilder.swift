@@ -79,8 +79,8 @@ enum PayloadBuilder {
         if let dominant = tools.max(by: { $0.value.total < $1.value.total }),
            Double(dominant.value.total) / Double(total) >= toolDominanceShare {
             let pct = Int((Double(dominant.value.total) / Double(total) * 100).rounded())
-            return .init(line: "Topo: \(dominant.key) \(pct)%", tier: .watch)
+            return .init(line: "Top: \(dominant.key) \(pct)%", tier: .watch)
         }
-        return .init(line: "Sessão equilibrada", tier: .ok)
+        return .init(line: "Balanced session", tier: .ok)
     }
 }

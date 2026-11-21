@@ -18,7 +18,7 @@ final class PayloadBuilderParityTests: XCTestCase {
         ]
         let payload = PayloadBuilder.build(provider: .claudeCode, window: .init(start: .distantPast, end: .distantFuture), records: records)
         // Read: 100k de 200k = 50% → dominante ≥ 40%
-        XCTAssertEqual(payload.preview.line, "Topo: Read 50%")
+        XCTAssertEqual(payload.preview.line, "Top: Read 50%")
         XCTAssertEqual(payload.preview.tier, .watch)
         // O painel lê tokensByTool — MESMO objeto de onde o preview derivou
         XCTAssertEqual(payload.tokensByTool["Read"], TokenUsage(input: 80_000, output: 15_000, cacheWrite: 0, cacheRead: 5_000))
@@ -34,7 +34,7 @@ final class PayloadBuilderParityTests: XCTestCase {
             .init(timestamp: .now, requestId: "c", model: "m",
                   tokens: TokenUsage(input: 8_000, output: 2_000, cacheWrite: 0, cacheRead: 5_000), toolNames: ["Write"]),
         ])
-        XCTAssertEqual(payload.preview.line, "Sessão equilibrada")
+        XCTAssertEqual(payload.preview.line, "Balanced session")
         XCTAssertEqual(payload.preview.tier, .ok)
     }
 
