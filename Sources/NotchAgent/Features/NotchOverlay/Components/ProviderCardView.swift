@@ -12,6 +12,10 @@ struct ProviderCardView: View {
 
     @Environment(UsageStore.self) private var store
 
+    private var setupLanguage: SetupLanguage {
+        SetupLanguage.matching(store.settings.interfaceLanguage)
+    }
+
     /// NotchAgent never spends a reset itself — it opens OpenAI's own flow so
     /// the account owner picks which of the (scarce, non-refundable) credits to use.
     static let codexUsageSettingsURL = URL(string: "https://chatgpt.com/codex/settings/usage")!
@@ -199,7 +203,7 @@ struct ProviderCardView: View {
             Text("∞")
                 .font(Theme.numeral(30))
                 .foregroundStyle(Theme.textSecondary)
-            GaugeLabel(text: SetupLanguage.current.text(
+            GaugeLabel(text: setupLanguage.text(
                 "SESSÃO DE 5H SEM LIMITE NESTE PLANO",
                 "NO 5H SESSION LIMIT ON THIS PLAN",
                 "SIN LÍMITE DE SESIÓN DE 5H EN ESTE PLAN"
@@ -229,10 +233,10 @@ struct ProviderCardView: View {
                 }
             }
         } else if DistributionChannel.isAppStore && provider == .claudeCode {
-            Text(SetupLanguage.current.text("COTA INDISPONÍVEL", "QUOTA UNAVAILABLE", "CUOTA NO DISPONIBLE"))
+            Text(setupLanguage.text("COTA INDISPONÍVEL", "QUOTA UNAVAILABLE", "CUOTA NO DISPONIBLE"))
                 .font(Theme.numeral(18))
                 .foregroundStyle(Theme.textDim)
-            GaugeLabel(text: SetupLanguage.current.text("CLAUDE NÃO INFORMA A COTA NESTES ARQUIVOS", "CLAUDE DOES NOT REPORT QUOTA IN THESE FILES", "CLAUDE NO INFORMA LA CUOTA EN ESTOS ARCHIVOS"), color: Theme.textFaint, size: 8)
+            GaugeLabel(text: setupLanguage.text("CLAUDE NÃO INFORMA A COTA NESTES ARQUIVOS", "CLAUDE DOES NOT REPORT QUOTA IN THESE FILES", "CLAUDE NO INFORMA LA CUOTA EN ESTOS ARCHIVOS"), color: Theme.textFaint, size: 8)
         } else if Self.quotaUnavailable(
             for: provider,
             probeEnabled: settings.claudeQuotaProbeEnabled,
@@ -277,9 +281,9 @@ struct ProviderCardView: View {
                 criticalAt: settings.criticalThresholdPercent
             )
         } else if DistributionChannel.isAppStore && provider == .claudeCode {
-            GaugeLabel(text: SetupLanguage.current.text("COTA SEMANAL INDISPONÍVEL", "WEEKLY QUOTA UNAVAILABLE", "CUOTA SEMANAL NO DISPONIBLE"), color: Theme.textFaint, size: 8)
+            GaugeLabel(text: setupLanguage.text("COTA SEMANAL INDISPONÍVEL", "WEEKLY QUOTA UNAVAILABLE", "CUOTA SEMANAL NO DISPONIBLE"), color: Theme.textFaint, size: 8)
             Button {} label: {
-                Text(SetupLanguage.current.text("Ver cota oficial no Claude ↗", "View official quota in Claude ↗", "Ver cuota oficial en Claude ↗"))
+                Text(setupLanguage.text("Ver cota oficial no Claude ↗", "View official quota in Claude ↗", "Ver cuota oficial en Claude ↗"))
                     .font(Theme.body(10, weight: .semibold))
             }
             .buttonStyle(.plain)
@@ -287,7 +291,7 @@ struct ProviderCardView: View {
             .highPriorityGesture(TapGesture().onEnded {
                 _ = NSWorkspace.shared.open(Self.claudeUsageSettingsURL)
             })
-            .accessibilityHint(SetupLanguage.current.text("Abre Configurações > Uso no Claude", "Opens Settings > Usage in Claude", "Abre Configuración > Uso en Claude"))
+            .accessibilityHint(setupLanguage.text("Abre Configurações > Uso no Claude", "Opens Settings > Usage in Claude", "Abre Configuración > Uso en Claude"))
         } else {
             VStack(alignment: .leading, spacing: 3) {
                 HStack(alignment: .firstTextBaseline, spacing: 5) {
@@ -422,7 +426,7 @@ struct ProviderCardView: View {
         VStack(alignment: .leading, spacing: 5) {
             #if APP_STORE
             if needsStoreFolderAccess {
-                let language = SetupLanguage.current
+                let language = setupLanguage
                 Text(provider == .codex
                     ? language.text("Autorize as sessões do Codex salvas neste Mac", "Authorize Codex sessions saved on this Mac", "Autoriza las sesiones de Codex guardadas en este Mac")
                     : language.text("Autorize as sessões do Claude Code salvas neste Mac", "Authorize Claude Code sessions saved on this Mac", "Autoriza las sesiones de Claude Code guardadas en este Mac"))
@@ -439,7 +443,7 @@ struct ProviderCardView: View {
                 Text(storeSetupMessage)
                     .font(Theme.body(10))
                     .foregroundStyle(Theme.textSecondary)
-                Button(SetupLanguage.current.text("Entender e configurar", "Understand and set up", "Entender y configurar")) {
+                Button(setupLanguage.text("Entender e configurar", "Understand and set up", "Entender y configurar")) {
                     AppEnvironment.shared.router.openStoreOnboarding(
                         focus: provider == .codex ? .codex : .claudeCode
                     )
@@ -449,7 +453,7 @@ struct ProviderCardView: View {
                 unavailableDetails
             }
             if provider == .codex {
-                Link(SetupLanguage.current.text("Ver cota oficial", "View official quota", "Ver cuota oficial"), destination: Self.codexUsageSettingsURL)
+                Link(setupLanguage.text("Ver cota oficial", "View official quota", "Ver cuota oficial"), destination: Self.codexUsageSettingsURL)
                     .font(Theme.body(10, weight: .semibold))
             }
             #else
@@ -474,7 +478,7 @@ struct ProviderCardView: View {
 
     #if APP_STORE
     private var storeSetupMessage: String {
-        let language = SetupLanguage.current
+        let language = setupLanguage
         switch snapshot?.health {
         case nil:
             return language.text("Lendo sessões…", "Reading sessions…", "Leyendo sesiones…")
@@ -508,7 +512,7 @@ struct ProviderCardView: View {
                 StatusPill(text: health.storeBadge(
                     for: provider,
                     hasFolderAccess: !needsStoreFolderAccess,
-                    language: SetupLanguage.current
+                    language: setupLanguage
                 ), color: healthColor(health))
                 #else
                 StatusPill(text: health.badgeText, color: healthColor(health))
