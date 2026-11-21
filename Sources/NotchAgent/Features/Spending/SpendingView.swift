@@ -99,7 +99,7 @@ struct SpendingView: View {
                 ForEach(currentExpenses) { expense in
                     HStack {
                         VStack(alignment: .leading) {
-                            Text(expense.title.isEmpty ? expense.kind.label : expense.title)
+                            Text(expense.title.isEmpty ? expense.kind.title(language) : expense.title)
                             Text("\(expense.provider.displayName) · \(expense.source.title(language))")
                                 .font(.caption).foregroundStyle(.secondary)
                         }

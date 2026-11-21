@@ -136,17 +136,17 @@ struct MenuBarContentView: View {
 
     private func settings(preferences: Bindable<PreferencesStore>) -> some View {
         VStack(alignment: .leading, spacing: 9) {
-            Toggle(preferences.settings.interfaceLanguage.text("Alertas do sistema", "System alerts"), isOn: preferences.settings.notificationsEnabled)
-            Picker(preferences.settings.interfaceLanguage.text("Aparência", "Appearance"), selection: preferences.settings.themeMode) {
+            Toggle(preferences.wrappedValue.settings.interfaceLanguage.text("Alertas do sistema", "System alerts"), isOn: preferences.settings.notificationsEnabled)
+            Picker(preferences.wrappedValue.settings.interfaceLanguage.text("Aparência", "Appearance"), selection: preferences.settings.themeMode) {
                 ForEach(ThemeMode.allCases, id: \.self) { Text($0.label).tag($0) }
             }
-            Picker(preferences.settings.interfaceLanguage.text("Idioma", "Language"), selection: preferences.settings.interfaceLanguage) {
+            Picker(preferences.wrappedValue.settings.interfaceLanguage.text("Idioma", "Language"), selection: preferences.settings.interfaceLanguage) {
                 ForEach(InterfaceLanguage.allCases, id: \.self) { Text($0.label).tag($0) }
             }
-            Button(preferences.settings.interfaceLanguage.text("Abrir todos os ajustes", "Open all settings"), systemImage: "gearshape") { router.openSettings() }
+            Button(preferences.wrappedValue.settings.interfaceLanguage.text("Abrir todos os ajustes", "Open all settings"), systemImage: "gearshape") { router.openSettings() }
                 .controlSize(.small)
             if !AppEnvironment.shared.appUpdates.isManagedByStore {
-                Button(preferences.settings.interfaceLanguage.text("Buscar atualização…", "Check for updates…"), systemImage: "arrow.down.circle") {
+                Button(preferences.wrappedValue.settings.interfaceLanguage.text("Buscar atualização…", "Check for updates…"), systemImage: "arrow.down.circle") {
                     AppEnvironment.shared.appUpdates.checkForUpdates()
                 }
                 .controlSize(.small)
