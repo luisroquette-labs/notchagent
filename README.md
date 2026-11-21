@@ -11,11 +11,11 @@
 <p align="center">
   <a href="https://notchagent.app"><img src="https://img.shields.io/badge/website-live-FF654F?style=flat-square" alt="NotchAgent website" /></a>
   <a href="https://github.com/luisroquette-labs/RocketLabs"><img src="https://img.shields.io/badge/RocketLabs-flagship%20project-7C5CFC?style=flat-square" alt="RocketLabs flagship project" /></a>
-  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/version-v3.5.5-38D6C7?style=flat-square" alt="Version v3.5.5" /></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/version-v3.7.1-38D6C7?style=flat-square" alt="Version v3.7.1" /></a>
   <a href="https://notchagent.app"><img src="https://img.shields.io/badge/install-Mac%20App%20Store-F3B85A?style=flat-square" alt="Get it on the Mac App Store via notchagent.app" /></a>
 </p>
 
-**Current version: 3.5.5** · App Store update candidate: 3.7.0 · Desk protocol 1.3 · pairs with Desk firmware 0.8.0 · source updated 2026-10-31 · [version history](CHANGELOG.md)
+**Current version: 3.7.1** · App Store version: 3.7.1 · Desk protocol 1.3 · pairs with Desk firmware 0.8.0 · [version history](CHANGELOG.md)
 
 A native macOS menu-bar + notch overlay for Claude Code/Codex quotas and
 financial monitoring of external API accounts. It shows provider-reported
@@ -72,10 +72,18 @@ and [compatibility matrix](https://github.com/luisroquette-labs/notchagent-desk/
 **official on the Mac App Store**, reviewed and approved by Apple. One click, no
 Terminal, automatic updates.
 
-> The public download runs through [notchagent.app](https://notchagent.app): a
-> quick contact form, then the Mac App Store opens. Every install path (Mac App
-> Store today, Windows preview) is reachable from there — we gate it behind that
-> short form so we can let you know when a new version ships.
+The [GitHub release](https://github.com/luisroquette-labs/notchagent/releases/tag/v3.7.1)
+offers a signed, notarized DMG. Homebrew installs the same Direct edition:
+
+```bash
+brew install --cask luisroquette-labs/tap/notchagent
+```
+
+> Downloads started at [notchagent.app](https://notchagent.app) currently open
+> a contact form first. The GitHub release and Homebrew links above go directly
+> to the download without that form.
+
+The source code is available under the [MIT License](LICENSE).
 
 **Build from source** (Xcode 15+ / Swift 6 toolchain):
 

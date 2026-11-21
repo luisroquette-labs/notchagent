@@ -1,12 +1,16 @@
 # Changelog
 
-## 3.7.1 (App Store) — 2026-11-18
+## 3.7.1 — 2026-11-20
+
+App Store and Direct editions.
 
 - First-run setup now distinguishes folder permission from usable local sessions,
   explains why cloud tasks do not appear, and links to the official Codex quota.
 - The Codex card no longer describes an authorized empty folder as an absent
   installation. Setup can be closed without pretending that monitoring is ready.
 - No account login, paid model request, or new folder permission was added.
+- The Direct edition is available as a signed and notarized GitHub release and
+  through Homebrew Cask.
 
 ## 3.7.0 (App Store) — 2026-10-31
 
