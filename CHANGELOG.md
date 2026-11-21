@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.7.2 (App Store) — 2026-11-21
+
+App Store channel only; the Direct edition stays on 3.7.1. Both targets move to
+build 26. No code changes: adds the English (U.S.) App Store listing as
+`NotchAgent: AI Usage Meter`.
+
 ## 3.7.1 — 2026-11-20
 
 App Store and Direct editions.
