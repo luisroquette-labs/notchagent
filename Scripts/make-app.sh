@@ -95,6 +95,7 @@ cp .build/release/NotchAgent "$APP/Contents/MacOS/NotchAgent"
 echo "▸ bundling mascot sprites"
 mkdir -p "$APP/Contents/Resources/Mascots"
 cp Sources/NotchAgent/Resources/Mascots/*.png "$APP/Contents/Resources/Mascots/"
+cp LICENSE "$APP/Contents/Resources/LICENSE"
 
 echo "▸ bundling generated weather art"
 mkdir -p "$APP/Contents/Resources/Weather"

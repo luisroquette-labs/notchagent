@@ -81,6 +81,10 @@ framework="$app/Contents/Frameworks/Sparkle.framework"
     echo "FAIL: packaged app does not embed the executable and Sparkle framework." >&2
     exit 1
 }
+cmp -s LICENSE "$app/Contents/Resources/LICENSE" || {
+    echo "FAIL: packaged app does not include the MIT license notice." >&2
+    exit 1
+}
 codesign --verify --deep --strict "$app"
 otool -L "$executable" | grep -q '@rpath/Sparkle.framework/Versions/B/Sparkle' || {
     echo "FAIL: packaged executable is not linked to embedded Sparkle." >&2
