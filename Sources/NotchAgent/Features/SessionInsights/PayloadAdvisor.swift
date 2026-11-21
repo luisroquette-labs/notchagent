@@ -8,7 +8,7 @@ enum PayloadAdvisor {
     static let agentDominanceShare = 0.50
     static let messageDominanceShare = 0.30
 
-    static func advise(_ payload: SessionInsightsPayload) -> [DecisionAdvice] {
+    static func advise(_ payload: SessionInsightsPayload, language: InterfaceLanguage = .ptBR) -> [DecisionAdvice] {
         var advice: [DecisionAdvice] = []
         let total = max(payload.aggregate.total, 1)
 
@@ -16,8 +16,11 @@ enum PayloadAdvisor {
            Double(dominant.value.total) / Double(total) >= PayloadBuilder.toolDominanceShare {
             let pct = Int((Double(dominant.value.total) / Double(total) * 100).rounded())
             advice.append(DecisionAdvice(
-                title: "Ferramenta dominante: \(dominant.key)",
-                detail: "\(dominant.key) consome \(pct)% dos tokens desta sessão; retornos grandes podem ser recortados.",
+                title: language.text("Ferramenta dominante: \(dominant.key)", "Dominant tool: \(dominant.key)"),
+                detail: language.text(
+                    "\(dominant.key) consome \(pct)% dos tokens desta sessão; retornos grandes podem ser recortados.",
+                    "\(dominant.key) uses \(pct)% of this session's tokens; large tool results can be trimmed."
+                ),
                 severity: .normal
             ))
         }
@@ -27,8 +30,11 @@ enum PayloadAdvisor {
             if subTotal > 0, Double(split.subagent.total) / Double(subTotal) >= agentDominanceShare {
                 let pct = Int((Double(split.subagent.total) / Double(subTotal) * 100).rounded())
                 advice.append(DecisionAdvice(
-                    title: "Subagentes dominando",
-                    detail: "Subagentes consomem \(pct)% da sessão; cada um relê o contexto inteiro.",
+                    title: language.text("Subagentes dominando", "Subagents are dominating"),
+                    detail: language.text(
+                        "Subagentes consomem \(pct)% da sessão; cada um relê o contexto inteiro.",
+                        "Subagents use \(pct)% of the session; each one rereads the whole context."
+                    ),
                     severity: .warning
                 ))
             }
@@ -38,8 +44,11 @@ enum PayloadAdvisor {
            Double(heaviest.tokens.total) / Double(total) >= messageDominanceShare {
             let pct = Int((Double(heaviest.tokens.total) / Double(total) * 100).rounded())
             advice.append(DecisionAdvice(
-                title: "Operação única pesada",
-                detail: "Uma única operação (\(pct)% da sessão) consumiu \(Format.tokens(heaviest.tokens.total)).",
+                title: language.text("Operação única pesada", "One heavy operation"),
+                detail: language.text(
+                    "Uma única operação (\(pct)% da sessão) consumiu \(Format.tokens(heaviest.tokens.total)).",
+                    "A single operation (\(pct)% of the session) used \(Format.tokens(heaviest.tokens.total))."
+                ),
                 severity: .normal
             ))
         }

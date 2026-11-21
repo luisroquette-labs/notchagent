@@ -315,7 +315,10 @@ final class RefreshScheduler {
         // por tick — as views só renderizam (nunca recalculam). O sinal CALMA AÍ
         // entra no mesmo payload e dispara notificação com cooldown de 6h.
         let burnoutSignals = BurnoutAlerter.signals(
-            snapshots: store.snapshots, percentHistory: store.percentHistory)
+            snapshots: store.snapshots,
+            percentHistory: store.percentHistory,
+            language: store.settings.interfaceLanguage
+        )
         scheduleInsightsRefresh(snapshots: store.snapshots, burnout: burnoutSignals)
 
         if store.settings.notificationsEnabled {
@@ -329,7 +332,10 @@ final class RefreshScheduler {
                 }
             }
 
-            if let signal = ResetCreditAlerter.signal(credits: store.snapshots[.codex]?.rateLimitResetCredits) {
+            if let signal = ResetCreditAlerter.signal(
+                credits: store.snapshots[.codex]?.rateLimitResetCredits,
+                language: store.settings.interfaceLanguage
+            ) {
                 let last = defaults.object(forKey: ResetCreditNotifier.lastNotifiedKey) as? Date
                 if let fired = ResetCreditNotifier.evaluate(
                     signal: signal, gate: UNNotificationGate.shared, lastNotifiedAt: last) {

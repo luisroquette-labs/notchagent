@@ -12,10 +12,21 @@ public enum InterfaceLanguage: String, Codable, Sendable, CaseIterable {
     case en
 
     var label: String { self == .ptBR ? "Português (Brasil)" : "English" }
+
+    func text(_ portuguese: String, _ english: String) -> String {
+        self == .ptBR ? portuguese : english
+    }
+
+    /// Fresh installs follow the Mac language. Saved settings keep an explicit
+    /// choice, and payloads that predate the field stay Portuguese.
+    static var systemDefault: Self {
+        let identifier = Locale.preferredLanguages.first ?? Locale.current.identifier
+        return identifier.lowercased().hasPrefix("pt") ? .ptBR : .en
+    }
 }
 
 public struct AppSettings: Codable, Sendable, Equatable {
-    public var interfaceLanguage: InterfaceLanguage = .ptBR
+    public var interfaceLanguage: InterfaceLanguage = .systemDefault
     public var themeMode: ThemeMode = .dark
     public var refreshIntervalSeconds: Double = 60
     /// Percent thresholds applied to any quota percentage a provider reports.
@@ -210,7 +221,16 @@ public struct AppSettings: Codable, Sendable, Equatable {
     }
 
     public mutating func normalizeAPIAccountLabels() {
-        for index in apiAccounts.indices where apiAccounts[index].service == .anthropicConsole {
+        let renamedDefaults = [
+            "xAI / Grok (opcional)": "xAI / Grok",
+            "X / Twitter — Conta 1": "X / Twitter — Account 1",
+            "X / Twitter — Conta 2": "X / Twitter — Account 2",
+        ]
+        for index in apiAccounts.indices {
+            if let renamed = renamedDefaults[apiAccounts[index].label] {
+                apiAccounts[index].label = renamed
+            }
+            guard apiAccounts[index].service == .anthropicConsole else { continue }
             let oldLabel = apiAccounts[index].label.lowercased()
             if oldLabel == "openai" || oldLabel == "anthropic console" {
                 apiAccounts[index].label = APIServiceID.anthropicConsole.displayName

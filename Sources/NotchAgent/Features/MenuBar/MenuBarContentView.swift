@@ -14,11 +14,11 @@ struct MenuBarContentView: View {
             case .settings: "slider.horizontal.3"
             }
         }
-        var label: String {
+        func label(_ language: InterfaceLanguage) -> String {
             switch self {
-            case .overview: "Agora"
-            case .costs: "Gastos"
-            case .settings: "Ajustes"
+            case .overview: language.text("Agora", "Now")
+            case .costs: language.text("Gastos", "Spend")
+            case .settings: language.text("Ajustes", "Settings")
             }
         }
     }
@@ -42,7 +42,9 @@ struct MenuBarContentView: View {
                        systemImage: "power") { NSApp.terminate(nil) }
                     .foregroundStyle(.orange)
                 Spacer()
-                Button(selectedTab == .costs ? "Abrir gastos" : "Dashboard") {
+                Button(selectedTab == .costs
+                       ? preferences.settings.interfaceLanguage.text("Abrir gastos", "Open spend")
+                       : "Dashboard") {
                     selectedTab == .costs ? router.openSpending() : router.openDashboard()
                 }
                 .buttonStyle(.borderedProminent)
@@ -62,10 +64,10 @@ struct MenuBarContentView: View {
                 .font(.system(size: 14, weight: .semibold))
             VStack(alignment: .leading, spacing: 1) {
                 Text("NOTCHAGENT").font(.system(size: 11, weight: .bold, design: .rounded)).tracking(1.4)
-                Text("Controle de capacidade e custo").font(.caption2).foregroundStyle(.secondary)
+                Text(preferences.settings.interfaceLanguage.text("Controle de capacidade e custo", "Capacity and cost")).font(.caption2).foregroundStyle(.secondary)
             }
             Spacer()
-            if store.isPaused { Text("PAUSADO").font(.caption2.bold()).foregroundStyle(.orange) }
+            if store.isPaused { Text(preferences.settings.interfaceLanguage.text("PAUSADO", "PAUSED")).font(.caption2.bold()).foregroundStyle(.orange) }
         }
     }
 
@@ -75,7 +77,7 @@ struct MenuBarContentView: View {
                 Button {
                     selectedTab = tab
                 } label: {
-                    Label(tab.label, systemImage: tab.icon)
+                    Label(tab.label(preferences.settings.interfaceLanguage), systemImage: tab.icon)
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
@@ -98,9 +100,12 @@ struct MenuBarContentView: View {
         VStack(spacing: 8) {
             ForEach(ProviderID.allCases) { provider in providerRow(provider) }
             HStack {
-                Button("Atualizar", systemImage: "arrow.clockwise") { AppEnvironment.shared.scheduler.refreshNow() }
+                Button(preferences.settings.interfaceLanguage.text("Atualizar", "Refresh"), systemImage: "arrow.clockwise") { AppEnvironment.shared.scheduler.refreshNow() }
                 Spacer()
-                Button(store.isPaused ? "Retomar" : "Pausar", systemImage: store.isPaused ? "play.fill" : "pause.fill") {
+                Button(store.isPaused
+                       ? preferences.settings.interfaceLanguage.text("Retomar", "Resume")
+                       : preferences.settings.interfaceLanguage.text("Pausar", "Pause"),
+                       systemImage: store.isPaused ? "play.fill" : "pause.fill") {
                     store.isPaused.toggle()
                 }
             }
@@ -112,36 +117,36 @@ struct MenuBarContentView: View {
         let estimate = EstimatedCostLayers.fromSnapshots(store.snapshots)
         return VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 0) {
-                costMetric("PAGO · MÊS", spending.format(spending.monthlySpend.paidBRL))
+                costMetric(preferences.settings.interfaceLanguage.text("PAGO · MÊS", "PAID · MONTH"), spending.format(spending.monthlySpend.paidBRL))
                 Divider().frame(height: 34).padding(.horizontal, 12)
                 costMetric("EST. · 7D", spending.formatEstimatedUSD(estimate.totalUSD))
             }
             if let budget = spending.monthlyBudgetStatus {
                 VStack(alignment: .leading, spacing: 4) {
-                    HStack { Text("ORÇAMENTO").font(.caption2.bold()).foregroundStyle(.secondary); Spacer(); Text("\(Int(budget.projectedPercent.rounded()))%") .font(.caption.bold()) }
+                    HStack { Text(preferences.settings.interfaceLanguage.text("ORÇAMENTO", "BUDGET")).font(.caption2.bold()).foregroundStyle(.secondary); Spacer(); Text("\(Int(budget.projectedPercent.rounded()))%") .font(.caption.bold()) }
                     ProgressView(value: min(budget.projectedPercent, 100), total: 100).tint(budget.level == .normal ? .green : budget.level == .warning ? .orange : .red)
                 }
             } else {
-                Text("Defina um orçamento para receber alertas.").font(.caption).foregroundStyle(.secondary)
+                Text(preferences.settings.interfaceLanguage.text("Defina um orçamento para receber alertas.", "Set a budget to get alerts.")).font(.caption).foregroundStyle(.secondary)
             }
-            Button("Gerenciar gastos e orçamento", systemImage: "arrow.up.right.square") { router.openSpending() }
+            Button(preferences.settings.interfaceLanguage.text("Gerenciar gastos e orçamento", "Manage spend and budget"), systemImage: "arrow.up.right.square") { router.openSpending() }
                 .controlSize(.small)
         }
     }
 
     private func settings(preferences: Bindable<PreferencesStore>) -> some View {
         VStack(alignment: .leading, spacing: 9) {
-            Toggle("Alertas do sistema", isOn: preferences.settings.notificationsEnabled)
-            Picker("Aparência", selection: preferences.settings.themeMode) {
+            Toggle(preferences.settings.interfaceLanguage.text("Alertas do sistema", "System alerts"), isOn: preferences.settings.notificationsEnabled)
+            Picker(preferences.settings.interfaceLanguage.text("Aparência", "Appearance"), selection: preferences.settings.themeMode) {
                 ForEach(ThemeMode.allCases, id: \.self) { Text($0.label).tag($0) }
             }
-            Picker("Idioma", selection: preferences.settings.interfaceLanguage) {
+            Picker(preferences.settings.interfaceLanguage.text("Idioma", "Language"), selection: preferences.settings.interfaceLanguage) {
                 ForEach(InterfaceLanguage.allCases, id: \.self) { Text($0.label).tag($0) }
             }
-            Button("Abrir todos os ajustes", systemImage: "gearshape") { router.openSettings() }
+            Button(preferences.settings.interfaceLanguage.text("Abrir todos os ajustes", "Open all settings"), systemImage: "gearshape") { router.openSettings() }
                 .controlSize(.small)
             if !AppEnvironment.shared.appUpdates.isManagedByStore {
-                Button("Buscar atualização…", systemImage: "arrow.down.circle") {
+                Button(preferences.settings.interfaceLanguage.text("Buscar atualização…", "Check for updates…"), systemImage: "arrow.down.circle") {
                     AppEnvironment.shared.appUpdates.checkForUpdates()
                 }
                 .controlSize(.small)
@@ -173,9 +178,10 @@ struct MenuBarContentView: View {
     }
 
     private func detail(for snapshot: UsageSnapshot?) -> String {
-        guard let snapshot else { return "Aguardando dados" }
+        let language = preferences.settings.interfaceLanguage
+        guard let snapshot else { return language.text("Aguardando dados", "Waiting for data") }
         guard snapshot.health.isUsable else { return snapshot.health.badgeText }
-        if let metric = GaugeMetric.from(snapshot) { return "\(Int(metric.remaining.rounded()))% restante" }
-        return snapshot.note ?? "Sem limite disponível"
+        if let metric = GaugeMetric.from(snapshot) { return language.text("\(Int(metric.remaining.rounded()))% restante", "\(Int(metric.remaining.rounded()))% left") }
+        return snapshot.note ?? language.text("Sem limite disponível", "No limit available")
     }
 }

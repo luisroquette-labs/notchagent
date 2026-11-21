@@ -130,7 +130,7 @@ final class GoogleSubscriptionReader: NSObject, WKNavigationDelegate {
             service: .googleSubscription,
             usedPercent: nil,
             resetsAt: nil,
-            note: "Google: plano \(plan) · \(isAnnual ? "equivalente mensal" : "mensal")",
+            note: "Google: \(plan) plan · \(isAnnual ? "monthly equivalent" : "monthly")",
             monthlyPlanUSD: usd.map { $0 / divisor },
             monthlyPlanBRL: brl.map { Decimal($0 / divisor) },
             planName: plan

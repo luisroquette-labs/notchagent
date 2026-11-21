@@ -16,6 +16,15 @@ final class AppSettingsDelightTests: XCTestCase {
         XCTAssertEqual(decode("{}")?.themeMode, .dark)
     }
 
+    func testFreshInstallFollowsTheMacLanguage() {
+        let expectsPortuguese = (Locale.preferredLanguages.first ?? "").lowercased().hasPrefix("pt")
+        XCTAssertEqual(AppSettings().interfaceLanguage, expectsPortuguese ? .ptBR : .en)
+    }
+
+    func testLegacySettingsWithoutALanguageStayPortuguese() {
+        XCTAssertEqual(decode("{}")?.interfaceLanguage, .ptBR)
+    }
+
     func testDelightEnabledDecodesWhenPresent() {
         let settings = decode("{\"delightEnabled\":false}")
         XCTAssertEqual(settings?.delightEnabled, false)

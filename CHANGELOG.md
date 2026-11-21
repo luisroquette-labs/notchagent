@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.7.1 — unreleased Direct
+
+The Mac App Store edition is already 3.7.1. The GitHub Release, Sparkle
+appcast, and Homebrew cask are still 3.5.5. Do not publish the Direct release
+from this repository state: it needs a Developer ID signature and Apple
+notarization on Luis's Mac. Paste-ready notes and the exact commands are in
+[docs/release-notes/3.7.1.md](docs/release-notes/3.7.1.md).
+
 ## 3.7.1 (App Store) — 2026-11-18
 
 - First-run setup now distinguishes folder permission from usable local sessions,

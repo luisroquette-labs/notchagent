@@ -15,7 +15,7 @@
   <a href="https://notchagent.app"><img src="https://img.shields.io/badge/install-Mac%20App%20Store-F3B85A?style=flat-square" alt="Get it on the Mac App Store via notchagent.app" /></a>
 </p>
 
-**Current version: 3.5.5** · App Store update candidate: 3.7.0 · Desk protocol 1.3 · pairs with Desk firmware 0.8.0 · source updated 2026-10-31 · [version history](CHANGELOG.md)
+**Current version: 3.5.5** · Mac App Store edition: 3.7.1 · Direct/GitHub/Homebrew stay on 3.5.5 until the notarized 3.7.1 release is published · Desk protocol 1.3 · pairs with Desk firmware 0.8.0 · [version history](CHANGELOG.md) · [3.7.1 release draft](docs/release-notes/3.7.1.md)
 
 A native macOS menu-bar + notch overlay for Claude Code/Codex quotas and
 financial monitoring of external API accounts. It shows provider-reported
@@ -68,14 +68,14 @@ and [compatibility matrix](https://github.com/luisroquette-labs/notchagent-desk/
 
 ## Install
 
-**Get NotchAgent at [notchagent.app](https://notchagent.app)** — free, and now
-**official on the Mac App Store**, reviewed and approved by Apple. One click, no
-Terminal, automatic updates.
+Free. No account. Pick a path — none of these ask for a contact form.
 
-> The public download runs through [notchagent.app](https://notchagent.app): a
-> quick contact form, then the Mac App Store opens. Every install path (Mac App
-> Store today, Windows preview) is reachable from there — we gate it behind that
-> short form so we can let you know when a new version ships.
+- **Mac App Store (US):** [NotchAgent](https://apps.apple.com/us/app/notchagent/id6817046228)
+- **Homebrew:** `brew install --cask --no-quarantine luisroquette-labs/tap/notchagent`
+- **Notarized direct download:** [GitHub Releases](https://github.com/luisroquette-labs/notchagent/releases/latest)
+- **Product Hunt landing (English):** [notchagent.app/producthunt](https://notchagent.app/producthunt) once the page in [`docs/producthunt/`](docs/producthunt/index.html) is copied into [`luisroquette-labs/notchagent-site`](https://github.com/luisroquette-labs/notchagent-site). Until then GitHub Pages serves the same file at `https://luisroquette-labs.github.io/notchagent/producthunt/`.
+
+The Portuguese site at [notchagent.app](https://notchagent.app) still gates its homepage download behind a contact form. Use the links above, or `/producthunt`, when you do not want that form.
 
 **Build from source** (Xcode 15+ / Swift 6 toolchain):
 
@@ -259,7 +259,7 @@ Commercial release builds use `NOTCHAGENT_UPDATE_FEED_URL` and
 not upload or publish files. Keep Sparkle's private EdDSA key in the macOS
 Keychain.
 - [x] Product site on [notchagent.app](https://notchagent.app)
-- [x] Free and open source — no licensing planned
+- [x] Free and open source — [MIT License](LICENSE)
 
 ## Observability
 
@@ -268,6 +268,11 @@ Keychain.
 ```
 
 ---
+
+## License
+
+[MIT](LICENSE). Copyright (c) 2026 Luis Roquette. Same attribution as the other
+luisroquette-labs MIT repositories.
 
 <p align="center">
   <strong>NotchAgent is a flagship project from <a href="https://github.com/luisroquette-labs/RocketLabs">RocketLabs</a>.</strong><br />

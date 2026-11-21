@@ -52,7 +52,7 @@ final class AppEnvironment {
             ) {
             case .none: break
             case .openRecoverySettings: self.router.openSettings()
-            case .askToEnableMirroring: self.notifications.postDeskDetected()
+            case .askToEnableMirroring: self.notifications.postDeskDetected(language: self.preferences.settings.interfaceLanguage)
             }
         }
         notifications.onDeskMirroringRequested = { [weak self] in
