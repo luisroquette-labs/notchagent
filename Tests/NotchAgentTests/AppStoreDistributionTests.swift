@@ -174,6 +174,11 @@ final class AppStoreDistributionTests: XCTestCase {
         XCTAssertEqual(SetupLanguage.preferred(for: "en-US"), .en)
         XCTAssertEqual(SetupLanguage.preferred(for: "es-ES"), .es)
         XCTAssertEqual(SetupLanguage.preferred(for: "fr-FR"), .en)
+        XCTAssertEqual(SetupLanguage.matching(.en, setup: .pt), .en)
+        XCTAssertEqual(SetupLanguage.matching(.en, setup: .es), .es)
+        XCTAssertEqual(SetupLanguage.matching(.en, setup: .en), .en)
+        XCTAssertEqual(SetupLanguage.matching(.ptBR, setup: .en), .pt)
+        XCTAssertEqual(SetupLanguage.matching(.ptBR, setup: .es), .pt)
     }
 
     func testRestoredStoreSnapshotCannotShowOldEstimatedClaudeQuota() async throws {
