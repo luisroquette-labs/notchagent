@@ -11,11 +11,11 @@
 <p align="center">
   <a href="https://notchagent.app"><img src="https://img.shields.io/badge/website-live-FF654F?style=flat-square" alt="NotchAgent website" /></a>
   <a href="https://github.com/luisroquette-labs/RocketLabs"><img src="https://img.shields.io/badge/RocketLabs-flagship%20project-7C5CFC?style=flat-square" alt="RocketLabs flagship project" /></a>
-  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/version-v3.5.5-38D6C7?style=flat-square" alt="Version v3.5.5" /></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/version-v3.7.1-38D6C7?style=flat-square" alt="Version v3.7.1" /></a>
   <a href="https://notchagent.app"><img src="https://img.shields.io/badge/install-Mac%20App%20Store-F3B85A?style=flat-square" alt="Get it on the Mac App Store via notchagent.app" /></a>
 </p>
 
-**Current version: 3.5.5** · Mac App Store edition: 3.7.1 · Direct/GitHub/Homebrew stay on 3.5.5 until the notarized 3.7.1 release is published · Desk protocol 1.3 · pairs with Desk firmware 0.8.0 · [version history](CHANGELOG.md) · [3.7.1 release draft](docs/release-notes/3.7.1.md)
+**Current version: 3.7.1** · App Store version: 3.7.1 · Desk protocol 1.3 · pairs with Desk firmware 0.8.0 · [version history](CHANGELOG.md) · [Product Hunt page](docs/producthunt/index.html)
 
 A native macOS menu-bar + notch overlay for Claude Code/Codex quotas and
 financial monitoring of external API accounts. It shows provider-reported
@@ -71,11 +71,20 @@ and [compatibility matrix](https://github.com/luisroquette-labs/notchagent-desk/
 Free. No account. Pick a path — none of these ask for a contact form.
 
 - **Mac App Store (US):** [NotchAgent](https://apps.apple.com/us/app/notchagent/id6817046228)
-- **Homebrew:** `brew install --cask --no-quarantine luisroquette-labs/tap/notchagent`
-- **Notarized direct download:** [GitHub Releases](https://github.com/luisroquette-labs/notchagent/releases/latest)
-- **Product Hunt landing (English):** [notchagent.app/producthunt](https://notchagent.app/producthunt) once the page in [`docs/producthunt/`](docs/producthunt/index.html) is copied into [`luisroquette-labs/notchagent-site`](https://github.com/luisroquette-labs/notchagent-site). Until then GitHub Pages serves the same file at `https://luisroquette-labs.github.io/notchagent/producthunt/`.
+- **Notarized DMG (3.7.1):** [NotchAgent-3.7.1.dmg](https://github.com/luisroquette-labs/notchagent/releases/download/v3.7.1/NotchAgent-3.7.1.dmg)
+- **Homebrew (3.7.1):**
 
-The Portuguese site at [notchagent.app](https://notchagent.app) still gates its homepage download behind a contact form. Use the links above, or `/producthunt`, when you do not want that form.
+```bash
+brew install --cask --no-quarantine luisroquette-labs/tap/notchagent
+```
+
+On some Homebrew versions the cask also needs `brew trust --cask luisroquette-labs/tap/notchagent` before that install.
+
+- **Product Hunt landing (English):** [notchagent.app/producthunt](https://notchagent.app/producthunt). The page source is [`docs/producthunt/`](docs/producthunt/index.html). GitHub Pages also serves it at `https://luisroquette-labs.github.io/notchagent/producthunt/` until that path is on the site.
+
+The Portuguese homepage at [notchagent.app](https://notchagent.app) still opens a contact form before download. The DMG, Homebrew command, and `/producthunt` page do not.
+
+The source code is available under the [MIT License](LICENSE).
 
 **Build from source** (Xcode 15+ / Swift 6 toolchain):
 
@@ -238,14 +247,14 @@ RefreshScheduler ───────────────┴─▶ Snapshot
 
 - Notch geometry is inferred (`safeAreaInsets` + auxiliary areas) — there's no official API; a fallback pill covers Apple changes.
 - Costs are estimates from a public table; subscription plans don't bill per token.
-- The 3.5.5 ZIP and DMG are Developer ID signed and notarized. The Desk hardware gates (24-hour physical soak, pilot evidence) apply to the Desk product, not the app distribution.
+- The 3.7.1 ZIP and DMG are Developer ID signed and notarized. The Desk hardware gates (24-hour physical soak, pilot evidence) apply to the Desk product, not the app distribution.
 - Local source builds are not the notarized release; they use the first available Apple Development identity unless `NOTCHAGENT_SIGN_IDENTITY` selects another identity.
 - `Limited` on the MODELS page reflects the account's unified rate limit at probe time, not the model itself being unavailable.
 
 ## Distribution status
 
-- [x] NotchAgent 3.5.5 · notarized ZIP + DMG · automated test suite
-- [x] Public release [v3.5.5](https://cfgauss.com.br/t/notchagent-releases)
+- [x] NotchAgent 3.7.1 · notarized ZIP + DMG · automated test suite
+- [x] Public release [v3.7.1](https://github.com/luisroquette-labs/notchagent/releases/tag/v3.7.1)
 - [x] Homebrew Cask install
 - [x] Packaged `.app` with icon + launch-at-login + notifications
 - [x] Developer ID signature + notarization + stapled ticket
