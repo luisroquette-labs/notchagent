@@ -1,6 +1,8 @@
 #!/bin/zsh
 set -euo pipefail
 cd "$(dirname "$0")/.."
+python3 Tools/check-comments.py
+python3 -m unittest Tools/test_check_comments.py
 
 version=$(tr -d '[:space:]' < APP_STORE_VERSION)
 build_number=$(tr -d '[:space:]' < BUILD_NUMBER)

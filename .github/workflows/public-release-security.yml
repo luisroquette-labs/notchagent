@@ -23,11 +23,15 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           fetch-depth: 0
-      - name: Fetch immutable public-history baseline
-        run: git fetch --no-tags https://github.com/luisroquette-labs/notchagent.git master:refs/remotes/public-audit/master
+      - name: Check comment ratchet
+        run: python3 Tools/check-comments.py
+      - name: Test comment ratchet
+        run: python3 -m unittest Tools/test_check_comments.py
+      - name: Fetch repository history baseline
+        run: git fetch --no-tags origin master:refs/remotes/audit-baseline/master
       - name: Audit public source and history
         env:
-          NOTCHAGENT_PUBLIC_HISTORY_BASE: refs/remotes/public-audit/master
+          NOTCHAGENT_PUBLIC_HISTORY_BASE: refs/remotes/audit-baseline/master
         run: zsh Scripts/audit-public-release.sh
       - name: Validate GitHub Action pins
         run: zsh Scripts/check-github-actions-pins.sh
