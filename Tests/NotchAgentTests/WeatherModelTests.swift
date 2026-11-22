@@ -2,8 +2,6 @@ import XCTest
 @testable import NotchAgent
 
 final class WeatherModelTests: XCTestCase {
-    // MARK: WMO mapping
-
     func testWMOMappingClear() {
         XCTAssertEqual(WeatherCondition.from(wmoCode: 0), .clear)
     }
@@ -81,8 +79,6 @@ final class WeatherModelTests: XCTestCase {
         XCTAssertTrue(WeatherCondition.snow.dimsSky)
         XCTAssertFalse(WeatherCondition.clear.dimsSky)
     }
-
-    // MARK: Snapshot round-trip
 
     func testSnapshotRoundTripsThroughJSON() throws {
         let snap = WeatherSnapshot(
