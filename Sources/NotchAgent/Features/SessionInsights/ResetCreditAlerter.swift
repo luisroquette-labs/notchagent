@@ -10,18 +10,22 @@ enum ResetCreditAlerter {
         var detail: String
     }
 
-    static func signal(credits: RateLimitResetCredits?, now: Date = Date()) -> Signal? {
+    static func signal(credits: RateLimitResetCredits?, now: Date = Date(), language: InterfaceLanguage = .ptBR) -> Signal? {
         guard let credits, credits.availableCount > 0,
               let expiresAt = credits.soonestExpiresAt,
               expiresAt > now,
               expiresAt.timeIntervalSince(now) <= leadHours * 3600 else { return nil }
 
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "pt_BR")
-        formatter.dateFormat = "dd/MM 'às' HH:mm"
+        formatter.locale = Locale(identifier: language == .ptBR ? "pt_BR" : "en_US_POSIX")
+        formatter.dateFormat = language == .ptBR ? "dd/MM 'às' HH:mm" : "MMM d 'at' HH:mm"
+        let when = formatter.string(from: expiresAt)
         return Signal(
-            title: "RESET GRÁTIS DO CODEX EXPIRANDO",
-            detail: "Você tem \(credits.availableCount) redefinição(ões) de limite — a mais próxima expira em \(formatter.string(from: expiresAt))."
+            title: language.text("RESET GRÁTIS DO CODEX EXPIRANDO", "FREE CODEX RESET EXPIRING"),
+            detail: language.text(
+                "Você tem \(credits.availableCount) redefinição(ões) de limite — a mais próxima expira em \(when).",
+                "You have \(credits.availableCount) limit reset(s) — the soonest expires \(when)."
+            )
         )
     }
 }

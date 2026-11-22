@@ -1,8 +1,15 @@
 # Changelog
 
+## 3.7.2 (App Store) — 2026-11-21
+
+App Store channel only; the Direct edition stays on 3.7.1. Both targets move to
+build 26. No code changes: adds the English (U.S.) App Store listing as
+`NotchAgent: AI Usage Meter`.
+
 ## 3.7.1 — 2026-11-20
 
-App Store and Direct editions.
+App Store and Direct editions. Notes from the commits since 3.5.5 are in
+[docs/release-notes/3.7.1.md](docs/release-notes/3.7.1.md).
 
 - First-run setup now distinguishes folder permission from usable local sessions,
   explains why cloud tasks do not appear, and links to the official Codex quota.

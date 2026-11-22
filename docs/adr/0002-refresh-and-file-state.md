@@ -10,4 +10,4 @@ Skip ordinary refresh ticks between sleep and wake notifications. Schedule the w
 
 ## Consequences
 
-The app avoids predictable authorization failures during sleep and sees current transcript metadata. The delay does not currently block a periodic tick that fires within three seconds after wake; [issue #6](https://github.com/luisroquette-labs/notchagent-personal/issues/6) tracks this race. Changes to the sleep gate or file stamp path require tests against real macOS behavior.
+The app avoids predictable authorization failures during sleep and sees current transcript metadata. The delay does not currently block a periodic tick that fires within three seconds after wake; [issue #34](https://github.com/luisroquette-labs/notchagent/issues/34) tracks this race. Changes to the sleep gate or file stamp path require tests against real macOS behavior.

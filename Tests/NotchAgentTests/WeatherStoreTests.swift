@@ -15,7 +15,7 @@ final class WeatherStoreTests: XCTestCase {
             return WeatherSnapshot(condition: .rain, temperatureC: 24, isDay: true, city: city, capturedAt: .now)
         }
 
-        func geocode(city: String) async throws -> (lat: Double, lon: Double, name: String) {
+        func geocode(city: String, languageCode: String) async throws -> (lat: Double, lon: Double, name: String) {
             geocodeCalls += 1
             if shouldThrow { throw WeatherError.badPayload }
             return (-8.05, -34.9, "Recife, BR")

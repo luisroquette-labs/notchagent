@@ -71,11 +71,11 @@ enum APIAccountDisplayConfidence: String, Equatable {
 
     var label: String {
         switch self {
-        case .officialAPI: "API OFICIAL"
-        case .officialPortal: "PORTAL OFICIAL"
-        case .manual: "VALOR MANUAL"
-        case .derived: "ESTIMADO PELO PLANO"
-        case .unavailable: "NÃO INFORMADO"
+        case .officialAPI: "OFFICIAL API"
+        case .officialPortal: "OFFICIAL PORTAL"
+        case .manual: "MANUAL VALUE"
+        case .derived: "PLAN ESTIMATE"
+        case .unavailable: "NOT REPORTED"
         }
     }
 }
@@ -154,11 +154,11 @@ struct APIAccountFinancePresentation: Equatable {
         plan = APIAccountMoneyPresentation(amountBRL: planValue, confidence: planConfidence)
         switch usage?.spendPeriod {
         case .rolling28Days:
-            spendLabel = "GASTO 28 DIAS"
+            spendLabel = "28-DAY SPEND"
         case .currentCalendarMonth:
-            spendLabel = "GASTO MÊS ATUAL"
+            spendLabel = "THIS MONTH"
         case .rolling30Days, nil:
-            spendLabel = "GASTO 30 DIAS"
+            spendLabel = "30-DAY SPEND"
         }
     }
 }
