@@ -2936,9 +2936,7 @@
   },
   "Tests/NotchAgentTests/WeatherModelTests.swift": {
     "468f468d408b74af211a65e49c429a1e3658ea14266bd6f9b4817abb73c9537b": 1,
-    "71c9af29c2ce2f9180636c415ffb703e67600a29c2b40c96f05c3066dff5c59a": 1,
-    "848adee811cc6706954f6648dbb77763f2ba82fe5fd8776db547e3a7155a8579": 1,
-    "92e19298e56da77f0fb98bbf027cd6fba5a2c588086c0ebadb0321986d48773a": 1
+    "848adee811cc6706954f6648dbb77763f2ba82fe5fd8776db547e3a7155a8579": 1
   },
   "Tests/NotchAgentTests/WeatherStoreTests.swift": {
     "18252e01d55b9db32756ea81e3b8e1359a756b560220cc35712c126f7bca1e95": 1,
