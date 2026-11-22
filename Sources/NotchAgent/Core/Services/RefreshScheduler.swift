@@ -24,12 +24,6 @@ struct RefreshRequestQueue {
     }
 }
 
-/// Tracks whether the system is between `willSleepNotification` and
-/// `didWakeNotification`. A background Power Nap / dark-wake cycle still
-/// runs enough of the process to fire the periodic tick timer, but any
-/// Keychain read attempted then fails immediately with -25320 ("In dark
-/// wake, no UI possible") — measured as 156 of 169 Keychain failures in a
-/// real app.log (25/08). Non-forced ticks must be skipped while asleep.
 struct SleepGate {
     private(set) var isAsleep = false
     mutating func willSleep() { isAsleep = true }
@@ -79,9 +73,6 @@ struct RefreshGenerationTracker {
     }
 }
 
-/// Central refresh loop: fans out to all providers concurrently, feeds the
-/// store, persists snapshots/history. One scheduler owns all polling — no
-/// provider ever refreshes itself.
 @MainActor
 final class RefreshScheduler {
     private let providers: [any UsageProvider]
@@ -95,12 +86,6 @@ final class RefreshScheduler {
     private var refreshQueue = RefreshRequestQueue()
     private var generations = RefreshGenerationTracker()
     private var sleepGate = SleepGate()
-    /// Grace period after a real wake before touching the Keychain. Right at
-    /// wake the system can still be in a transitional/dark-wake-adjacent
-    /// state where SecurityAgent can't cleanly present or hold a prompt
-    /// (-60008 "Unable to obtain authorization", -128 "User canceled" both
-    /// clustered right around wake in app.log). Not user-configurable —
-    /// this is an OS-timing workaround, not a feature.
     private static let wakeSettleDelay: Duration = .seconds(3)
 
     init(
