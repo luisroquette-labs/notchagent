@@ -5,7 +5,6 @@ enum AppPaths {
         FileManager.default.homeDirectoryForCurrentUser
     }
 
-    /// ~/Library/Application Support/NotchAgent (created on first access).
     static var appSupport: URL {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         let dir = base.appendingPathComponent("NotchAgent", isDirectory: true)
@@ -19,9 +18,6 @@ struct FileStamp: Equatable, Sendable {
     let size: Int
 
     init?(url: URL) {
-        // FileManager instead of URL.resourceValues: NSURL caches resource
-        // values per instance, which would freeze the stamp of the live,
-        // constantly-growing transcript within a refresh cycle.
         guard let attributes = try? FileManager.default.attributesOfItem(atPath: url.path),
               let modified = attributes[.modificationDate] as? Date,
               let size = (attributes[.size] as? NSNumber)?.intValue
@@ -31,7 +27,6 @@ struct FileStamp: Equatable, Sendable {
     }
 }
 
-/// Recursively lists files with `ext`, modified after `cutoff`, newest first, capped.
 func recentFiles(under root: URL, ext: String, modifiedAfter cutoff: Date, limit: Int = 500) -> [URL] {
     let keys: [URLResourceKey] = [.contentModificationDateKey, .isRegularFileKey]
     guard let enumerator = FileManager.default.enumerator(
