@@ -30,6 +30,16 @@ enum SetupLanguage: String, CaseIterable, Identifiable {
         UserDefaults.standard.string(forKey: savedKey).flatMap(Self.init(rawValue:)) ?? system
     }
 
+    /// The main panel follows the interface language chosen in Settings.
+    /// Spanish has no interface language of its own, so a Spanish setup
+    /// language is kept whenever the interface is English.
+    static func matching(_ interface: InterfaceLanguage, setup: Self = .current) -> Self {
+        switch interface {
+        case .ptBR: .pt
+        case .en: setup == .es ? .es : .en
+        }
+    }
+
     static func preferred(for identifier: String?) -> Self {
         let code = identifier?.prefix(2).lowercased() ?? "en"
         return Self(rawValue: code) ?? .en

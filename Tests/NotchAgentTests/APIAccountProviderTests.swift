@@ -87,7 +87,7 @@ final class APIAccountProviderTests: XCTestCase {
         XCTAssertEqual(finance.spend.amountBRL, Decimal(string: "50"))
         XCTAssertEqual(finance.balance.amountBRL, Decimal(string: "100"))
         XCTAssertEqual(finance.plan.amountBRL, Decimal(string: "25"))
-        XCTAssertEqual(finance.spendLabel, "GASTO 28 DIAS")
+        XCTAssertEqual(finance.spendLabel, "28-DAY SPEND")
         XCTAssertEqual(finance.spend.confidence, .officialPortal)
     }
 
@@ -981,7 +981,7 @@ final class APIAccountProviderTests: XCTestCase {
         XCTAssertEqual(quota.seatCount, 10)
         XCTAssertEqual(
             quota.note,
-            "Claude: plano Equipe · próxima fatura R$ 1.848,40 · 10 licenças · créditos de uso -R$ 0,10"
+            "Claude: Equipe plan · next invoice R$ 1.848,40 · 10 seats · usage credits -R$ 0,10"
         )
     }
 

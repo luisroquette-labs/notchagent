@@ -54,7 +54,7 @@ public enum APIServiceID: String, Codable, CaseIterable, Sendable, Identifiable,
         switch self {
         case .openAI: "OpenAI"
         case .gemini: "Google / Gemini"
-        case .xAI: "xAI / Grok (opcional)"
+        case .xAI: "xAI / Grok"
         case .deepSeek: "DeepSeek"
         case .elevenLabs: "ElevenLabs"
         case .firecrawl: "Firecrawl"
@@ -67,8 +67,8 @@ public enum APIServiceID: String, Codable, CaseIterable, Sendable, Identifiable,
         case .googleSubscription: "Google AI / Gemini"
         case .firecrawlSubscription: "Firecrawl"
         case .xTwitter: "X / Twitter"
-        case .xTwitterAccount1: "X / Twitter — Conta 1"
-        case .xTwitterAccount2: "X / Twitter — Conta 2"
+        case .xTwitterAccount1: "X / Twitter — Account 1"
+        case .xTwitterAccount2: "X / Twitter — Account 2"
         case .twitterAPI: "twitterapi.io"
         case .infoSimples: "Infosimples"
         case .brAPI: "brapi.dev"
@@ -143,7 +143,7 @@ public enum APIServiceID: String, Codable, CaseIterable, Sendable, Identifiable,
         switch self {
         case .twilio: "Twilio API Key SID:secret"
         case .openAI: "OpenAI Admin key"
-        case .anthropicAPI: "Anthropic Admin API key — opcional"
+        case .anthropicAPI: "Anthropic Admin API key — optional"
         case .xAI: "xAI Management key"
         case .gemini: "Google OAuth access token — optional fallback"
         case .xTwitter, .xTwitterAccount1, .xTwitterAccount2: "X API Bearer Token"

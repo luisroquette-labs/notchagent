@@ -1,13 +1,13 @@
 # Mac App Store metadata
 
-Version: 3.7.1
-Build: 25
+Version: 3.7.2
+Build: 26
 Bundle ID: `br.com.lfrprojects.notchagent.appstore`
 Primary category: Developer Tools
 Secondary category: Productivity
 Price: Free
-App Store Connect 3.7.1 locale: `pt-BR`; English and Spanish copy below
-is prepared locally and is not published as a separate locale.
+App Store Connect 3.7.2 locales: `pt-BR` (primary) and `en-US`. Spanish copy
+below is prepared locally and is not published as a separate locale.
 
 ## URLs
 
@@ -62,7 +62,8 @@ Description:
 
 ## English (U.S.)
 
-Name: `NotchAgent`
+Name: `NotchAgent: AI Usage Meter` (`NotchAgent` alone is taken in en-US by
+another developer account)
 Subtitle: `AI usage, pace, and costs`
 Keywords: `tokens,quota,cost,limits,productivity,notch,menu bar,monitor,AI,agents`
 
@@ -139,6 +140,18 @@ NotchAgent Desk hardware is not required for review. If no device is present,
 the Desk section remains in a disconnected state.
 
 NotchAgent is independent and is not affiliated with the monitored providers.
+
+## What's new in 3.7.2
+
+Portuguese (Brazil):
+
+> Página da App Store agora também em inglês (EUA). Versão de manutenção, sem
+> mudanças de recursos.
+
+English (U.S.):
+
+> Adds an English (U.S.) App Store listing. Maintenance release with no feature
+> changes.
 
 ## What's new in 3.7.1
 

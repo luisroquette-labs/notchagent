@@ -84,7 +84,10 @@ final class WeatherStore {
                let lon = settings.settings.weatherLon {
                 return (lat, lon, city)
             }
-            let place = try await service.geocode(city: city)
+            let place = try await service.geocode(
+                city: city,
+                languageCode: settings.settings.interfaceLanguage == .ptBR ? "pt" : "en"
+            )
             settings.settings.weatherLat = place.lat
             settings.settings.weatherLon = place.lon
             settings.settings.weatherCityResolved = city

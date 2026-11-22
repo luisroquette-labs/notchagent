@@ -179,7 +179,7 @@ final class AnthropicAPIConsoleReader: NSObject, WKNavigationDelegate {
         )
         var parts = [
             String(
-                format: "custo do mês atual %.2f USD",
+                format: "current month cost %.2f USD",
                 locale: Locale(identifier: "en_US_POSIX"),
                 spend
             ),

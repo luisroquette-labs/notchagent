@@ -101,12 +101,12 @@ final class ChatGPTSubscriptionReader: NSObject, WKNavigationDelegate {
             return nil
         }
 
-        let cadence = annualCadence(in: scope) ? "equivalente mensal" : "mensal"
+        let cadence = annualCadence(in: scope) ? "monthly equivalent" : "monthly"
         return AccountQuota(
             service: .chatGPTSubscription,
             usedPercent: nil,
             resetsAt: nil,
-            note: "ChatGPT: plano \(plan) · \(cadence)",
+            note: "ChatGPT: \(plan) plan · \(cadence)",
             monthlyPlanUSD: amount.currency == .usd ? amount.monthlyValue : nil,
             monthlyPlanBRL: amount.currency == .brl ? amount.monthlyDecimal : nil,
             planName: plan

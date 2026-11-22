@@ -107,8 +107,14 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         guard Self.isAvailable, settings.notificationsEnabled else { return }
         let center = UNUserNotificationCenter.current()
         let content = UNMutableNotificationContent()
-        content.title = alert.level == .exceeded ? "Orçamento excedido" : "Orçamento de IA em risco"
-        content.body = "Previsão mensal em \(Int(alert.percent.rounded()))% do orçamento."
+        let language = settings.interfaceLanguage
+        content.title = alert.level == .exceeded
+            ? language.text("Orçamento excedido", "Budget exceeded")
+            : language.text("Orçamento de IA em risco", "AI budget at risk")
+        content.body = language.text(
+            "Previsão mensal em \(Int(alert.percent.rounded()))% do orçamento.",
+            "Monthly forecast is at \(Int(alert.percent.rounded()))% of the budget."
+        )
         if alert.level == .critical || alert.level == .exceeded { content.sound = .default }
         center.add(UNNotificationRequest(
             identifier: "budget-\(alert.level.rawValue)-\(Calendar.current.component(.month, from: .now))",
@@ -119,7 +125,7 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
 
     /// Fired once per Desk that connects for the first time while mirroring
     /// is still off — the opt-in ask itself, one tap away, no menu to find.
-    func postDeskDetected() {
+    func postDeskDetected(language: InterfaceLanguage = .ptBR) {
         guard Self.isAvailable else { return }
         let center = UNUserNotificationCenter.current()
 
@@ -133,7 +139,7 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
             deskCategoryRegistered = true
             let enable = UNNotificationAction(
                 identifier: Self.deskEnableActionID,
-                title: "Mostrar meus dados",
+                title: language.text("Mostrar meus dados", "Show my data"),
                 options: [.foreground]
             )
             center.setNotificationCategories([
@@ -142,8 +148,11 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         }
 
         let content = UNMutableNotificationContent()
-        content.title = "NotchAgent Desk detectada"
-        content.body = "Toque para mostrar sua quota na tela física."
+        content.title = language.text("NotchAgent Desk detectada", "NotchAgent Desk detected")
+        content.body = language.text(
+            "Toque para mostrar sua quota na tela física.",
+            "Tap to show your quota on the Desk."
+        )
         content.categoryIdentifier = Self.deskCategoryID
         center.add(UNNotificationRequest(identifier: "desk-detected", content: content, trigger: nil))
     }

@@ -81,9 +81,13 @@ final class WindowRouter {
         if spendingWindow == nil {
             let view = SpendingView()
                 .environment(environment.store)
+                .environment(environment.preferences)
                 .environmentObject(environment.spending)
             spendingWindow = makeWindow(
-                title: "NotchAgent — Gastos",
+                title: environment.preferences.settings.interfaceLanguage.text(
+                    "NotchAgent — Gastos",
+                    "NotchAgent — Spend"
+                ),
                 content: AnyView(view),
                 size: NSSize(width: 620, height: 560)
             )

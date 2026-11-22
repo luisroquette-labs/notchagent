@@ -151,10 +151,10 @@ final class AnthropicConsoleReader: NSObject, WKNavigationDelegate {
             in: text
         ).flatMap(Int.init)
 
-        var details = ["próxima fatura \(currencyText(projected))"]
-        if let plan, !plan.isEmpty { details.insert("plano \(plan)", at: 0) }
-        if let seats { details.append("\(seats) licenças") }
-        if let balance { details.append("créditos de uso \(currencyText(balance))") }
+        var details = ["next invoice \(currencyText(projected))"]
+        if let plan, !plan.isEmpty { details.insert("\(plan) plan", at: 0) }
+        if let seats { details.append("\(seats) seats") }
+        if let balance { details.append("usage credits \(currencyText(balance))") }
 
         return AccountQuota(
             service: .anthropicConsole,

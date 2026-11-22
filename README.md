@@ -15,7 +15,7 @@
   <a href="https://notchagent.app"><img src="https://img.shields.io/badge/install-Mac%20App%20Store-F3B85A?style=flat-square" alt="Get it on the Mac App Store via notchagent.app" /></a>
 </p>
 
-**Current version: 3.7.1** · App Store version: 3.7.1 · Desk protocol 1.3 · pairs with Desk firmware 0.8.0 · [version history](CHANGELOG.md)
+**Current version: 3.7.1** · App Store version: 3.7.1 · Desk protocol 1.3 · pairs with Desk firmware 0.8.0 · [version history](CHANGELOG.md) · [Product Hunt page](docs/producthunt/index.html)
 
 A native macOS menu-bar + notch overlay for Claude Code/Codex quotas and
 financial monitoring of external API accounts. It shows provider-reported
@@ -68,20 +68,21 @@ and [compatibility matrix](https://github.com/luisroquette-labs/notchagent-desk/
 
 ## Install
 
-**Get NotchAgent at [notchagent.app](https://notchagent.app)** — free, and now
-**official on the Mac App Store**, reviewed and approved by Apple. One click, no
-Terminal, automatic updates.
+Free. No account. Pick a path — none of these ask for a contact form.
 
-The [GitHub release](https://github.com/luisroquette-labs/notchagent/releases/tag/v3.7.1)
-offers a signed, notarized DMG. Homebrew installs the same Direct edition:
+- **Mac App Store (US):** [NotchAgent](https://apps.apple.com/us/app/notchagent/id6817046228)
+- **Notarized DMG (3.7.1):** [NotchAgent-3.7.1.dmg](https://github.com/luisroquette-labs/notchagent/releases/download/v3.7.1/NotchAgent-3.7.1.dmg)
+- **Homebrew (3.7.1):**
 
 ```bash
-brew install --cask luisroquette-labs/tap/notchagent
+brew install --cask --no-quarantine luisroquette-labs/tap/notchagent
 ```
 
-> Downloads started at [notchagent.app](https://notchagent.app) currently open
-> a contact form first. The GitHub release and Homebrew links above go directly
-> to the download without that form.
+On some Homebrew versions the cask also needs `brew trust --cask luisroquette-labs/tap/notchagent` before that install.
+
+- **Product Hunt landing (English):** [notchagent.app/producthunt](https://notchagent.app/producthunt). The page source is [`docs/producthunt/`](docs/producthunt/index.html). GitHub Pages also serves it at `https://luisroquette-labs.github.io/notchagent/producthunt/` until that path is on the site.
+
+The Portuguese homepage at [notchagent.app](https://notchagent.app) still opens a contact form before download. The DMG, Homebrew command, and `/producthunt` page do not.
 
 The source code is available under the [MIT License](LICENSE).
 
@@ -246,14 +247,14 @@ RefreshScheduler ───────────────┴─▶ Snapshot
 
 - Notch geometry is inferred (`safeAreaInsets` + auxiliary areas) — there's no official API; a fallback pill covers Apple changes.
 - Costs are estimates from a public table; subscription plans don't bill per token.
-- The 3.5.5 ZIP and DMG are Developer ID signed and notarized. The Desk hardware gates (24-hour physical soak, pilot evidence) apply to the Desk product, not the app distribution.
+- The 3.7.1 ZIP and DMG are Developer ID signed and notarized. The Desk hardware gates (24-hour physical soak, pilot evidence) apply to the Desk product, not the app distribution.
 - Local source builds are not the notarized release; they use the first available Apple Development identity unless `NOTCHAGENT_SIGN_IDENTITY` selects another identity.
 - `Limited` on the MODELS page reflects the account's unified rate limit at probe time, not the model itself being unavailable.
 
 ## Distribution status
 
-- [x] NotchAgent 3.5.5 · notarized ZIP + DMG · automated test suite
-- [x] Public release [v3.5.5](https://cfgauss.com.br/t/notchagent-releases)
+- [x] NotchAgent 3.7.1 · notarized ZIP + DMG · automated test suite
+- [x] Public release [v3.7.1](https://github.com/luisroquette-labs/notchagent/releases/tag/v3.7.1)
 - [x] Homebrew Cask install
 - [x] Packaged `.app` with icon + launch-at-login + notifications
 - [x] Developer ID signature + notarization + stapled ticket
@@ -267,7 +268,7 @@ Commercial release builds use `NOTCHAGENT_UPDATE_FEED_URL` and
 not upload or publish files. Keep Sparkle's private EdDSA key in the macOS
 Keychain.
 - [x] Product site on [notchagent.app](https://notchagent.app)
-- [x] Free and open source — no licensing planned
+- [x] Free and open source — [MIT License](LICENSE)
 
 ## Observability
 
@@ -276,6 +277,11 @@ Keychain.
 ```
 
 ---
+
+## License
+
+[MIT](LICENSE). Copyright (c) 2026 Luis Roquette. Same attribution as the other
+luisroquette-labs MIT repositories.
 
 <p align="center">
   <strong>NotchAgent is a flagship project from <a href="https://github.com/luisroquette-labs/RocketLabs">RocketLabs</a>.</strong><br />

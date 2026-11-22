@@ -39,24 +39,31 @@ struct DashboardView: View {
 
     private var spendingSummary: some View {
         let estimate = EstimatedCostLayers.fromSnapshots(store.snapshots)
-        return GroupBox("Custo: camadas separadas") {
+        let language = store.preferences.settings.interfaceLanguage
+        return GroupBox(language.text("Custo: camadas separadas", "Cost: separate layers")) {
             HStack(spacing: 28) {
-                statColumn("Pago · mês", spending.format(spending.monthlySpend.paidBRL))
-                statColumn("Previsto · mês", spending.format(spending.monthlySpend.forecastPlanBRL))
-                statColumn("Estimado · 7d", spending.formatEstimatedUSD(estimate.totalUSD))
+                statColumn(language.text("Pago · mês", "Paid · month"), spending.format(spending.monthlySpend.paidBRL))
+                statColumn(language.text("Previsto · mês", "Forecast · month"), spending.format(spending.monthlySpend.forecastPlanBRL))
+                statColumn(language.text("Estimado · 7d", "Estimated · 7d"), spending.formatEstimatedUSD(estimate.totalUSD))
                 if let budget = spending.monthlyBudgetStatus {
-                    statColumn("Orçamento", "\(Int(budget.projectedPercent.rounded()))%")
+                    statColumn(language.text("Orçamento", "Budget"), "\(Int(budget.projectedPercent.rounded()))%")
                 }
-                statColumn("Planos confirmados", spending.format(spending.monthlySpend.planChargesBRL))
+                statColumn(language.text("Planos confirmados", "Confirmed plans"), spending.format(spending.monthlySpend.planChargesBRL))
                 Spacer()
-                Button("Gerenciar gastos") { AppEnvironment.shared.router.openSpending() }
+                Button(language.text("Gerenciar gastos", "Manage spend")) { AppEnvironment.shared.router.openSpending() }
             }
             .padding(.vertical, 6)
-            Text("Pago = cobrança confirmada. Previsto = renovação ainda pendente. Estimado = tokens locais × tabela pública; não é uma fatura.")
+            Text(language.text(
+                "Pago = cobrança confirmada. Previsto = renovação ainda pendente. Estimado = tokens locais × tabela pública; não é uma fatura.",
+                "Paid = confirmed charge. Forecast = renewal still ahead. Estimated = local tokens × the public price table; it is not an invoice."
+            ))
                 .font(.caption)
                 .foregroundStyle(.secondary)
             if let budget = spending.monthlyBudgetStatus {
-                Text("Previsão: \(spending.format(budget.projectedBRL)) de \(spending.format(budget.budgetBRL)).")
+                Text(language.text(
+                    "Previsão: \(spending.format(budget.projectedBRL)) de \(spending.format(budget.budgetBRL)).",
+                    "Forecast: \(spending.format(budget.projectedBRL)) of \(spending.format(budget.budgetBRL))."
+                ))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -64,9 +71,10 @@ struct DashboardView: View {
     }
 
     private var decisionMode: some View {
-        let advice = DecisionAdvisor.advise(snapshots: store.snapshots, budget: spending.monthlyBudgetStatus)
-            + store.sessionPayloads.values.flatMap { PayloadAdvisor.advise($0) }
-        return GroupBox("Modo decisão") {
+        let language = store.preferences.settings.interfaceLanguage
+        let advice = DecisionAdvisor.advise(snapshots: store.snapshots, budget: spending.monthlyBudgetStatus, language: language)
+            + store.sessionPayloads.values.flatMap { PayloadAdvisor.advise($0, language: language) }
+        return GroupBox(language.text("Modo decisão", "Decision mode")) {
             VStack(alignment: .leading, spacing: 7) {
                 ForEach(advice) { item in
                     HStack(spacing: 8) {
@@ -87,7 +95,7 @@ struct DashboardView: View {
         ForEach([ProviderID.claudeCode, .codex], id: \.self) { provider in
             if let payload = store.sessionPayloads[provider] {
                 // Fonte de verdade: o payload do motor (render-only).
-                GroupBox("Sessão ativa — \(provider.shortName)") {
+                GroupBox(store.preferences.settings.interfaceLanguage.text("Sessão ativa — \(provider.shortName)", "Active session — \(provider.shortName)")) {
                     HStack(spacing: 12) {
                         SegmentedMeter(percent: payload.cacheShare * 100, segments: 14, tint: Theme.coral, height: 9, spacing: 2)
                             .frame(maxWidth: 200)
@@ -103,7 +111,7 @@ struct DashboardView: View {
             } else if let session = store.snapshots[provider]?.session,
                       let summary = DecisionAdvisor.cacheSummary(session) {
                 // Fallback até o motor ter fonte real (etapa 3).
-                GroupBox("Sessão ativa — \(provider.shortName)") {
+                GroupBox(store.preferences.settings.interfaceLanguage.text("Sessão ativa — \(provider.shortName)", "Active session — \(provider.shortName)")) {
                     HStack(spacing: 12) {
                         SegmentedMeter(percent: summary.share * 100, segments: 14, tint: Theme.coral, height: 9, spacing: 2)
                             .frame(maxWidth: 200)
